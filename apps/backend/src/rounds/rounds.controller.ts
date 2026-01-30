@@ -1,24 +1,24 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { RoundsService } from './rounds.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('rounds')
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard('jwt'))
 export class RoundsController {
   constructor(private roundsService: RoundsService) {}
 
-  @Get()
-  async findAll() {
-    return this.roundsService.findAll();
+  @Get('current')
+  getCurrentRound() {
+    return this.roundsService.getCurrentRound();
   }
 
-  @Get('active')
-  async getActiveRound() {
-    return this.roundsService.getActiveRound();
+  @Get()
+  getAllRounds() {
+    return this.roundsService.getAllRounds();
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string) {
-    return this.roundsService.findById(id);
+  getRound(@Param('id') id: string) {
+    return this.roundsService.getRound(id);
   }
 }

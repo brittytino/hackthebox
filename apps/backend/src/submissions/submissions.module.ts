@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
-import { SubmissionsService } from './submissions.service';
 import { SubmissionsController } from './submissions.controller';
-import { AuditModule } from '../audit/audit.module';
+import { SubmissionsService } from './submissions.service';
 
 @Module({
-  imports: [AuditModule],
-  providers: [SubmissionsService],
   controllers: [SubmissionsController],
+  providers: [SubmissionsService],
   exports: [SubmissionsService],
 })
 export class SubmissionsModule {}

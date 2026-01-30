@@ -1,24 +1,30 @@
-import { Controller, Get, Sse, MessageEvent, UseGuards } from '@nestjs/common';
-import { Observable, interval, map, switchMap, from } from 'rxjs';
+import { Controller, Get, Param, UseGuards, Sse, MessageEvent } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Observable, interval } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { ScoreboardService } from './scoreboard.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('scoreboard')
+@UseGuards(AuthGuard('jwt'))
 export class ScoreboardController {
   constructor(private scoreboardService: ScoreboardService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
-  async getScoreboard() {
+  getScoreboard() {
     return this.scoreboardService.getScoreboard();
+  }
+
+  @Get('team/:teamId')
+  getTeamStats(@Param('teamId') teamId: string) {
+    return this.scoreboardService.getTeamStats(teamId);
   }
 
   @Sse('live')
   liveScoreboard(): Observable<MessageEvent> {
     return interval(5000).pipe(
-      switchMap(() => from(this.scoreboardService.getScoreboard())),
-      map((data) => ({
-        data: { scoreboard: data, timestamp: new Date().toISOString() },
+      switchMap(() => this.scoreboardService.getScoreboard()),
+      map((scoreboard) => ({
+        data: scoreboard,
       })),
     );
   }

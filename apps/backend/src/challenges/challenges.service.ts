@@ -1,62 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ChallengesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(roundId?: string) {
-    const where: any = { isActive: true };
-    if (roundId) {
-      where.roundId = roundId;
-    }
-
-    return this.prisma.challenge.findMany({
-      where,
-      select: {
-        id: true,
-        roundId: true,
-        title: true,
-        description: true,
-        type: true,
-        points: true,
-        maxAttempts: true,
-        order: true,
-        hints: true,
-        round: {
-          select: {
-            id: true,
-            name: true,
-            state: true,
-          },
-        },
-      },
-      orderBy: {
-        order: 'asc',
-      },
-    });
-  }
-
-  async findById(id: string) {
+  async getChallenge(challengeId: string) {
     const challenge = await this.prisma.challenge.findUnique({
-      where: { id },
+      where: { id: challengeId },
       select: {
         id: true,
-        roundId: true,
         title: true,
         description: true,
-        type: true,
         points: true,
-        maxAttempts: true,
         order: true,
         hints: true,
-        isActive: true,
-        isFinalFlag: true,
+        maxAttempts: true,
         round: {
           select: {
             id: true,
             name: true,
-            state: true,
+            type: true,
+            status: true,
           },
         },
       },
@@ -69,7 +34,7 @@ export class ChallengesService {
     return challenge;
   }
 
-  async getActiveChallenges(roundId: string) {
+  async getChallengesByRound(roundId: string) {
     return this.prisma.challenge.findMany({
       where: {
         roundId,
@@ -79,16 +44,43 @@ export class ChallengesService {
         id: true,
         title: true,
         description: true,
-        type: true,
         points: true,
-        maxAttempts: true,
         order: true,
         hints: true,
-        isFinalFlag: true,
+        maxAttempts: true,
       },
-      orderBy: {
-        order: 'asc',
+      orderBy: { order: 'asc' },
+    });
+  }
+
+  async getAllChallenges() {
+    // Get current active round only
+    const activeRound = await this.prisma.round.findFirst({
+      where: { status: 'ACTIVE' },
+      orderBy: { order: 'asc' },
+    });
+
+    if (!activeRound) {
+      return [];
+    }
+
+    // Only show challenges from current active round
+    return this.prisma.challenge.findMany({
+      where: {
+        roundId: activeRound.id,
+        isActive: true,
       },
+      include: {
+        round: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: { order: 'asc' },
     });
   }
 }

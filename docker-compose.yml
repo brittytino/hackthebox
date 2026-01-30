@@ -3,36 +3,33 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: htb_postgres
-    restart: unless-stopped
+    container_name: hackthebox_postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-hackthebox}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hackthebox_secure_2026}
-      POSTGRES_DB: ${POSTGRES_DB:-hackthebox}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "0.0.0.0:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - htb_network
+      - hackthebox_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U hackthebox"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: htb_redis
-    restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD:-redis_secure_2026}
+    container_name: hackthebox_redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "0.0.0.0:6379:6379"
     volumes:
       - redis_data:/data
     networks:
-      - htb_network
+      - hackthebox_network
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 10s
@@ -43,51 +40,50 @@ services:
     build:
       context: ./apps/backend
       dockerfile: Dockerfile
-    container_name: htb_backend
-    restart: unless-stopped
+    container_name: hackthebox_backend
     environment:
-      NODE_ENV: production
-      PORT: ${BACKEND_PORT:-3001}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-hackthebox}:${POSTGRES_PASSWORD:-hackthebox_secure_2026}@postgres:5432/${POSTGRES_DB:-hackthebox}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_secure_2026}
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-3h}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${BACKEND_PORT}
     ports:
-      - "${BACKEND_PORT:-3001}:3001"
+      - "0.0.0.0:${BACKEND_PORT}:${BACKEND_PORT}"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     networks:
-      - htb_network
+      - hackthebox_network
     volumes:
-      - ./apps/backend/uploads:/app/uploads
+      - ./apps/backend/src:/app/src
+      - ./apps/backend/prisma:/app/prisma
+    restart: unless-stopped
 
   frontend:
     build:
       context: ./apps/frontend
       dockerfile: Dockerfile
-    container_name: htb_frontend
-    restart: unless-stopped
+    container_name: hackthebox_frontend
     environment:
-      NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      PORT: ${NEXTJS_PORT}
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "0.0.0.0:${NEXTJS_PORT}:${NEXTJS_PORT}"
     depends_on:
       - backend
     networks:
-      - htb_network
+      - hackthebox_network
+    restart: unless-stopped
+
+networks:
+  hackthebox_network:
+    driver: bridge
 
 volumes:
   postgres_data:
-    driver: local
   redis_data:
-    driver: local
-
-networks:
-  htb_network:
-    driver: bridge

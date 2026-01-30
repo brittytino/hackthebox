@@ -1,285 +1,107 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuditService } from '../audit/audit.service';
-import { RoundState } from '@prisma/client';
+import { CreateRoundDto, UpdateRoundStatusDto, CreateChallengeDto, UpdateChallengeDto } from './dto/admin.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AdminService {
-  constructor(
-    private prisma: PrismaService,
-    private auditService: AuditService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  // ==========================================
-  // ROUND MANAGEMENT
-  // ==========================================
+  // Round Management
+  async createRound(dto: CreateRoundDto) {
+    return this.prisma.round.create({
+      data: dto,
+    });
+  }
 
-  async updateRoundState(roundId: string, state: RoundState, adminId: string) {
-    const round = await this.prisma.round.findUnique({
+  async updateRoundStatus(roundId: string, dto: UpdateRoundStatusDto) {
+    return this.prisma.round.update({
+      where: { id: roundId },
+      data: { status: dto.status },
+    });
+  }
+
+  async deleteRound(roundId: string) {
+    await this.prisma.round.delete({
       where: { id: roundId },
     });
-
-    if (!round) {
-      throw new NotFoundException('Round not found');
-    }
-
-    // Only one round can be active at a time
-    if (state === 'ACTIVE') {
-      await this.prisma.round.updateMany({
-        where: {
-          id: { not: roundId },
-          state: 'ACTIVE',
-        },
-        data: {
-          state: 'LOCKED',
-        },
-      });
-    }
-
-    const updateData: any = { state };
-
-    if (state === 'ACTIVE' && !round.startedAt) {
-      updateData.startedAt = new Date();
-    }
-
-    if (state === 'ENDED' && !round.endedAt) {
-      updateData.endedAt = new Date();
-    }
-
-    const updatedRound = await this.prisma.round.update({
-      where: { id: roundId },
-      data: updateData,
-    });
-
-    await this.auditService.log({
-      userId: adminId,
-      action: 'ROUND_STATE_CHANGE',
-      targetType: 'Round',
-      targetId: roundId,
-      metadata: { newState: state },
-    });
-
-    return updatedRound;
+    return { message: 'Round deleted successfully' };
   }
 
-  // ==========================================
-  // CHALLENGE MANAGEMENT
-  // ==========================================
+  // Challenge Management
+  async createChallenge(dto: CreateChallengeDto) {
+    const flagHash = await bcrypt.hash(dto.flag.toLowerCase(), 10);
 
-  async toggleChallenge(challengeId: string, isActive: boolean, adminId: string) {
-    const challenge = await this.prisma.challenge.findUnique({
-      where: { id: challengeId },
-    });
+    const { flag, ...data } = dto;
 
-    if (!challenge) {
-      throw new NotFoundException('Challenge not found');
-    }
-
-    const updated = await this.prisma.challenge.update({
-      where: { id: challengeId },
-      data: { isActive },
-    });
-
-    await this.auditService.log({
-      userId: adminId,
-      action: 'CHALLENGE_STATE_CHANGE',
-      targetType: 'Challenge',
-      targetId: challengeId,
-      metadata: { isActive },
-    });
-
-    return updated;
-  }
-
-  // ==========================================
-  // TEAM MANAGEMENT
-  // ==========================================
-
-  async disqualifyTeam(teamId: string, isDisqualified: boolean, reason: string, adminId: string) {
-    const team = await this.prisma.team.findUnique({
-      where: { id: teamId },
-    });
-
-    if (!team) {
-      throw new NotFoundException('Team not found');
-    }
-
-    const updated = await this.prisma.team.update({
-      where: { id: teamId },
-      data: { isDisqualified },
-    });
-
-    await this.auditService.log({
-      userId: adminId,
-      action: 'TEAM_DISQUALIFY',
-      targetType: 'Team',
-      targetId: teamId,
-      metadata: { isDisqualified, reason },
-    });
-
-    return updated;
-  }
-
-  async adjustScore(teamId: string, points: number, reason: string, adminId: string) {
-    const team = await this.prisma.team.findUnique({
-      where: { id: teamId },
-    });
-
-    if (!team) {
-      throw new NotFoundException('Team not found');
-    }
-
-    // Create score adjustment record
-    await this.prisma.scoreAdjustment.create({
+    return this.prisma.challenge.create({
       data: {
-        teamId,
-        adminId,
-        points,
-        reason,
+        ...data,
+        flagHash,
       },
     });
-
-    // Update team score
-    const updated = await this.prisma.team.update({
-      where: { id: teamId },
-      data: {
-        totalScore: {
-          increment: points,
-        },
-      },
-    });
-
-    await this.auditService.log({
-      userId: adminId,
-      action: 'SCORE_ADJUSTMENT',
-      targetType: 'Team',
-      targetId: teamId,
-      metadata: { points, reason },
-    });
-
-    return updated;
   }
 
-  // ==========================================
-  // EVENT MANAGEMENT
-  // ==========================================
-
-  async updateEventConfig(updates: any, adminId: string) {
-    let config = await this.prisma.eventConfig.findFirst();
-
-    if (!config) {
-      config = await this.prisma.eventConfig.create({
-        data: {
-          eventName: 'HACK-THE-BOX',
-          tagline: 'Decode. Discover. Defend.',
-          duration: 180,
-          isActive: false,
-        },
-      });
-    }
-
-    const updateData: any = {};
-
-    if (updates.isActive !== undefined) {
-      updateData.isActive = updates.isActive;
-      if (updates.isActive && !config.startedAt) {
-        updateData.startedAt = new Date();
-      }
-      if (!updates.isActive && config.isActive) {
-        updateData.endedAt = new Date();
-      }
-    }
-
-    if (updates.scoreboardFrozen !== undefined) {
-      updateData.scoreboardFrozen = updates.scoreboardFrozen;
-    }
-
-    return this.prisma.eventConfig.update({
-      where: { id: config.id },
-      data: updateData,
+  async updateChallenge(challengeId: string, dto: UpdateChallengeDto) {
+    return this.prisma.challenge.update({
+      where: { id: challengeId },
+      data: dto,
     });
   }
 
-  // ==========================================
-  // STATISTICS & REPORTING
-  // ==========================================
+  async deleteChallenge(challengeId: string) {
+    await this.prisma.challenge.delete({
+      where: { id: challengeId },
+    });
+    return { message: 'Challenge deleted successfully' };
+  }
 
-  async getDashboardStats() {
-    const [totalTeams, activeTeams, totalSubmissions, correctSubmissions] = await Promise.all([
+  // User Management
+  async updateUserRole(userId: string, role: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { role: role as any },
+    });
+  }
+
+  async deleteUser(userId: string) {
+    await this.prisma.user.delete({
+      where: { id: userId },
+    });
+    return { message: 'User deleted successfully' };
+  }
+
+  // Statistics
+  async getStatistics() {
+    const [
+      totalUsers,
+      totalTeams,
+      totalRounds,
+      totalChallenges,
+      totalSubmissions,
+      correctSubmissions,
+    ] = await Promise.all([
+      this.prisma.user.count(),
       this.prisma.team.count(),
-      this.prisma.team.count({ where: { isDisqualified: false } }),
+      this.prisma.round.count(),
+      this.prisma.challenge.count(),
       this.prisma.submission.count(),
       this.prisma.submission.count({ where: { isCorrect: true } }),
     ]);
 
-    const rounds = await this.prisma.round.findMany({
-      include: {
-        challenges: {
-          select: {
-            id: true,
-            isActive: true,
-          },
-        },
-      },
-      orderBy: {
-        order: 'asc',
-      },
-    });
-
     return {
-      teams: {
-        total: totalTeams,
-        active: activeTeams,
-        disqualified: totalTeams - activeTeams,
-      },
-      submissions: {
-        total: totalSubmissions,
-        correct: correctSubmissions,
-        incorrect: totalSubmissions - correctSubmissions,
-      },
-      rounds: rounds.map(r => ({
-        id: r.id,
-        name: r.name,
-        state: r.state,
-        challengeCount: r.challenges.length,
-        activeChallenges: r.challenges.filter(c => c.isActive).length,
-      })),
+      totalUsers,
+      totalTeams,
+      totalRounds,
+      totalChallenges,
+      totalSubmissions,
+      correctSubmissions,
+      successRate: totalSubmissions > 0 ? (correctSubmissions / totalSubmissions) * 100 : 0,
     };
   }
 
   async getAllSubmissions() {
     return this.prisma.submission.findMany({
-      include: {
-        team: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            username: true,
-          },
-        },
-        challenge: {
-          select: {
-            id: true,
-            title: true,
-            type: true,
-            points: true,
-          },
-        },
-      },
-      orderBy: {
-        submittedAt: 'desc',
-      },
-      take: 1000,
-    });
-  }
-
-  async exportResults() {
-    const teams = await this.prisma.team.findMany({
       include: {
         user: {
           select: {
@@ -287,35 +109,251 @@ export class AdminService {
             email: true,
           },
         },
-        submissions: {
-          where: {
-            isCorrect: true,
+        team: {
+          select: {
+            name: true,
           },
-          include: {
-            challenge: {
+        },
+        challenge: {
+          select: {
+            title: true,
+            points: true,
+            round: {
               select: {
-                title: true,
-                points: true,
+                name: true,
               },
             },
           },
         },
       },
-      orderBy: [
-        { totalScore: 'desc' },
-        { lastSubmission: 'asc' },
-      ],
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+  }
+
+  async resetCompetition() {
+    await this.prisma.submission.deleteMany({});
+    await this.prisma.score.deleteMany({});
+    await this.prisma.round.updateMany({
+      data: { status: 'PENDING' },
+    });
+    
+    return { message: 'Competition reset successfully' };
+  }
+
+  // Score Management
+  async adjustTeamScore(teamId: string, points: number, reason: string) {
+    const score = await this.prisma.score.findUnique({
+      where: { teamId },
     });
 
-    return teams.map((team, index) => ({
-      rank: index + 1,
-      teamName: team.name,
-      username: team.user.username,
-      email: team.user.email,
-      totalScore: team.totalScore,
-      solvedChallenges: team.submissions.length,
-      lastSubmission: team.lastSubmission,
-      isDisqualified: team.isDisqualified,
-    }));
+    if (!score) {
+      throw new NotFoundException('Team score not found');
+    }
+
+    const newTotal = Math.max(0, score.totalPoints + points);
+
+    await this.prisma.score.update({
+      where: { teamId },
+      data: { totalPoints: newTotal },
+    });
+
+    return {
+      message: `Score adjusted by ${points} points. Reason: ${reason}`,
+      newTotal,
+    };
+  }
+
+  async disqualifyTeam(teamId: string, reason: string) {
+    await this.prisma.team.update({
+      where: { id: teamId },
+      data: {
+        disqualified: true,
+        members: {
+          updateMany: {
+            where: { teamId },
+            data: { role: 'JUDGE' }, // Use JUDGE role as disqualified marker
+          },
+        },
+      },
+    });
+
+    await this.prisma.score.update({
+      where: { teamId },
+      data: { totalPoints: 0 },
+    });
+
+    return {
+      message: `Team disqualified. Reason: ${reason}`,
+    };
+  }
+
+  async qualifyTeam(teamId: string) {
+    await this.prisma.team.update({
+      where: { id: teamId },
+      data: {
+        qualified: true,
+        qualifiedAt: new Date(),
+      },
+    });
+
+    return {
+      message: 'Team qualified for next round',
+    };
+  }
+
+  async qualifyTopTeams(count: number) {
+    const topTeams = await this.prisma.score.findMany({
+      take: count,
+      orderBy: [
+        { totalPoints: 'desc' },
+        { lastSolved: 'asc' },
+      ],
+      include: {
+        team: true,
+      },
+    });
+
+    const qualifiedIds = [];
+    for (const score of topTeams) {
+      await this.prisma.team.update({
+        where: { id: score.teamId },
+        data: {
+          qualified: true,
+          qualifiedAt: new Date(),
+        },
+      });
+      qualifiedIds.push(score.teamId);
+    }
+
+    return {
+      message: `Qualified top ${count} teams`,
+      qualifiedTeams: qualifiedIds,
+    };
+  }
+
+  async freezeScoreboard(freeze: boolean) {
+    await this.prisma.systemConfig.upsert({
+      where: { key: 'scoreboard_frozen' },
+      create: { key: 'scoreboard_frozen', value: freeze.toString() },
+      update: { value: freeze.toString() },
+    });
+
+    return {
+      message: `Scoreboard ${freeze ? 'frozen' : 'unfrozen'}`,
+      frozen: freeze,
+    };
+  }
+
+  async exportResults() {
+    const [teams, submissions, rounds] = await Promise.all([
+      this.prisma.team.findMany({
+        include: {
+          members: {
+            select: {
+              username: true,
+              email: true,
+            },
+          },
+          scores: true,
+        },
+      }),
+      this.prisma.submission.findMany({
+        where: { isCorrect: true },
+        include: {
+          user: {
+            select: {
+              username: true,
+            },
+          },
+          team: {
+            select: {
+              name: true,
+            },
+          },
+          challenge: {
+            select: {
+              title: true,
+              points: true,
+              round: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      this.prisma.round.findMany({
+        include: {
+          challenges: true,
+        },
+        orderBy: { order: 'asc' },
+      }),
+    ]);
+
+    return {
+      exportDate: new Date().toISOString(),
+      teams: teams.map(team => ({
+        id: team.id,
+        name: team.name,
+        members: team.members,
+        totalPoints: team.scores[0]?.totalPoints || 0,
+        lastSolved: team.scores[0]?.lastSolved,
+      })),
+      submissions,
+      rounds,
+      statistics: await this.getStatistics(),
+    };
+  }
+
+  async exportResultsCSV() {
+    const teams = await this.prisma.team.findMany({
+      include: {
+        members: {
+          select: {
+            username: true,
+            email: true,
+          },
+        },
+        scores: true,
+      },
+      orderBy: {
+        scores: {
+          _count: 'desc',
+        },
+      },
+    });
+
+    // Build CSV content
+    let csv = 'Rank,Team Name,Members,Total Points,Last Solve Time,Qualified,Status\n';
+    
+    let rank = 1;
+    const sortedTeams = teams
+      .map(team => ({
+        ...team,
+        totalPoints: team.scores[0]?.totalPoints || 0,
+        lastSolved: team.scores[0]?.lastSolved || null,
+      }))
+      .sort((a, b) => {
+        if (b.totalPoints !== a.totalPoints) {
+          return b.totalPoints - a.totalPoints;
+        }
+        if (!a.lastSolved) return 1;
+        if (!b.lastSolved) return -1;
+        return new Date(a.lastSolved).getTime() - new Date(b.lastSolved).getTime();
+      });
+
+    for (const team of sortedTeams) {
+      const memberNames = team.members.map(m => m.username).join(';');
+      const status = team.disqualified ? 'DISQUALIFIED' : 'ACTIVE';
+      const lastSolvedStr = team.lastSolved ? new Date(team.lastSolved).toISOString() : 'N/A';
+      
+      csv += `${rank},"${team.name}","${memberNames}",${team.totalPoints},${lastSolvedStr},${team.qualified},${status}\n`;
+      rank++;
+    }
+
+    return csv;
   }
 }

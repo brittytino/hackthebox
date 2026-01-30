@@ -1,42 +1,73 @@
-import { IsString, IsInt, IsEnum, IsBoolean, IsOptional } from 'class-validator';
-import { RoundState } from '@prisma/client';
+import { IsNotEmpty, IsString, IsNumber, IsEnum, IsOptional, IsBoolean } from 'class-validator';
+import { RoundType, RoundStatus } from '@prisma/client';
 
-export class UpdateRoundStateDto {
-  @IsEnum(RoundState)
-  state: RoundState;
-}
-
-export class ToggleChallengeDto {
-  @IsBoolean()
-  isActive: boolean;
-}
-
-export class AdjustScoreDto {
+export class CreateRoundDto {
   @IsString()
-  teamId: string;
+  @IsNotEmpty()
+  name: string;
 
-  @IsInt()
+  @IsEnum(RoundType)
+  type: RoundType;
+
+  @IsNumber()
+  order: number;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+}
+
+export class UpdateRoundStatusDto {
+  @IsEnum(RoundStatus)
+  status: RoundStatus;
+}
+
+export class CreateChallengeDto {
+  @IsString()
+  @IsNotEmpty()
+  roundId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+  @IsString()
+  @IsNotEmpty()
+  description: string;
+
+  @IsNumber()
   points: number;
 
   @IsString()
-  reason: string;
-}
+  @IsNotEmpty()
+  flag: string;
 
-export class DisqualifyTeamDto {
-  @IsBoolean()
-  isDisqualified: boolean;
+  @IsNumber()
+  order: number;
+
+  @IsNumber()
+  @IsOptional()
+  maxAttempts?: number;
 
   @IsString()
   @IsOptional()
-  reason?: string;
+  hints?: string;
 }
 
-export class UpdateEventDto {
+export class UpdateChallengeDto {
+  @IsString()
+  @IsOptional()
+  title?: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsNumber()
+  @IsOptional()
+  points?: number;
+
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
-
-  @IsBoolean()
-  @IsOptional()
-  scoreboardFrozen?: boolean;
 }

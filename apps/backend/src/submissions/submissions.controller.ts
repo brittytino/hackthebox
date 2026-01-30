@@ -1,40 +1,27 @@
-import { Controller, Post, Get, Body, UseGuards, Req, Param, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { SubmissionsService } from './submissions.service';
-import { SubmitFlagDto } from './dto/submit-flag.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { SubmitFlagDto } from './dto/submission.dto';
 
 @Controller('submissions')
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard('jwt'))
 export class SubmissionsController {
   constructor(private submissionsService: SubmissionsService) {}
 
   @Post()
-  async submitFlag(@Body() dto: SubmitFlagDto, @Req() req: any) {
-    if (!req.user.team) {
-      throw new BadRequestException('You must create a team first');
-    }
-
-    return this.submissionsService.submitFlag(
-      req.user.id,
-      req.user.team.id,
-      dto.challengeId,
-      dto.flag,
-      req.ip,
-      req.headers['user-agent'],
-    );
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  submitFlag(@Body() dto: SubmitFlagDto, @Request() req) {
+    return this.submissionsService.submitFlag(dto.challengeId, dto.flag, req.user.id);
   }
 
-  @Get('my-submissions')
-  async getMySubmissions(@Req() req: any) {
-    if (!req.user.team) {
-      return [];
-    }
-
-    return this.submissionsService.getTeamSubmissions(req.user.team.id);
+  @Get('me')
+  getMySubmissions(@Request() req) {
+    return this.submissionsService.getUserSubmissions(req.user.id);
   }
 
-  @Get('challenge/:challengeId')
-  async getChallengeSubmissions(@Param('challengeId') challengeId: string) {
-    return this.submissionsService.getChallengeSubmissions(challengeId);
+  @Get('team/:teamId')
+  getTeamSubmissions(@Param('teamId') teamId: string) {
+    return this.submissionsService.getTeamSubmissions(teamId);
   }
 }

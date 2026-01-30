@@ -1,102 +1,115 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Header } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { UserRole } from '@prisma/client';
 import { AdminService } from './admin.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { AdminGuard } from '../auth/guards/roles.guard';
-import {
-  UpdateRoundStateDto,
-  ToggleChallengeDto,
-  AdjustScoreDto,
-  DisqualifyTeamDto,
-  UpdateEventDto,
-} from './dto/admin.dto';
-import { SubmissionsService } from '../submissions/submissions.service';
+import { CreateRoundDto, UpdateRoundStatusDto, CreateChallengeDto, UpdateChallengeDto } from './dto/admin.dto';
 
 @Controller('admin')
-@UseGuards(JwtAuthGuard, AdminGuard)
+@UseGuards(AuthGuard('jwt'), RolesGuard)
+@Roles(UserRole.ADMIN)
 export class AdminController {
-  constructor(
-    private adminService: AdminService,
-    private submissionsService: SubmissionsService,
-  ) {}
+  constructor(private adminService: AdminService) {}
 
-  @Get('dashboard')
-  async getDashboard() {
-    return this.adminService.getDashboardStats();
+  // Rounds
+  @Post('rounds')
+  createRound(@Body() dto: CreateRoundDto) {
+    return this.adminService.createRound(dto);
   }
 
-  // ==========================================
-  // ROUND MANAGEMENT
-  // ==========================================
-
-  @Put('rounds/:id/state')
-  async updateRoundState(
-    @Param('id') id: string,
-    @Body() dto: UpdateRoundStateDto,
-    @Req() req: any,
-  ) {
-    return this.adminService.updateRoundState(id, dto.state, req.user.id);
+  @Put('rounds/:id/status')
+  updateRoundStatus(@Param('id') id: string, @Body() dto: UpdateRoundStatusDto) {
+    return this.adminService.updateRoundStatus(id, dto);
   }
 
-  // ==========================================
-  // CHALLENGE MANAGEMENT
-  // ==========================================
-
-  @Put('challenges/:id/toggle')
-  async toggleChallenge(
-    @Param('id') id: string,
-    @Body() dto: ToggleChallengeDto,
-    @Req() req: any,
-  ) {
-    return this.adminService.toggleChallenge(id, dto.isActive, req.user.id);
+  @Delete('rounds/:id')
+  deleteRound(@Param('id') id: string) {
+    return this.adminService.deleteRound(id);
   }
 
-  // ==========================================
-  // TEAM MANAGEMENT
-  // ==========================================
-
-  @Put('teams/:id/disqualify')
-  async disqualifyTeam(
-    @Param('id') id: string,
-    @Body() dto: DisqualifyTeamDto,
-    @Req() req: any,
-  ) {
-    return this.adminService.disqualifyTeam(
-      id,
-      dto.isDisqualified,
-      dto.reason || 'No reason provided',
-      req.user.id,
-    );
+  // Challenges
+  @Post('challenges')
+  createChallenge(@Body() dto: CreateChallengeDto) {
+    return this.adminService.createChallenge(dto);
   }
 
-  @Post('teams/adjust-score')
-  async adjustScore(@Body() dto: AdjustScoreDto, @Req() req: any) {
-    return this.adminService.adjustScore(dto.teamId, dto.points, dto.reason, req.user.id);
+  @Put('challenges/:id')
+  updateChallenge(@Param('id') id: string, @Body() dto: UpdateChallengeDto) {
+    return this.adminService.updateChallenge(id, dto);
   }
 
-  // ==========================================
-  // SUBMISSIONS
-  // ==========================================
+  @Delete('challenges/:id')
+  deleteChallenge(@Param('id') id: string) {
+    return this.adminService.deleteChallenge(id);
+  }
+
+  // Users
+  @Put('users/:id/role')
+  updateUserRole(@Param('id') id: string, @Body('role') role: string) {
+    return this.adminService.updateUserRole(id, role);
+  }
+
+  @Delete('users/:id')
+  deleteUser(@Param('id') id: string) {
+    return this.adminService.deleteUser(id);
+  }
+
+  // Statistics
+  @Get('stats')
+  getStatistics() {
+    return this.adminService.getStatistics();
+  }
 
   @Get('submissions')
-  async getAllSubmissions() {
-    return this.submissionsService.getAllSubmissions();
+  getAllSubmissions() {
+    return this.adminService.getAllSubmissions();
   }
 
-  // ==========================================
-  // EVENT MANAGEMENT
-  // ==========================================
-
-  @Put('event')
-  async updateEvent(@Body() dto: UpdateEventDto, @Req() req: any) {
-    return this.adminService.updateEventConfig(dto, req.user.id);
+  @Post('reset')
+  resetCompetition() {
+    return this.adminService.resetCompetition();
   }
 
-  // ==========================================
-  // EXPORT
-  // ==========================================
+  // Score Management
+  @Post('teams/:id/adjust-score')
+  adjustTeamScore(
+    @Param('id') id: string,
+    @Body('points') points: number,
+    @Body('reason') reason: string,
+  ) {
+    return this.adminService.adjustTeamScore(id, points, reason);
+  }
 
-  @Get('export/results')
-  async exportResults() {
+  @Post('teams/:id/disqualify')
+  disqualifyTeam(@Param('id') id: string, @Body('reason') reason: string) {
+    return this.adminService.disqualifyTeam(id, reason);
+  }
+
+  @Post('teams/:id/qualify')
+  qualifyTeam(@Param('id') id: string) {
+    return this.adminService.qualifyTeam(id);
+  }
+
+  @Post('teams/qualify-top')
+  qualifyTopTeams(@Body('count') count: number) {
+    return this.adminService.qualifyTopTeams(count);
+  }
+
+  @Post('scoreboard/freeze')
+  freezeScoreboard(@Body('freeze') freeze: boolean) {
+    return this.adminService.freezeScoreboard(freeze);
+  }
+
+  @Get('export')
+  exportResults() {
     return this.adminService.exportResults();
+  }
+
+  @Get('export/csv')
+  @Header('Content-Type', 'text/csv')
+  @Header('Content-Disposition', 'attachment; filename="ctf-results.csv"')
+  exportResultsCSV() {
+    return this.adminService.exportResultsCSV();
   }
 }

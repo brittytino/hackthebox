@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { RoundsService } from './rounds.service';
 import { RoundsController } from './rounds.controller';
+import { RoundsService } from './rounds.service';
 
 @Module({
-  providers: [RoundsService],
   controllers: [RoundsController],
+  providers: [RoundsService],
   exports: [RoundsService],
 })
 export class RoundsModule {}

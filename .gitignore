@@ -1,47 +1,52 @@
-# Hack-The-Box Competition Platform
-
-# Node modules
+# Dependencies
 node_modules/
-.next/
-dist/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
 build/
+dist/
+.next/
 out/
 
-# Environment variables
+# Environment
 .env
-.env*.local
-
-# Database
-apps/backend/prisma/migrations/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+lerna-debug.log*
+*.log
 
 # OS
 .DS_Store
 *.pem
 Thumbs.db
 
-# Docker data
-docker/postgres/data/
-docker/redis/data/
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+.project
+.classpath
+.settings/
 
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
+# Docker
+docker-compose.override.yml
 
-# Vercel
-.vercel
+# Prisma
+apps/backend/prisma/migrations/
 
-# Testing
-/coverage
+# Cache
+.turbo
+.cache

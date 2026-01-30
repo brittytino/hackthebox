@@ -4,286 +4,268 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seed...');
+  console.log('🌱 Seeding database...');
 
-  // ==========================================
-  // CLEAR EXISTING DATA (optional, for development)
-  // ==========================================
-  console.log('Cleaning existing data...');
-  await prisma.submission.deleteMany();
-  await prisma.scoreAdjustment.deleteMany();
-  await prisma.challenge.deleteMany();
-  await prisma.round.deleteMany();
-  await prisma.team.deleteMany();
-  await prisma.auditLog.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.eventConfig.deleteMany();
-
-  // ==========================================
-  // CREATE EVENT CONFIG
-  // ==========================================
-  console.log('Creating event config...');
-  await prisma.eventConfig.create({
-    data: {
-      eventName: 'HACK-THE-BOX',
-      tagline: 'Decode. Discover. Defend.',
-      duration: 180,
-      isActive: false,
-    },
-  });
-
-  // ==========================================
-  // CREATE ADMIN USERS
-  // ==========================================
-  console.log('Creating admin users...');
-  const adminPassword = await bcrypt.hash('admin123', 12);
-  
-  const admin = await prisma.user.create({
-    data: {
+  // Create Admin User
+  const adminPassword = await bcrypt.hash('admin123', 10);
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@hackthebox.local' },
+    update: {},
+    create: {
       email: 'admin@hackthebox.local',
       username: 'admin',
       passwordHash: adminPassword,
       role: 'ADMIN',
     },
   });
+  console.log('✅ Admin user created:', admin.username);
 
-  const judge = await prisma.user.create({
-    data: {
+  // Create Judge User
+  const judgePassword = await bcrypt.hash('judge123', 10);
+  const judge = await prisma.user.upsert({
+    where: { email: 'judge@hackthebox.local' },
+    update: {},
+    create: {
       email: 'judge@hackthebox.local',
       username: 'judge',
-      passwordHash: await bcrypt.hash('judge123', 12),
+      passwordHash: judgePassword,
       role: 'JUDGE',
     },
   });
+  console.log('✅ Judge user created:', judge.username);
 
-  console.log('✅ Admin users created');
-  console.log('   - admin@hackthebox.local / admin123');
-  console.log('   - judge@hackthebox.local / judge123');
-
-  // ==========================================
-  // CREATE TEST PARTICIPANTS
-  // ==========================================
-  console.log('Creating test participants...');
-  const participantPassword = await bcrypt.hash('test123', 12);
-  
+  // Create Test Users
+  const testUsers = [];
   for (let i = 1; i <= 5; i++) {
-    const user = await prisma.user.create({
-      data: {
-        email: `participant${i}@test.local`,
-        username: `participant${i}`,
-        passwordHash: participantPassword,
+    const password = await bcrypt.hash('test123', 10);
+    const user = await prisma.user.upsert({
+      where: { email: `user${i}@test.local` },
+      update: {},
+      create: {
+        email: `user${i}@test.local`,
+        username: `user${i}`,
+        passwordHash: password,
         role: 'PARTICIPANT',
       },
     });
+    testUsers.push(user);
+  }
+  console.log(`✅ Created ${testUsers.length} test users`);
 
-    await prisma.team.create({
-      data: {
-        name: `Team Alpha ${i}`,
-        userId: user.id,
-      },
+  // Create Sample Teams
+  const team1 = await prisma.team.upsert({
+    where: { name: 'Alpha Team' },
+    update: {},
+    create: {
+      name: 'Alpha Team',
+      qualified: false,
+    },
+  });
+
+  const team2 = await prisma.team.upsert({
+    where: { name: 'Beta Squad' },
+    update: {},
+    create: {
+      name: 'Beta Squad',
+      qualified: false,
+    },
+  });
+
+  // Assign users to teams
+  if (testUsers.length >= 2) {
+    await prisma.user.update({
+      where: { id: testUsers[0].id },
+      data: { teamId: team1.id },
+    });
+
+    await prisma.user.update({
+      where: { id: testUsers[1].id },
+      data: { teamId: team2.id },
     });
   }
 
-  console.log('✅ Created 5 test participants (test123)');
+  // Initialize scores for teams
+  await prisma.score.upsert({
+    where: { teamId: team1.id },
+    update: {},
+    create: {
+      teamId: team1.id,
+      totalPoints: 0,
+    },
+  });
 
-  // ==========================================
-  // CREATE ROUNDS
-  // ==========================================
-  console.log('Creating rounds...');
+  await prisma.score.upsert({
+    where: { teamId: team2.id },
+    update: {},
+    create: {
+      teamId: team2.id,
+      totalPoints: 0,
+    },
+  });
 
-  const round1 = await prisma.round.create({
-    data: {
-      number: 1,
-      name: 'Decode the Secret',
-      description: 'Cryptography challenges - decode encrypted messages and find hidden secrets',
-      state: 'LOCKED',
+  console.log('✅ Created 2 sample teams with members');
+
+  // Create Rounds
+  const round1 = await prisma.round.upsert({
+    where: { order: 1 },
+    update: {},
+    create: {
+      name: 'Round 1: Decode the Secret',
+      type: 'DECODE_THE_SECRET',
       order: 1,
+      status: 'ACTIVE',
+      description: 'Decode encrypted messages and crack cryptographic challenges',
     },
   });
+  console.log('✅ Round 1 created');
 
-  const round2 = await prisma.round.create({
-    data: {
-      number: 2,
-      name: 'Find & Crack',
-      description: 'Hash cracking and token decoding challenges',
-      state: 'LOCKED',
+  const round2 = await prisma.round.upsert({
+    where: { order: 2 },
+    update: {},
+    create: {
+      name: 'Round 2: Find & Crack',
+      type: 'FIND_AND_CRACK',
       order: 2,
+      status: 'PENDING',
+      description: 'Hunt for hidden flags and crack hashes',
     },
   });
+  console.log('✅ Round 2 created');
 
-  const round3 = await prisma.round.create({
-    data: {
-      number: 3,
-      name: 'Catch the Flag',
-      description: 'Final CTF challenges - capture the ultimate flag!',
-      state: 'LOCKED',
+  const round3 = await prisma.round.upsert({
+    where: { order: 3 },
+    update: {},
+    create: {
+      name: 'Round 3: Catch the Flag',
+      type: 'CATCH_THE_FLAG',
       order: 3,
+      status: 'PENDING',
+      description: 'Final challenge - first team to capture the flag wins',
     },
   });
+  console.log('✅ Round 3 created');
 
-  console.log('✅ Rounds created');
-
-  // ==========================================
-  // CREATE CHALLENGES - ROUND 1 (Decode the Secret)
-  // ==========================================
-  console.log('Creating Round 1 challenges...');
-
-  // Challenge flags will be hashed for security
-  const createHashedFlag = async (flag: string) => {
-    return bcrypt.hash(flag.toLowerCase(), 10);
-  };
-
-  await prisma.challenge.create({
-    data: {
-      roundId: round1.id,
+  // Create Challenges for Round 1
+  const challenges1 = [
+    {
       title: 'Base64 Basics',
-      description: 'Decode this Base64 string: SGFja1RoZUJveA==\n\nSubmit the decoded message.',
-      type: 'CRYPTO',
+      description: 'Decode this Base64 string: SGFja1RoZUJveDIwMjY=',
+      flag: 'HackTheBox2026',
       points: 100,
-      flagHash: await createHashedFlag('HackTheBox'),
-      maxAttempts: 0,
       order: 1,
-      hints: 'This is a simple Base64 encoding. Use any online decoder or command-line tools.',
+      hints: 'Try using a Base64 decoder',
     },
-  });
-
-  await prisma.challenge.create({
-    data: {
-      roundId: round1.id,
-      title: 'Caesar Shift',
-      description: 'Decrypt this Caesar cipher (ROT13): FHPPRFF\n\nSubmit the decrypted word.',
-      type: 'CRYPTO',
+    {
+      title: 'Caesar Cipher',
+      description: 'Decrypt this Caesar cipher (shift 13): Pelcgur Gur Obk',
+      flag: 'Welcome The Box',
       points: 150,
-      flagHash: await createHashedFlag('SUCCESS'),
-      maxAttempts: 0,
       order: 2,
-      hints: 'ROT13 is a simple letter substitution cipher.',
+      hints: 'ROT13 is your friend',
     },
-  });
-
-  await prisma.challenge.create({
-    data: {
-      roundId: round1.id,
-      title: 'Hex Mystery',
-      description: 'Convert this hexadecimal to text: 4379626572536563757269747921\n\nSubmit the decoded text.',
-      type: 'CRYPTO',
+    {
+      title: 'Simple XOR',
+      description: 'XOR decrypt: 1a0e1f0a with key: 0x7f',
+      flag: 'easy',
       points: 200,
-      flagHash: await createHashedFlag('CyberSecurity!'),
-      maxAttempts: 0,
       order: 3,
-      hints: 'Hexadecimal encoding - each pair of characters represents a byte.',
+      hints: 'XOR each byte with 0x7f',
     },
-  });
+  ];
 
-  console.log('✅ Round 1 challenges created');
+  for (const challenge of challenges1) {
+    const flagHash = await bcrypt.hash(challenge.flag.toLowerCase(), 10);
+    await prisma.challenge.create({
+      data: {
+        roundId: round1.id,
+        title: challenge.title,
+        description: challenge.description,
+        points: challenge.points,
+        flagHash: flagHash,
+        order: challenge.order,
+        hints: challenge.hints,
+        isActive: true,
+      },
+    });
+  }
+  console.log(`✅ Created ${challenges1.length} challenges for Round 1`);
 
-  // ==========================================
-  // CREATE CHALLENGES - ROUND 2 (Find & Crack)
-  // ==========================================
-  console.log('Creating Round 2 challenges...');
-
-  await prisma.challenge.create({
-    data: {
-      roundId: round2.id,
-      title: 'MD5 Hash Crack',
-      description: 'Crack this MD5 hash: 5f4dcc3b5aa765d61d8327deb882cf99\n\nSubmit the original password.',
-      type: 'HASH_CRACK',
-      points: 200,
-      flagHash: await createHashedFlag('password'),
-      maxAttempts: 5,
-      order: 1,
-      hints: 'Try common passwords or use an online MD5 cracker.',
-    },
-  });
-
-  await prisma.challenge.create({
-    data: {
-      roundId: round2.id,
-      title: 'JWT Token Decode',
-      description: 'Decode this JWT token and find the hidden flag in the payload:\n\neyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmbGFnIjoiSldUX01BU1RFUiIsInVzZXIiOiJoYWNrZXIifQ.xyz\n\nSubmit the flag value.',
-      type: 'GENERAL',
+  // Create Challenges for Round 2
+  const challenges2 = [
+    {
+      title: 'MD5 Hash Cracker',
+      description: 'Crack this MD5 hash: 5f4dcc3b5aa765d61d8327deb882cf99',
+      flag: 'password',
       points: 250,
-      flagHash: await createHashedFlag('JWT_MASTER'),
-      maxAttempts: 3,
-      order: 2,
-      hints: 'JWT tokens have three parts separated by dots. The payload is Base64 encoded.',
-    },
-  });
-
-  await prisma.challenge.create({
-    data: {
-      roundId: round2.id,
-      title: 'Binary Secret',
-      description: 'Convert this binary to text: 01000110 01001100 01000001 01000111\n\nSubmit the decoded word.',
-      type: 'GENERAL',
-      points: 300,
-      flagHash: await createHashedFlag('FLAG'),
-      maxAttempts: 0,
-      order: 3,
-      hints: 'Binary to ASCII conversion.',
-    },
-  });
-
-  console.log('✅ Round 2 challenges created');
-
-  // ==========================================
-  // CREATE CHALLENGES - ROUND 3 (Catch the Flag)
-  // ==========================================
-  console.log('Creating Round 3 challenges...');
-
-  await prisma.challenge.create({
-    data: {
-      roundId: round3.id,
-      title: 'Network Analysis',
-      description: 'A packet capture reveals a hidden message. The flag format is: HTB{...}\n\nFlag: HTB{NETWORK_NINJA}',
-      type: 'CTF',
-      points: 300,
-      flagHash: await createHashedFlag('HTB{NETWORK_NINJA}'),
-      maxAttempts: 3,
       order: 1,
-      hints: 'Look for HTTP traffic or DNS queries in the capture.',
+      maxAttempts: 5,
+      hints: 'Common password hash',
     },
-  });
-
-  await prisma.challenge.create({
-    data: {
-      roundId: round3.id,
-      title: 'Web Exploitation',
-      description: 'Find the flag hidden in the web application vulnerability.\n\nFlag format: HTB{...}\n\nFlag: HTB{SQL_INJECTION_PRO}',
-      type: 'CTF',
-      points: 400,
-      flagHash: await createHashedFlag('HTB{SQL_INJECTION_PRO}'),
-      maxAttempts: 3,
+    {
+      title: 'SHA-256 Mystery',
+      description: 'Find the word that produces SHA-256: ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f',
+      flag: 'password123',
+      points: 300,
       order: 2,
-      hints: 'Check for SQL injection vulnerabilities.',
+      maxAttempts: 5,
+      hints: 'Try a password list',
     },
-  });
+  ];
 
-  await prisma.challenge.create({
-    data: {
-      roundId: round3.id,
-      title: 'THE FINAL FLAG',
-      description: '🏆 This is the ultimate challenge! Solve it to win the competition.\n\nThe final flag is: HTB{CHAMPION_2026}\n\nFirst team to submit wins!',
-      type: 'CTF',
-      points: 500,
-      flagHash: await createHashedFlag('HTB{CHAMPION_2026}'),
-      maxAttempts: 3,
-      isFinalFlag: true,
-      order: 3,
-      hints: 'This is the final flag. Good luck!',
+  for (const challenge of challenges2) {
+    const flagHash = await bcrypt.hash(challenge.flag.toLowerCase(), 10);
+    await prisma.challenge.create({
+      data: {
+        roundId: round2.id,
+        title: challenge.title,
+        description: challenge.description,
+        points: challenge.points,
+        flagHash: flagHash,
+        order: challenge.order,
+        maxAttempts: challenge.maxAttempts,
+        hints: challenge.hints,
+        isActive: true,
+      },
+    });
+  }
+  console.log(`✅ Created ${challenges2.length} challenges for Round 2`);
+
+  // Create Challenges for Round 3
+  const challenges3 = [
+    {
+      title: 'The Final Flag',
+      description: 'Find the ultimate flag hidden in the depths of the system. First team wins!',
+      flag: 'HTB{y0u_4r3_th3_ch4mp10n}',
+      points: 1000,
+      order: 1,
+      hints: 'The flag format is HTB{...}',
     },
-  });
+  ];
 
-  console.log('✅ Round 3 challenges created');
+  for (const challenge of challenges3) {
+    const flagHash = await bcrypt.hash(challenge.flag.toLowerCase(), 10);
+    await prisma.challenge.create({
+      data: {
+        roundId: round3.id,
+        title: challenge.title,
+        description: challenge.description,
+        points: challenge.points,
+        flagHash: flagHash,
+        order: challenge.order,
+        hints: challenge.hints,
+        isActive: true,
+      },
+    });
+  }
+  console.log(`✅ Created ${challenges3.length} challenge for Round 3`);
 
-  console.log('\n✅ Database seeding completed successfully!\n');
-  console.log('📝 ADMIN CREDENTIALS:');
-  console.log('   Email: admin@hackthebox.local');
-  console.log('   Password: admin123\n');
-  console.log('📝 TEST PARTICIPANTS:');
-  console.log('   Email: participant1@test.local');
-  console.log('   Password: test123');
-  console.log('   (and participant2-5)\n');
+  console.log('\n🎉 Seeding completed successfully!\n');
+  console.log('📝 Test Credentials:');
+  console.log('   Admin: username=admin, password=admin123');
+  console.log('   Judge: username=judge, password=judge123');
+  console.log('   Users: username=user1-5, password=test123');
+  console.log('   Teams: Alpha Team, Beta Squad');
+  console.log('\n🚀 Ready to start the competition!\n');
 }
 
 main()

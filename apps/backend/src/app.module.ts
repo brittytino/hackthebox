@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
-import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TeamsModule } from './teams/teams.module';
@@ -10,19 +10,18 @@ import { ChallengesModule } from './challenges/challenges.module';
 import { SubmissionsModule } from './submissions/submissions.module';
 import { ScoreboardModule } from './scoreboard/scoreboard.module';
 import { AdminModule } from './admin/admin.module';
-import { AuditModule } from './audit/audit.module';
-import { EventModule } from './event/event.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000,
-        limit: 10,
-      },
-    ]),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
     PrismaModule,
-    RedisModule,
     AuthModule,
     UsersModule,
     TeamsModule,
@@ -31,8 +30,7 @@ import { EventModule } from './event/event.module';
     SubmissionsModule,
     ScoreboardModule,
     AdminModule,
-    AuditModule,
-    EventModule,
+    HealthModule,
   ],
 })
 export class AppModule {}

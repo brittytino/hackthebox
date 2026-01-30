@@ -1,406 +1,392 @@
-# 🔥 HACK-THE-BOX Competition Platform
+# Hack-The-Box CTF Platform
 
-**Decode. Discover. Defend.**
-
-A complete, production-ready, local-only cybersecurity competition platform built for running CTF-style events with 100+ participants.
-
----
+A production-grade, local-only cybersecurity competition platform for running Capture The Flag (CTF) events on a LAN network.
 
 ## 🎯 Features
 
-### Core Capabilities
-- ✅ **100% Local** - No cloud dependencies, runs entirely on LAN
-- ✅ **3 Sequential Rounds** - Progressive difficulty from Crypto to CTF
-- ✅ **100 Participant Support** - Scalable architecture
-- ✅ **Real-time Scoreboard** - Server-Sent Events (SSE) for live updates
-- ✅ **Comprehensive Admin Panel** - Full event control
-- ✅ **Crash-Resilient** - Docker-based with persistent storage
-- ✅ **Security-First** - Server-side validation, hashed flags, rate limiting
-- ✅ **Production-Ready** - Stable, tested, and event-ready
+- **3 Competition Rounds:**
+  - Round 1: Decode the Secret (Cryptography challenges)
+  - Round 2: Find & Crack (Hash cracking, token decoding)
+  - Round 3: Catch the Flag (Final challenge, first team wins)
 
-### Technical Stack
+- **Team-Based Competition:**
+  - Create or join teams
+  - Collaborative scoring
+  - Live scoreboard with real-time updates
 
-**Backend:**
-- NestJS (TypeScript)
-- PostgreSQL + Prisma ORM
-- Redis for caching & rate limiting
-- JWT authentication
-- RESTful APIs
-- Server-Sent Events (SSE)
+- **Admin Dashboard:**
+  - Create and manage rounds
+  - Add challenges with encrypted flags
+  - Control round progression
+  - View statistics and submissions
 
-**Frontend:**
-- Next.js 14 (App Router)
-- TypeScript
-- Tailwind CSS
-- shadcn/ui components
-- Dark mode interface
-
-**Infrastructure:**
-- Docker & Docker Compose
-- Monorepo structure
-- Automated seeding
-
----
+- **Modern Tech Stack:**
+  - Frontend: Next.js 15 (App Router) + TypeScript + Tailwind CSS
+  - Backend: NestJS + TypeScript
+  - Database: PostgreSQL
+  - Cache: Redis
+  - Auth: JWT (local, no cloud services)
 
 ## 📋 Prerequisites
 
-Before starting, ensure you have installed:
+- Docker Desktop installed and running
+- Git (for cloning)
+- At least 4GB RAM available
+- Ports 3000, 3001, 5432, 6379 available
 
-- **Docker Desktop** (Windows/Mac) or Docker Engine + Docker Compose (Linux)
-- **Node.js 20+** (for local development only)
-- **Git**
+## 🚀 Quick Start
 
-Verify installations:
-```powershell
-docker --version
-docker compose version
-node --version
+### 1. Clone and Setup
+
+```bash
+cd hack-the-box
+cp .env.example .env
 ```
 
----
+### 2. Configure Environment (Optional)
 
-## 🚀 Quick Start (5 Minutes)
-
-### 1. Navigate to Project Directory
-```powershell
-cd d:\Thiran\hackthebox
-```
-
-### 2. Configure Environment
-The `.env` file is already created. **IMPORTANT:** Change the JWT_SECRET for security:
-```
-JWT_SECRET=your-super-secret-random-string-here
-```
+Edit `.env` if you want to change default settings:
+- Database credentials
+- JWT secret
+- Port numbers
 
 ### 3. Start the Platform
-```powershell
+
+```bash
 docker compose up --build
 ```
 
-Wait for all services to start (2-3 minutes on first run).
+**First startup takes 3-5 minutes** (downloading images, building, database migration)
 
 ### 4. Access the Platform
 
-**Participant Interface:**
-- URL: http://localhost:3000
-- Create an account or use test credentials
+Once you see both services running:
 
-**Admin Interface:**
-- URL: http://localhost:3000/login
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:3001/api
+- **Admin Panel:** http://localhost:3000/admin (after login)
+
+### 5. Login
+
+**Admin Account:**
 - Username: `admin`
 - Password: `admin123`
 
-**Test Participants (pre-seeded):**
-- Email: `participant1@test.local` (through participant5)
+**Test Accounts:**
+- Username: `user1` to `user5`
 - Password: `test123`
 
----
+## 📱 For LAN Access
 
-## 📖 Usage Guide
+To access from other devices on your network:
 
-### For Administrators
+1. Find your machine's IP address:
+   ```bash
+   # Windows
+   ipconfig
+   
+   # Linux/Mac
+   ifconfig
+   ```
 
-1. **Login as Admin**
-   - Navigate to http://localhost:3000/login
-   - Use admin credentials
+2. Access from other devices:
+   - Frontend: `http://YOUR_IP:3000`
+   - Example: `http://192.168.1.100:3000`
 
-2. **Start Round 1**
-   - Go to Admin Panel
-   - Click "Rounds" tab
-   - Click "Activate" on Round 1
+3. Update `.env` for LAN mode:
+   ```env
+   NEXT_PUBLIC_API_URL=http://YOUR_IP:3001/api
+   ```
 
-3. **Monitor Competition**
-   - View live submissions
-   - Check scoreboard
-   - Manage challenges
+4. Restart containers:
+   ```bash
+   docker compose down
+   docker compose up --build
+   ```
 
-4. **Advance Rounds**
-   - End current round
-   - Activate next round
-   - Participants see updates immediately
-
-5. **Export Results**
-   - Click "Export Results" button
-   - Download JSON file with rankings
+## 🎮 Usage Guide
 
 ### For Participants
 
-1. **Register**
-   - Go to http://localhost:3000
-   - Create account
-   - Create team name
+1. **Register/Login** at http://localhost:3000
+2. **Create or Join a Team** - Required to submit flags
+3. **View Challenges** - Navigate to Challenges page
+4. **Submit Flags** - Enter flags to earn points
+5. **Check Scoreboard** - Live rankings updated every 10 seconds
 
-2. **View Challenges**
-   - Navigate to Challenges tab
-   - Select active round
-   - Read challenge descriptions
+### For Admins
 
-3. **Submit Flags**
-   - Enter flag in text field
-   - Click "Submit"
-   - Instant feedback
+1. **Login as Admin** (credentials above)
+2. **Go to Admin Panel** at http://localhost:3000/admin
+3. **Manage Rounds:**
+   - Activate rounds to make challenges available
+   - Complete rounds when finished
+   - Lock Round 3 after first team wins (automatic)
 
-4. **Check Rankings**
-   - View live scoreboard
-   - Updates every 5 seconds automatically
+4. **Create Challenges:**
+   - Select a round
+   - Enter title, description, points
+   - Set the flag (will be encrypted)
+   - Optional: Add hints, max attempts
 
----
+5. **Monitor Competition:**
+   - View real-time statistics
+   - Track submissions
+   - Monitor team progress
 
-## 🎮 Round Details
+## 🏗️ Architecture
 
-### Round 1: Decode the Secret (Cryptography)
-- **Challenges:** Base64, Caesar Cipher, Hex Encoding
-- **Total Points:** 450
-- **Skills:** Encoding/Decoding
-
-### Round 2: Find & Crack (Hash Cracking)
-- **Challenges:** MD5 Hash, JWT Decode, Binary Conversion
-- **Total Points:** 750
-- **Skills:** Hash cracking, Token analysis
-
-### Round 3: Catch the Flag (CTF)
-- **Challenges:** Network Analysis, Web Exploitation, Final Flag
-- **Total Points:** 1200
-- **Skills:** Advanced CTF techniques
-- **Special:** First team to capture final flag wins!
-
----
-
-## 🔧 Configuration
-
-### Environment Variables
-
-The `.env` file contains:
-
-```env
-# Database
-POSTGRES_USER=hackthebox
-POSTGRES_PASSWORD=hackthebox_secure_2026
-POSTGRES_DB=hackthebox
-
-# Redis
-REDIS_PASSWORD=redis_secure_2026
-
-# Backend
-JWT_SECRET=CHANGE-THIS-TO-SECURE-RANDOM-STRING
-JWT_EXPIRATION=3h
-
-# Ports
-BACKEND_PORT=3001
-FRONTEND_PORT=3000
+```
+hack-the-box/
+├── apps/
+│   ├── frontend/          # Next.js application
+│   │   ├── app/          # Pages (App Router)
+│   │   ├── components/   # UI components
+│   │   └── lib/          # API client, utilities
+│   │
+│   └── backend/          # NestJS API
+│       ├── src/
+│       │   ├── auth/     # JWT authentication
+│       │   ├── users/    # User management
+│       │   ├── teams/    # Team operations
+│       │   ├── rounds/   # Round control
+│       │   ├── challenges/  # Challenge CRUD
+│       │   ├── submissions/ # Flag validation
+│       │   ├── scoreboard/  # Live rankings
+│       │   └── admin/    # Admin operations
+│       │
+│       └── prisma/       # Database schema & migrations
+│
+├── docker-compose.yml    # Container orchestration
+└── .env                 # Configuration
 ```
 
-### Customization
+## 🔐 Security Features
 
-**Change Event Duration:**
-Edit `apps/backend/prisma/seed.ts`:
-```typescript
-duration: 180, // Change to desired minutes
+- **Password Hashing:** bcrypt (10 rounds)
+- **Flag Storage:** Flags stored as bcrypt hashes
+- **JWT Auth:** Secure token-based authentication
+- **Rate Limiting:** 10 requests per minute default
+- **Role-Based Access:** PARTICIPANT, ADMIN, JUDGE
+- **Input Validation:** All endpoints validated
+- **SQL Injection Protection:** Prisma ORM
+
+## 🎯 Round Types Explained
+
+### Round 1: Decode the Secret
+- Static cryptography challenges
+- Base64, Caesar cipher, XOR, etc.
+- Fixed scores per challenge
+- No attempt limits (unless set)
+
+### Round 2: Find & Crack
+- Hash cracking challenges
+- MD5, SHA-256, etc.
+- Rate-limited submissions (5 per minute)
+- Max attempts enforced per challenge
+
+### Round 3: Catch the Flag
+- Single final challenge
+- First team to submit correct flag wins
+- **Round automatically locks** after first correct submission
+- Highest point value
+
+## 🛠️ Management Commands
+
+### Stop the Platform
+```bash
+docker compose down
 ```
 
-**Add Custom Challenges:**
-Edit the seeding script and add challenges to any round.
+### View Logs
+```bash
+docker compose logs -f
+```
 
----
+### Reset Database (keeps structure)
+Use Admin Panel → Danger Zone → Reset Competition
 
-## 🛠️ Development Mode
+Or manually:
+```bash
+docker compose down -v
+docker compose up --build
+```
 
-### Backend Development
-```powershell
+### Seed Database Again
+```bash
+docker compose exec backend npm run prisma:seed
+```
+
+### Backup Database
+```bash
+docker compose exec postgres pg_dump -U hackthebox hackthebox > backup.sql
+```
+
+## 📊 Seeded Data
+
+The platform comes pre-loaded with:
+
+- 1 Admin user
+- 5 Test participants
+- 3 Rounds (Round 1 active by default)
+- 6 Sample challenges:
+  - 3 in Round 1 (100-200 points each)
+  - 2 in Round 2 (250-300 points each)
+  - 1 in Round 3 (1000 points)
+
+### Sample Challenge Solutions
+
+**Round 1:**
+1. Base64 Basics → `HackTheBox2026`
+2. Caesar Cipher → `Welcome The Box`
+3. Simple XOR → `easy`
+
+**Round 2:**
+1. MD5 Hash Cracker → `password`
+2. SHA-256 Mystery → `password123`
+
+**Round 3:**
+1. The Final Flag → `HTB{y0u_4r3_th3_ch4mp10n}`
+
+## 🐛 Troubleshooting
+
+### Port Already in Use
+```bash
+# Find and stop conflicting services
+docker compose down
+# Or change ports in .env
+```
+
+### Database Connection Failed
+```bash
+# Wait for postgres to be ready (check logs)
+docker compose logs postgres
+
+# Restart if needed
+docker compose restart backend
+```
+
+### Frontend Can't Connect to Backend
+- Check `NEXT_PUBLIC_API_URL` in `.env`
+- Ensure backend is running: `docker compose ps`
+- Check backend logs: `docker compose logs backend`
+
+### Build Errors
+```bash
+# Clean rebuild
+docker compose down -v
+docker compose build --no-cache
+docker compose up
+```
+
+## 🔧 Development Mode
+
+To run in development (with hot reload):
+
+**Backend:**
+```bash
 cd apps/backend
 npm install
 npm run start:dev
 ```
 
-### Frontend Development
-```powershell
+**Frontend:**
+```bash
 cd apps/frontend
 npm install
 npm run dev
 ```
 
-### Database Management
-```powershell
-cd apps/backend
-
-# Generate Prisma Client
-npx prisma generate
-
-# Push schema to DB
-npx prisma db push
-
-# Seed database
-npm run prisma:seed
-
-# Open Prisma Studio
-npx prisma studio
-```
-
----
-
-## 📁 Project Structure
-
-```
-hackthebox/
-├── apps/
-│   ├── backend/          # NestJS API
-│   │   ├── src/
-│   │   │   ├── auth/         # JWT authentication
-│   │   │   ├── users/        # User management
-│   │   │   ├── teams/        # Team management
-│   │   │   ├── rounds/       # Round logic
-│   │   │   ├── challenges/   # Challenge management
-│   │   │   ├── submissions/  # Flag submission & scoring
-│   │   │   ├── scoreboard/   # Live scoreboard + SSE
-│   │   │   ├── admin/        # Admin panel APIs
-│   │   │   ├── audit/        # Audit logging
-│   │   │   ├── event/        # Event configuration
-│   │   │   ├── prisma/       # Database service
-│   │   │   └── redis/        # Redis service
-│   │   ├── prisma/
-│   │   │   ├── schema.prisma # Database schema
-│   │   │   └── seed.ts       # Database seeding
-│   │   ├── Dockerfile
-│   │   └── package.json
-│   │
-│   └── frontend/         # Next.js UI
-│       ├── src/
-│       │   ├── app/
-│       │   │   ├── login/         # Auth pages
-│       │   │   └── dashboard/     # Protected routes
-│       │   │       ├── challenges/    # Challenge UI
-│       │   │       ├── scoreboard/    # Live scoreboard
-│       │   │       └── admin/         # Admin panel
-│       │   ├── components/ui/     # shadcn/ui components
-│       │   ├── contexts/          # React contexts
-│       │   └── lib/               # Utilities & API client
-│       ├── Dockerfile
-│       └── package.json
-│
-├── docker/
-│   ├── postgres/         # PostgreSQL config
-│   └── redis/            # Redis config
-│
-├── docker-compose.yml    # Service orchestration
-├── .env                  # Environment configuration
-└── README.md             # This file
-```
-
----
-
-## 🔒 Security Features
-
-1. **Server-Side Validation** - All submissions validated on backend
-2. **Hashed Flags** - Flags stored as bcrypt hashes, case-insensitive
-3. **Rate Limiting** - Redis-based, 10 submissions per minute per team
-4. **JWT Authentication** - 3-hour token expiration
-5. **Audit Logging** - All actions logged with IP tracking
-6. **Input Validation** - class-validator on all inputs
-
----
-
-## 🐛 Troubleshooting
-
-### Services Won't Start
-```powershell
-# Check logs
-docker compose logs backend
-docker compose logs frontend
-docker compose logs postgres
-
-# Restart services
-docker compose down
-docker compose up --build
-```
-
-### Database Issues
-```powershell
-# Reset database
-docker compose down -v
-docker compose up --build
-```
-
-### Port Conflicts
-Edit `.env` file:
+Update `.env`:
 ```env
-BACKEND_PORT=3002
-FRONTEND_PORT=3001
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
----
+## 📈 Scaling for 100+ Users
 
-## 📊 Performance & Scaling
+Current setup handles 100 users easily. For more:
 
-### Current Capacity
-- **100 concurrent users**
-- **1000+ submissions/hour**
-- **Real-time updates** via SSE
+1. **Increase Docker Resources:**
+   - Docker Desktop → Settings → Resources
+   - Set CPU: 4+ cores, RAM: 8+ GB
 
-### Resource Requirements
-- CPU: 2 cores recommended
-- RAM: 4GB minimum
-- Disk: 10GB for Docker images & data
+2. **Database Tuning:**
+   - Add to docker-compose.yml under postgres:
+     ```yaml
+     command: postgres -c max_connections=200
+     ```
 
----
+3. **Rate Limiting:**
+   - Adjust in `apps/backend/src/app.module.ts`
 
-## 🎓 Challenge Solutions
+## 🎨 Customization
 
-### Round 1
-1. **Base64 Basics**: `HackTheBox`
-2. **Caesar Shift**: `SUCCESS`
-3. **Hex Mystery**: `CyberSecurity!`
+### Change Theme Colors
+Edit `apps/frontend/app/globals.css` - CSS variables
 
-### Round 2
-1. **MD5 Hash Crack**: `password`
-2. **JWT Token Decode**: `JWT_MASTER`
-3. **Binary Secret**: `FLAG`
-
-### Round 3
-1. **Network Analysis**: `HTB{NETWORK_NINJA}`
-2. **Web Exploitation**: `HTB{SQL_INJECTION_PRO}`
-3. **THE FINAL FLAG**: `HTB{CHAMPION_2026}`
-
----
-
-## 🔄 Backup & Restore
-
-### Backup Database
-```powershell
-docker compose exec postgres pg_dump -U hackthebox hackthebox > backup.sql
+### Add Custom Challenges
+Use Admin Panel or directly via API:
+```bash
+POST /api/admin/challenges
+{
+  "roundId": "...",
+  "title": "My Challenge",
+  "description": "...",
+  "flag": "solution",
+  "points": 300,
+  "order": 1
+}
 ```
 
-### Restore Database
-```powershell
-docker compose exec -T postgres psql -U hackthebox hackthebox < backup.sql
-```
+### Modify Scoring
+Edit `apps/backend/src/submissions/submissions.service.ts`
+
+## 📝 API Documentation
+
+### Key Endpoints
+
+**Authentication:**
+- POST `/api/auth/register` - Create account
+- POST `/api/auth/login` - Login
+
+**Teams:**
+- POST `/api/teams` - Create team
+- POST `/api/teams/join` - Join team
+- GET `/api/teams` - List all teams
+
+**Challenges:**
+- GET `/api/rounds/current` - Active round
+- GET `/api/challenges` - All challenges
+
+**Submissions:**
+- POST `/api/submissions` - Submit flag
+
+**Scoreboard:**
+- GET `/api/scoreboard` - Live rankings
+
+All endpoints require JWT token in `Authorization: Bearer <token>` header (except auth routes).
+
+## 📄 License
+
+This is an educational project for CTF competitions. Use responsibly.
+
+## 🤝 Support
+
+For issues or questions:
+1. Check logs: `docker compose logs`
+2. Verify all services running: `docker compose ps`
+3. Review troubleshooting section above
+
+## 🎉 Credits
+
+Built with:
+- Next.js 15
+- NestJS 10
+- PostgreSQL 16
+- Redis 7
+- shadcn/ui components
+- Tailwind CSS
 
 ---
 
-## ✅ Pre-Event Checklist
-
-- [ ] Change JWT_SECRET in .env
-- [ ] Change database passwords
-- [ ] Test admin login
-- [ ] Test participant registration
-- [ ] Verify all challenges work
-- [ ] Test scoreboard updates
-- [ ] Backup database
-- [ ] Check server resources
-- [ ] Test on local network
-
----
-
-## 📝 License
-
-MIT License - Free for educational and competition use.
-
----
-
-**Ready to run your cybersecurity competition!** 🚀
-
-For issues, check the logs:
-```powershell
-docker compose logs -f
-```
-
-**Good luck, and may the best hacker win!** 🏆
+**Ready to hack? Start the platform and let the competition begin! 🚀**

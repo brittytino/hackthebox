@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ChallengesService } from './challenges.service';
 import { ChallengesController } from './challenges.controller';
+import { ChallengesService } from './challenges.service';
 
 @Module({
-  providers: [ChallengesService],
   controllers: [ChallengesController],
+  providers: [ChallengesService],
   exports: [ChallengesService],
 })
 export class ChallengesModule {}

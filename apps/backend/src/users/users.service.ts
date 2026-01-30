@@ -5,36 +5,36 @@ import { PrismaService } from '../prisma/prisma.service';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findById(id: string) {
+  async getProfile(userId: string) {
     return this.prisma.user.findUnique({
-      where: { id },
+      where: { id: userId },
       select: {
         id: true,
         email: true,
         username: true,
         role: true,
-        isActive: true,
-        isDisqualified: true,
-        createdAt: true,
         team: true,
+        createdAt: true,
       },
     });
   }
 
-  async findAll() {
+  async getAllUsers() {
     return this.prisma.user.findMany({
       select: {
         id: true,
         email: true,
         username: true,
         role: true,
-        isActive: true,
-        isDisqualified: true,
+        team: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         createdAt: true,
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 }

@@ -1,34 +1,24 @@
-import { IsEmail, IsString, MinLength, MaxLength, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
   email: string;
 
   @IsString()
-  @MinLength(3)
-  @MaxLength(20)
-  @Matches(/^[a-zA-Z0-9_-]+$/, {
-    message: 'Username can only contain letters, numbers, underscores and hyphens',
-  })
+  @IsNotEmpty()
   username: string;
 
   @IsString()
-  @MinLength(8)
-  @MaxLength(100)
+  @MinLength(6)
   password: string;
 }
 
 export class LoginDto {
   @IsString()
-  usernameOrEmail: string;
+  @IsNotEmpty()
+  username: string;
 
   @IsString()
+  @IsNotEmpty()
   password: string;
-}
-
-export class CreateTeamDto {
-  @IsString()
-  @MinLength(3)
-  @MaxLength(50)
-  teamName: string;
 }

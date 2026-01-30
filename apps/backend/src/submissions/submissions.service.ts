@@ -1,26 +1,24 @@
-import { Injectable, BadRequestException, ForbiddenException, ConflictException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { RedisService } from '../redis/redis.service';
-import { AuditService } from '../audit/audit.service';
+import { RoundStatus, RoundType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SubmissionsService {
-  constructor(
-    private prisma: PrismaService,
-    private redis: RedisService,
-    private auditService: AuditService,
-  ) {}
+  private round3Mutex: Map<string, boolean> = new Map();
 
-  async submitFlag(
-    userId: string,
-    teamId: string,
-    challengeId: string,
-    flag: string,
-    ipAddress?: string,
-    userAgent?: string,
-  ) {
-    // Get challenge with round info
+  constructor(private prisma: PrismaService) {}
+
+  async submitFlag(challengeId: string, flag: string, userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { team: true },
+    });
+
+    if (!user.teamId) {
+      throw new BadRequestException('You must be in a team to submit flags');
+    }
+
     const challenge = await this.prisma.challenge.findUnique({
       where: { id: challengeId },
       include: {
@@ -29,203 +27,187 @@ export class SubmissionsService {
     });
 
     if (!challenge) {
-      throw new BadRequestException('Challenge not found');
+      throw new NotFoundException('Challenge not found');
     }
 
     if (!challenge.isActive) {
-      throw new BadRequestException('Challenge is not active');
+      throw new ForbiddenException('Challenge is not active');
     }
 
-    // Check if round is active
-    if (challenge.round.state !== 'ACTIVE') {
-      throw new BadRequestException('Round is not active');
+    if (challenge.round.status !== RoundStatus.ACTIVE) {
+      throw new ForbiddenException('Round is not active');
     }
 
-    // Check if team exists and is not disqualified
-    const team = await this.prisma.team.findUnique({
-      where: { id: teamId },
-    });
-
-    if (!team) {
-      throw new BadRequestException('Team not found');
-    }
-
-    if (team.isDisqualified) {
-      throw new ForbiddenException('Team is disqualified');
-    }
-
-    // Check if already solved
-    const alreadySolved = await this.prisma.submission.findFirst({
+    // Check if already solved by this team
+    const existingSolve = await this.prisma.submission.findFirst({
       where: {
-        teamId,
         challengeId,
+        teamId: user.teamId,
         isCorrect: true,
       },
     });
 
-    if (alreadySolved) {
-      throw new BadRequestException('Challenge already solved');
+    if (existingSolve) {
+      throw new BadRequestException('Your team has already solved this challenge');
     }
 
-    // Rate limiting per team per challenge
-    const rateLimitKey = `ratelimit:${teamId}:${challengeId}`;
-    const canSubmit = await this.redis.checkRateLimit(rateLimitKey, 10, 60);
-    
-    if (!canSubmit) {
-      throw new BadRequestException('Too many attempts. Please wait.');
-    }
-
-    // Check max attempts if limited
-    if (challenge.maxAttempts > 0) {
+    // Check max attempts
+    if (challenge.maxAttempts) {
       const attemptCount = await this.prisma.submission.count({
         where: {
-          teamId,
           challengeId,
+          userId,
         },
       });
 
       if (attemptCount >= challenge.maxAttempts) {
-        throw new BadRequestException('Maximum attempts reached for this challenge');
+        throw new BadRequestException(`Maximum attempts (${challenge.maxAttempts}) reached for this challenge`);
       }
     }
 
+    // Round 3 mutex - atomic win check
+    if (challenge.round.type === RoundType.CATCH_THE_FLAG) {
+      const mutexKey = `round3_${challenge.roundId}`;
+      
+      if (this.round3Mutex.get(mutexKey)) {
+        throw new ForbiddenException('Round 3 has already been won');
+      }
+
+      // Check if anyone has solved this already
+      const existingWin = await this.prisma.submission.findFirst({
+        where: {
+          challenge: {
+            roundId: challenge.roundId,
+          },
+          isCorrect: true,
+        },
+      });
+
+      if (existingWin) {
+        throw new ForbiddenException('Round 3 has already been won');
+      }
+
+      // Set mutex
+      this.round3Mutex.set(mutexKey, true);
+    }
+
     // Validate flag (case-insensitive)
-    const isCorrect = await bcrypt.compare(flag.trim().toLowerCase(), challenge.flagHash);
+    const normalizedFlag = flag.trim().toLowerCase();
+    const isCorrect = await bcrypt.compare(normalizedFlag, challenge.flagHash);
 
-    // Calculate attempt number
-    const attemptNumber = await this.prisma.submission.count({
-      where: { teamId, challengeId },
-    }) + 1;
-
-    // Create submission
     const submission = await this.prisma.submission.create({
       data: {
-        teamId,
         userId,
+        teamId: user.teamId,
         challengeId,
         submittedFlag: flag,
         isCorrect,
         points: isCorrect ? challenge.points : 0,
-        attemptNumber,
-        ipAddress,
-        userAgent,
+      },
+      include: {
+        challenge: {
+          select: {
+            title: true,
+            points: true,
+          },
+        },
       },
     });
 
-    // If correct, update team score
+    // Update team score if correct
     if (isCorrect) {
-      await this.prisma.team.update({
-        where: { id: teamId },
-        data: {
-          totalScore: {
-            increment: challenge.points,
-          },
-          lastSubmission: new Date(),
-        },
-      });
+      await this.updateTeamScore(user.teamId);
 
-      // If this is the final flag in Round 3, end the round
-      if (challenge.isFinalFlag) {
-        await this.prisma.round.update({
-          where: { id: challenge.roundId },
-          data: {
-            state: 'ENDED',
-            endedAt: new Date(),
-          },
-        });
+      // Lock Round 3 immediately after first win
+      if (challenge.round.type === RoundType.CATCH_THE_FLAG) {
+        await this.lockRound(challenge.roundId);
+      }
+    } else {
+      // Release mutex if incorrect
+      if (challenge.round.type === RoundType.CATCH_THE_FLAG) {
+        const mutexKey = `round3_${challenge.roundId}`;
+        this.round3Mutex.delete(mutexKey);
       }
     }
 
-    // Audit log
-    await this.auditService.log({
-      userId,
-      action: 'SUBMIT_FLAG',
-      targetType: 'Challenge',
-      targetId: challengeId,
-      metadata: {
-        isCorrect,
-        points: isCorrect ? challenge.points : 0,
-        attemptNumber,
+    return {
+      ...submission,
+      message: isCorrect ? 'Correct! Points awarded.' : 'Incorrect flag.',
+    };
+  }
+
+  private async updateTeamScore(teamId: string) {
+    const totalPoints = await this.prisma.submission.aggregate({
+      where: {
+        teamId,
+        isCorrect: true,
       },
-      ipAddress,
-      userAgent,
+      _sum: {
+        points: true,
+      },
     });
 
-    return {
-      id: submission.id,
-      isCorrect: submission.isCorrect,
-      points: submission.points,
-      attemptNumber: submission.attemptNumber,
-      message: isCorrect ? 'Correct flag!' : 'Incorrect flag. Try again.',
-    };
+    await this.prisma.score.upsert({
+      where: { teamId },
+      create: {
+        teamId,
+        totalPoints: totalPoints._sum.points || 0,
+        lastSolved: new Date(),
+      },
+      update: {
+        totalPoints: totalPoints._sum.points || 0,
+        lastSolved: new Date(),
+      },
+    });
+  }
+
+  private async lockRound(roundId: string) {
+    await this.prisma.round.update({
+      where: { id: roundId },
+      data: { 
+        status: RoundStatus.LOCKED,
+        endTime: new Date(),
+      },
+    });
+  }
+
+  async getUserSubmissions(userId: string) {
+    return this.prisma.submission.findMany({
+      where: { userId },
+      include: {
+        challenge: {
+          select: {
+            title: true,
+            points: true,
+            round: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async getTeamSubmissions(teamId: string) {
     return this.prisma.submission.findMany({
       where: { teamId },
       include: {
-        challenge: {
-          select: {
-            id: true,
-            title: true,
-            type: true,
-            points: true,
-          },
-        },
-      },
-      orderBy: {
-        submittedAt: 'desc',
-      },
-    });
-  }
-
-  async getChallengeSubmissions(challengeId: string) {
-    return this.prisma.submission.findMany({
-      where: {
-        challengeId,
-        isCorrect: true,
-      },
-      include: {
-        team: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        submittedAt: 'asc',
-      },
-    });
-  }
-
-  async getAllSubmissions() {
-    return this.prisma.submission.findMany({
-      include: {
-        team: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        challenge: {
-          select: {
-            id: true,
-            title: true,
-            points: true,
-          },
-        },
         user: {
           select: {
-            id: true,
             username: true,
           },
         },
+        challenge: {
+          select: {
+            title: true,
+            points: true,
+          },
+        },
       },
-      orderBy: {
-        submittedAt: 'desc',
-      },
-      take: 500,
+      orderBy: { createdAt: 'desc' },
     });
   }
 }

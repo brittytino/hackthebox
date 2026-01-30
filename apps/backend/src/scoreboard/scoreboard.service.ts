@@ -6,96 +6,84 @@ export class ScoreboardService {
   constructor(private prisma: PrismaService) {}
 
   async getScoreboard() {
-    const teams = await this.prisma.team.findMany({
-      where: {
-        isDisqualified: false,
-      },
-      select: {
-        id: true,
-        name: true,
-        totalScore: true,
-        lastSubmission: true,
-        user: {
-          select: {
-            username: true,
-          },
-        },
-        submissions: {
-          where: {
-            isCorrect: true,
-          },
-          select: {
-            challengeId: true,
-            points: true,
-            submittedAt: true,
+    const scores = await this.prisma.score.findMany({
+      include: {
+        team: {
+          include: {
+            members: {
+              select: {
+                username: true,
+              },
+            },
           },
         },
       },
       orderBy: [
-        {
-          totalScore: 'desc',
-        },
-        {
-          lastSubmission: 'asc',
-        },
+        { totalPoints: 'desc' },
+        { lastSolved: 'asc' },
       ],
     });
 
-    return teams.map((team, index) => ({
+    return scores.map((score, index) => ({
       rank: index + 1,
-      id: team.id,
-      name: team.name,
-      username: team.user.username,
-      totalScore: team.totalScore,
-      solvedChallenges: team.submissions.length,
-      lastSubmission: team.lastSubmission,
+      teamId: score.teamId,
+      teamName: score.team.name,
+      totalPoints: score.totalPoints,
+      lastSolved: score.lastSolved,
+      memberCount: score.team.members.length,
+      members: score.team.members.map(m => m.username),
     }));
   }
 
   async getTeamStats(teamId: string) {
-    const team = await this.prisma.team.findUnique({
-      where: { id: teamId },
+    const score = await this.prisma.score.findUnique({
+      where: { teamId },
       include: {
-        submissions: {
-          where: {
-            isCorrect: true,
-          },
+        team: {
           include: {
-            challenge: {
-              select: {
-                id: true,
-                title: true,
-                type: true,
-                points: true,
+            submissions: {
+              where: { isCorrect: true },
+              include: {
+                challenge: {
+                  select: {
+                    title: true,
+                    points: true,
+                    round: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                  },
+                },
+                user: {
+                  select: {
+                    username: true,
+                  },
+                },
               },
+              orderBy: { createdAt: 'desc' },
             },
-          },
-          orderBy: {
-            submittedAt: 'asc',
           },
         },
       },
     });
 
-    if (!team) {
-      return null;
+    if (!score) {
+      return {
+        teamId,
+        totalPoints: 0,
+        solvedChallenges: 0,
+        submissions: [],
+      };
     }
 
-    const totalChallenges = await this.prisma.challenge.count({
-      where: {
-        isActive: true,
-      },
-    });
-
     return {
-      team: {
-        id: team.id,
-        name: team.name,
-        totalScore: team.totalScore,
-      },
-      solvedChallenges: team.submissions.length,
-      totalChallenges,
-      submissions: team.submissions,
+      teamId,
+      teamName: score.team.name,
+      totalPoints: score.totalPoints,
+      solvedChallenges: score.team.submissions.length,
+      lastSolved: score.lastSolved,
+      submissions: score.team.submissions,
     };
   }
 }

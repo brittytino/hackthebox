@@ -49,6 +49,7 @@ model Team {
   members       User[]
   submissions   Submission[]
   scores        Score[]
+  storyProgress StoryProgress[]
   qualified     Boolean       @default(false)
   qualifiedAt   DateTime?
   disqualified  Boolean       @default(false)
@@ -136,4 +137,36 @@ model SystemConfig {
   value         String
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+}
+
+model StoryProgress {
+  id                String        @id @default(uuid())
+  teamId            String
+  team              Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  currentRound      Int           @default(1)
+  round1Completed   Boolean       @default(false)
+  round2Completed   Boolean       @default(false)
+  round3Completed   Boolean       @default(false)
+  round1Artifacts   String?       // JSON: {systemTarget, darkweaveCode, credentialHash}
+  round2Artifacts   String?       // JSON: {masterKey, backdoorLocation}
+  round3Winner      Boolean       @default(false)
+  storyEnding       String?       // SUCCESS or FAILED
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@unique([teamId])
+  @@index([currentRound])
+  @@index([round3Winner])
+}
+
+model StoryState {
+  id                String        @id @default(uuid())
+  storyStarted      Boolean       @default(false)
+  storyEnded        Boolean       @default(false)
+  round3Winner      String?       // Team ID of first winner
+  winnerTeamName    String?
+  winTimestamp      DateTime?
+  finalOutcome      String?       // CITY_SAVED or BREACH_EXECUTED
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 }

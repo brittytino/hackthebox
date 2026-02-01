@@ -206,6 +206,10 @@ export class StoryService {
       select: { name: true },
     });
 
+    if (!team) {
+      return { success: false, message: 'Team not found' };
+    }
+
     await this.prisma.$transaction([
       this.prisma.storyProgress.update({
         where: { teamId },

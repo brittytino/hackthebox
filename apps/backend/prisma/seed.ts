@@ -35,7 +35,7 @@ async function main() {
   console.log('✅ Judge user created:', judge.username);
 
   // Create Test Users
-  const testUsers = [];
+  const testUsers: any[] = [];
   for (let i = 1; i <= 5; i++) {
     const password = await bcrypt.hash('test123', 10);
     const user = await prisma.user.upsert({

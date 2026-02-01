@@ -11,6 +11,10 @@ export class TeamsService {
       where: { id: userId },
     });
 
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     if (user.teamId) {
       throw new BadRequestException('You are already in a team');
     }
@@ -48,6 +52,10 @@ export class TeamsService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     if (user.teamId) {
       throw new BadRequestException('You are already in a team');

@@ -15,6 +15,10 @@ export class SubmissionsService {
       include: { team: true },
     });
 
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     if (!user.teamId) {
       throw new BadRequestException('You must be in a team to submit flags');
     }

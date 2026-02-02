@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -110,6 +110,26 @@ export const api = {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.text();
+    },
+  },
+
+  // Story endpoints
+  story: {
+    getState: () => apiRequest('/story/state'),
+    getProgress: () => apiRequest('/story/progress'),
+    getRound: (roundNumber: number) => apiRequest(`/story/round/${roundNumber}`),
+    submitRound1: (data: { systemTarget: string; darkweaveCode: string; credentialHash: string }) =>
+      apiRequest('/story/submit/round1', { method: 'POST', body: JSON.stringify(data) }),
+    submitRound2: (data: { masterKey: string; backdoorLocation: string }) =>
+      apiRequest('/story/submit/round2', { method: 'POST', body: JSON.stringify(data) }),
+    submitRound3: (data: { flag: string }) =>
+      apiRequest('/story/submit/round3', { method: 'POST', body: JSON.stringify(data) }),
+    admin: {
+      start: () => apiRequest('/story/admin/start', { method: 'POST' }),
+      end: (outcome: 'CITY_SAVED' | 'BREACH_EXECUTED') =>
+        apiRequest('/story/admin/end', { method: 'POST', body: JSON.stringify({ outcome }) }),
+      reset: () => apiRequest('/story/admin/reset', { method: 'POST' }),
+      getAllProgress: () => apiRequest('/story/admin/all-progress'),
     },
   },
 };

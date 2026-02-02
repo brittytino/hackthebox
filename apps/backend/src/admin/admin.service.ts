@@ -214,7 +214,7 @@ export class AdminService {
       },
     });
 
-    const qualifiedIds = [];
+    const qualifiedIds: string[] = [];
     for (const score of topTeams) {
       await this.prisma.team.update({
         where: { id: score.teamId },
@@ -223,7 +223,7 @@ export class AdminService {
           qualifiedAt: new Date(),
         },
       });
-      qualifiedIds.push(score.teamId);
+      qualifiedIds.push(score.teamId as string);
     }
 
     return {

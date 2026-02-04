@@ -10,163 +10,132 @@ datasource db {
 enum UserRole {
   PARTICIPANT
   ADMIN
-  JUDGE
-}
-
-enum RoundType {
-  DECODE_THE_SECRET
-  FIND_AND_CRACK
-  CATCH_THE_FLAG
 }
 
 enum RoundStatus {
-  PENDING
+  LOCKED
   ACTIVE
   COMPLETED
-  LOCKED
 }
 
-model User {
+enum ChallengeLevel {
+  LEVEL_1_1
+  LEVEL_1_2
+  LEVEL_1_3
+  LEVEL_2_1
+  LEVEL_2_2
+  LEVEL_2_3
+  LEVEL_3_1
+  LEVEL_3_2
+  LEVEL_3_3
+}
+
+// OTP System for Email Verification
+model OTP {
   id            String        @id @default(uuid())
-  email         String        @unique
-  username      String        @unique
-  passwordHash  String
-  role          UserRole      @default(PARTICIPANT)
-  teamId        String?
-  team          Team?         @relation(fields: [teamId], references: [id])
-  submissions   Submission[]
+  email         String
+  otpHash       String
+  attempts      Int           @default(0)
+  isVerified    Boolean       @default(false)
+  expiresAt     DateTime
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
   @@index([email])
-  @@index([username])
-  @@index([teamId])
+  @@index([expiresAt])
 }
 
+// Team model with 2 mandatory members
 model Team {
-  id            String        @id @default(uuid())
-  name          String        @unique
-  members       User[]
-  submissions   Submission[]
-  scores        Score[]
-  storyProgress StoryProgress[]
-  qualified     Boolean       @default(false)
-  qualifiedAt   DateTime?
-  disqualified  Boolean       @default(false)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                String        @id @default(uuid())
+  name              String        @unique
+  email             String        @unique
+  member1Name       String
+  member2Name       String
+  registrationTime  DateTime      @default(now())
+  currentChallenge  ChallengeLevel @default(LEVEL_1_1)
+  totalPoints       Int           @default(0)
+  timeElapsed       Int           @default(0) // in seconds
+  isActive          Boolean       @default(true)
+  hintsUsed         Int           @default(0)
+  submissions       Submission[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   @@index([name])
-  @@index([qualified])
+  @@index([email])
+  @@index([totalPoints])
 }
 
+// Rounds (3 rounds total)
 model Round {
   id            String        @id @default(uuid())
-  name          String
-  type          RoundType
-  status        RoundStatus   @default(PENDING)
-  order         Int           @unique
-  description   String?
-  startTime     DateTime?
-  endTime       DateTime?
+  roundNumber   Int           @unique // 1, 2, or 3
+  title         String        // "THE BREACH DISCOVERY", "INFILTRATION", "THE FINAL STRIKE"
+  theme         String        // "Cryptography & Code Breaking", etc.
+  storyArc      String        @db.Text
   challenges    Challenge[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  @@index([order])
-  @@index([status])
+  @@index([roundNumber])
 }
 
+// Challenges (9 total: 3 per round)
 model Challenge {
-  id            String        @id @default(uuid())
-  roundId       String
-  round         Round         @relation(fields: [roundId], references: [id], onDelete: Cascade)
-  title         String
-  description   String
-  points        Int
-  flagHash      String
-  maxAttempts   Int?
-  order         Int
-  hints         String?
-  isActive      Boolean       @default(true)
-  submissions   Submission[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id              String        @id @default(uuid())
+  roundId         String
+  round           Round         @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  level           ChallengeLevel @unique
+  levelNumber     Int           // 1, 2, or 3 within the round
+  title           String
+  narrative       String        @db.Text
+  challengeType   String
+  difficulty      String        // "Easy", "Medium", "Hard"
+  points          Int
+  hintText        String?       @db.Text
+  hintPenalty     Int           @default(0)
+  maxAttempts     Int           @default(3)
+  answerHash      String        // bcrypt hash of the correct answer
+  isActive        Boolean       @default(true)
+  submissions     Submission[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@index([roundId])
-  @@index([isActive])
+  @@index([level])
+  @@index([levelNumber])
 }
 
+// Submission tracking
 model Submission {
-  id            String        @id @default(uuid())
-  userId        String
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  teamId        String?
-  team          Team?         @relation(fields: [teamId], references: [id])
-  challengeId   String
-  challenge     Challenge     @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  submittedFlag String
-  isCorrect     Boolean       @default(false)
-  points        Int           @default(0)
-  attempts      Int           @default(1)
-  createdAt     DateTime      @default(now())
+  id              String        @id @default(uuid())
+  teamId          String
+  team            Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  challengeId     String
+  challenge       Challenge     @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  submittedAnswer String
+  isCorrect       Boolean       @default(false)
+  pointsAwarded   Int           @default(0)
+  attemptNumber   Int           @default(1)
+  timeTaken       Int           // in seconds from round start
+  usedHint        Boolean       @default(false)
+  createdAt       DateTime      @default(now())
 
-  @@index([userId])
   @@index([teamId])
   @@index([challengeId])
   @@index([isCorrect])
   @@index([createdAt])
 }
 
-model Score {
-  id            String        @id @default(uuid())
-  teamId        String
-  team          Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  totalPoints   Int           @default(0)
-  lastSolved    DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  @@unique([teamId])
-  @@index([totalPoints])
-  @@index([lastSolved])
-}
-
+// System configuration
 model SystemConfig {
   id            String        @id @default(uuid())
   key           String        @unique
   value         String
+  description   String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
-}
 
-model StoryProgress {
-  id                String        @id @default(uuid())
-  teamId            String
-  team              Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  currentRound      Int           @default(1)
-  round1Completed   Boolean       @default(false)
-  round2Completed   Boolean       @default(false)
-  round3Completed   Boolean       @default(false)
-  round1Artifacts   String?       // JSON: {systemTarget, darkweaveCode, credentialHash}
-  round2Artifacts   String?       // JSON: {masterKey, backdoorLocation}
-  round3Winner      Boolean       @default(false)
-  storyEnding       String?       // SUCCESS or FAILED
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  @@unique([teamId])
-  @@index([currentRound])
-  @@index([round3Winner])
-}
-
-model StoryState {
-  id                String        @id @default(uuid())
-  storyStarted      Boolean       @default(false)
-  storyEnded        Boolean       @default(false)
-  round3Winner      String?       // Team ID of first winner
-  winnerTeamName    String?
-  winTimestamp      DateTime?
-  finalOutcome      String?       // CITY_SAVED or BREACH_EXECUTED
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  @@index([key])
 }

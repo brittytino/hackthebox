@@ -1,0 +1,54 @@
+# 🚀 SETUP INSTRUCTIONS
+
+## IMPORTANT: Before starting, you MUST have PostgreSQL running!
+
+### Step 1: Start PostgreSQL
+Make sure your PostgreSQL server is running on localhost:5432
+
+### Step 2: Run Database Migration
+```bash
+cd apps/backend
+npx prisma migrate dev --name complete_redesign
+npx prisma generate
+npm run prisma:seed
+```
+
+### Step 3: Configure SMTP (Gmail)
+Edit `apps/backend/.env` and add your Gmail credentials:
+- Go to Google Account → Security → 2FA → App Passwords
+- Generate for "Mail"
+- Add to SMTP_PASS in .env
+
+### Step 4: Start Servers
+```bash
+# Terminal 1 - Backend
+cd apps/backend
+npm run start:dev
+
+# Terminal 2 - Frontend  
+cd apps/frontend
+npm run dev
+```
+
+### Step 5: Access
+- Frontend: http://localhost:3000
+- Backend: http://localhost:3001
+
+## Structure Ready
+✅ Prisma schema updated with OTP, Teams, 9 Challenges
+✅ All backend services created
+✅ Frontend with dark theme + GSAP animations
+✅ All dependencies installed
+
+## Test Answers
+```
+1.1: HTB{DARKNET_2026_COR}
+1.2: HTB{SERV-ER-42-FINAL-LAB}
+1.3: HTB{024A4F93}
+2.1: HTB{WHIONEPAS42}
+2.2: HTB{6202_SSECCA_TENKRAD}
+2.3: HTB{<team-specific>}
+3.1: HTB{BLACK_OUT_CODE_TWENTYTWO}
+3.2: HTB{DEFUSE_COMPOSITE}
+3.3: HTB{KILL_SWITCH_OPERATION_BLACKOUT_ABORTED_SUCCESS}
+```

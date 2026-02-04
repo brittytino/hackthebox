@@ -1,18 +1,47 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { OTPService } from './otp.service';
+import { RegistrationService } from '../teams/registration.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private otpService: OTPService,
+    private registrationService: RegistrationService,
+  ) {}
 
-  @Post('register')
-  async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  // Step 1: Request OTP
+  @Post('request-otp')
+  async requestOTP(@Body() body: { email: string }) {
+    return this.otpService.sendOTP(body.email);
   }
 
-  @Post('login')
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  // Step 2: Verify OTP
+  @Post('verify-otp')
+  async verifyOTP(@Body() body: { email: string; otp: string }) {
+    return this.otpService.verifyOTP(body.email, body.otp);
+  }
+
+  // Step 3: Register Team
+  @Post('register-team')
+  async registerTeam(
+    @Body()
+    body: {
+      email: string;
+      teamName: string;
+      member1Name: string;
+      member2Name: string;
+    },
+  ) {
+    return this.registrationService.registerTeam(body);
+  }
+
+  // Get team info
+  @Get('team/:teamId')
+  async getTeam(@Param('teamId') teamId: string) {
+    const team = await this.registrationService.getTeamInfo(teamId);
+    if (!team) {
+      return { success: false, message: 'Team not found' };
+    }
+    return { success: true, team };
   }
 }

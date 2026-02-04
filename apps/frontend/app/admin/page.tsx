@@ -150,7 +150,9 @@ export default function AdminPage() {
     } catch (error: any) {
       alert(error.message || 'Failed to reset competition');
     }
-  };AdjustScore = async (e: React.FormEvent) => {
+  };
+
+  const handleAdjustScore = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!adjustScoreTeamId || !adjustReason) {
       alert('Please select a team and provide a reason');

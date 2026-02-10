@@ -124,52 +124,76 @@ Dashboard Layout
 
 ## 📖 STORY NARRATIVE
 
-### The Mission: "Operation Cipher Strike"
+### The Mission: "Operation Cipher Strike" (Beast-Style Event Story)
 
 **Setting:** February 1, 2026, Coimbatore, India  
-**Location:** Coimbatore Tech Hub - India's largest IT facility  
+**Location:** Coimbatore Tech Hub + CODISSIA Industrial Park  
 
 ### Cast of Characters
 
 **THE HEROES (Your Team):**
-- **You** - Elite cybersecurity interns recruited by CERT-In Tamil Nadu Division
-- **Kavya Raghavan** (The Tech Goddess 🔥) - Chief Security Officer at Coimbatore Tech Hub, former IIT Madras hacker turned ethical mentor. Known in hacker circles as "The Phoenix" - she destroyed the world's first botnet in 2018 and now leads cyber defense at India's most critical tech hub.
-- **Vikram Singaravelan** (The Code Warrior 💪) - Senior Cyber Crime Inspector, Tamil Nadu Police. Legendary for cracking 200+ cyber cases. Has a personal vendetta against hackers who target India's tech infrastructure.
+- **You** - Elite cybersecurity interns recruited by CERT-In Tamil Nadu Division.
+- **Veera Raghavan** (The Reluctant Guardian) - former RAW field agent turned cybersecurity mentor. After a mission in Pakistan ended in civilian loss, Veera left the agency, haunted by guilt and PTSD.
+- **Kavya Raghavan** (The Tech Goddess 🔥) - Chief Security Officer at Coimbatore Tech Hub; pragmatic, brilliant, and the only one who can pull Veera back when the city is on the brink.
+- **Vikram Singaravelan** (The Code Warrior 💪) - Senior Cyber Crime Inspector, Tamil Nadu Police. Keeps the investigation legal, fast, and relentless.
+- **Preethi** (The Spark) - a smart, grounded strategist who convinces Veera to return to action and keep the team human when the pressure spikes.
 
-**THE VILLAIN:**
-- **Saravana Subramanian** (The Cipher Master 💀) - Brilliant but vengeful ex-hacker. Was CTL (Chief Technology Lead) at Coimbatore Tech Hub until 2024, when Kavya fired him for stealing employee data and selling it to Chinese hackers. Now leading an underground cyber terror network called "Digital Apocalypse". His attack: **Operation BLACKOUT** - set to destroy Coimbatore's entire tech ecosystem on Valentine's Day.
+**THE VILLAINS:**
+- **Saravana Subramanian** (The Cipher Master 💀) - ex-CTL of Tech Hub, now leader of "Digital Apocalypse". His plan: **Operation BLACKOUT** on February 14, 23:59:59 IST.
+- **Umar Saif** (The Trigger) - Saravana’s on‑ground commander, running sleeper cells disguised among civilians.
+- **A compromised Home Minister** - secretly aiding the operation to trade chaos for power.
 
 **THE STAKES:**
 - **50,000+ tech employees** from 1,200+ IT companies in CODISSIA Industrial Park
 - **₹2,000+ crore** in financial systems, research data, and business secrets
 - **National security:** Coimbatore produces 40% of India's industrial software
-- **Personal:** Saravana has threatened Kavya's family directly
-- **Deadline:** 13 days until midnight on February 14th - complete system lockdown
+- **Personal:** Saravana threatens Kavya's family and Veera's fragile recovery
+- **Deadline:** 13 days until midnight on February 14th
 
 ### The Plot (Linear Story Arc)
 
-#### ACT 1: THE DISCOVERY
+#### ACT 1: THE SCAR
 **Time:** 2:47 AM, February 1, 2026 - COIMBATORE TECH HUB, SECURITY COMMAND CENTER
 
-**[Alarm bells ringing across the facility]**
+**[Alarm bells echo. Screens flash red.]**
 
-**Kavya Raghavan** (Chief Security Officer) bursts through the security command center doors, her laptop under one arm, eyes blazing with intensity:
+**Kavya Raghavan** storms in with an intercepted transmission.
 
-*"Listen up! We've got a MAJOR problem. My team just intercepted an encrypted transmission from a hidden server in the Russian Dark Web. The signature code - that triple-layer encoding technique - I'd recognize it anywhere. It's Saravana. He's alive. And he's coming for all of us."*
+**Kavya:** *"This signature isn't random. Triple-layer encoding. Saravana. He's alive."*
 
-**Vikram Singaravelan** (Inspector, Tamil Nadu Cyber Crime) stands up from his desk:
+**Vikram:** *"If it's him, he's aiming at the hub."*
 
-*"Saravana Subramanian? The guy Kavya fired from Tech Hub? He went completely offline after the 2024 incident. Intelligence said he fled the country... but if he's back.."*
+**Kavya:** *"Operation BLACKOUT. Valentine’s Day. Full system lockdown."*
 
-**Kavya:** *"He's not just back. He's planned something MASSIVE. Look at this transmission timestamp - 'Operation BLACKOUT initiates February 14, 23:59:59 IST'. That's Valentine's Day midnight, 13 days from now. And he's targeting CODISSIA Park specifically - every single tech company in Coimbatore will be shut down simultaneously. 50,000 employees locked out. ₹2000 crores in business data ransomed. India's entire tech manufacturing hub crippled."*
+They need an edge. Kavya pulls in **Veera Raghavan**, now a broken man in Chennai trying to live quietly. **Preethi** persuades him to step into a new kind of fight—one where guns are replaced by logic, and battles are won with code.
 
-**Inspector Vikram:** *"How do we stop him?"*
+Your team is recruited as Veera’s cyber unit. You’re not just players—you’re his second chance.
 
-**Kavya:** *"His transmission is encrypted in multiple layers - a technique only Saravana knows. To break it, we need fresh minds, sharp hackers who can think like him but aren't jaded like him. CERT-In has a list of elite cybersecurity interns working in the region. That's where you come in. If you can crack his codes faster than he executes his plan, we might just find the kill switch to Operation BLACKOUT."*
+#### ACT 2: THE SIEGE
+**Time:** 4:15 AM - CODISSIA INDUSTRIAL PARK, CENTRAL MALL COMPLEX
 
-**Vikram:** *"What if we fail?"*
+The Tech Hub’s public mall becomes the staging ground. Veera visits with Preethi and Domnic’s small security firm. He notices odd behavior: maintenance workers in wrong uniforms, closed wings with power reroutes, and a new camera grid that isn’t in the facility map.
 
-**Kavya:** *"Then Coimbatore becomes a digital ghost town. And it starts a chain reaction across all of India. We can't fail."*
+Minutes later, **Umar Saif** and sleeper cells disguised among mall staff take control, locking down exits and broadcasting their demand: **release Saravana** or people die on live streams.
+
+Outside, the government hesitates. Inside, Veera goes silent—then starts moving. He disables a cell, captures a terrorist, and brings intel back to a hidden room. Meanwhile, you decode Saravana’s layered ciphers to locate the first breach point.
+
+**Your challenges begin:** decode the intercepted transmission, assemble fragment maps, and crack the time-locked vault. Each level is a step Veera can’t take without you.
+
+#### ACT 3: THE COUNTERSTRIKE
+Veera infiltrates the enemy under disguise, while your team breaks into the admin network. The Home Minister, secretly allied with Saif, broadcasts a staged execution to force a release. Veera flips the script, taking control of the negotiation using a threat only Saravana understands: his own stolen codes.
+
+As Saif learns Veera’s identity, he traps him. **Aparna**, the Home Minister’s daughter, helps Veera escape. Together, you eliminate the sleeper cells and clear a path for hostages—while decoding the nested JWT and hash‑based locks that guard the final payload.
+
+#### ACT 4: THE BORDER
+Saravana is released despite all resistance. But the game isn’t over. Veera crosses into enemy territory, recaptures Saravana in Pakistan, and returns with the only man who knows the kill switch.
+
+Back in Coimbatore, your team races to solve the master vault. The final flag is protected by every technique you’ve learned—hex, JWT, ROT13, and hash verification. You decode it first, trigger the kill switch, and stop BLACKOUT with seconds to spare.
+
+#### ACT 5: THE RECKONING
+Saravana is in custody. The compromised minister is exposed. The Tech Hub survives. Veera finally finds closure—not by forgetting the past, but by choosing to protect a future.
+
+Your team doesn’t just win a competition—you save a city.
 
 ---
 

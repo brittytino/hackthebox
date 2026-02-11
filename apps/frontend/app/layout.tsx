@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Hack The Box - CTF Competition",
-  description: "Cybersecurity Competition Platform",
+  title: "Operation Cipher Strike",
+  description: "Interactive Cyber-Thriller Experience",
 };
 
 export default function RootLayout({
@@ -15,8 +15,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className="dark h-full w-full overflow-hidden">
+      <body className={`${inter.className} bg-black text-white antialiased h-full w-full overflow-hidden select-none`}>
+        {children}
+      </body>
     </html>
   );
 }

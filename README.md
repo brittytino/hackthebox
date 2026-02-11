@@ -1,554 +1,311 @@
-# 🎯 Hack The Box 2026 - Operation Cipher Strike
-## Beast-Inspired Cybersecurity Competition Event
+# 🎯 Operation Cipher Strike - CTF Platform
 
-![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
-![Story](https://img.shields.io/badge/Story-Beast%202022%20Adapted-blue)
-![Implementation](https://img.shields.io/badge/Implementation-Comic%20Book%20Style-purple)
-![License](https://img.shields.io/badge/License-MIT-green)
+A production-grade Capture The Flag (CTF) competition platform with modern character-driven visual storytelling, built with Next.js, NestJS, and PostgreSQL.
 
-> *Help RAW agent Veera Raghavan save 1,200 hostages. Decode. Infiltrate. Survive. Win.*
+![Tech Stack](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
+![NestJS](https://img.shields.io/badge/NestJS-10-E0234E?logo=nestjs)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)
 
----
+## ✨ Features
 
-## 🎬 THE STORY
+### 🎮 Participant Experience
+- **OTP-based Authentication** - Secure email-based registration
+- **Team Management** - 2-member teams with real-time tracking
+- **Character-Driven Story** - 5 characters with 15 unique expressions
+- **Progressive Challenges** - Sequential challenge unlocking
+- **Live Scoreboard** - Real-time rankings and activity feed
+- **Modern UI** - Cyberpunk-themed, responsive design
 
-### February 1, 2026, 2:00 AM - Coimbatore, India
+### 👨‍💼 Admin Panel
+- **Challenge Management** - CRUD operations for challenges
+- **Team Oversight** - View, qualify, disqualify teams
+- **Live Monitoring** - Real-time submission tracking
+- **Score Adjustments** - Manual point modifications
+- **Competition Control** - Start, pause, reset events
 
-A shopping mall is under siege. **1,200 hostages** trapped inside.  
-**Umar Saif**, a terrorist with a personal vendetta, demands the release of a captured militant.  
-The **Home Minister secretly helps the terrorists**.  
-A **cyber-attack (Operation BLACKOUT)** will hit India's tech hub on Valentine's Day.
+### 🔧 Technical Features
+- **RESTful API** - NestJS with Prisma ORM
+- **Type-Safe** - Full TypeScript coverage
+- **Dockerized** - One-command deployment
+- **Real-time Updates** - Live activity feeds
+- **Secure** - JWT authentication, bcrypt hashing
+- **Rate Limited** - Redis-based rate limiting
+- **Email Integration** - SMTP for OTP delivery
 
-**Veera Raghavan**, a broken RAW agent with PTSD from a mission gone wrong, is the only one who can stop this.  
-But he needs **YOUR cyber team** (CERT-In interns) to help from outside.
+## 🚀 Quick Start
 
-**Your Mission:**
-- 🔍 Decode intercepted transmissions
-- 💻 Crack terrorist databases  
-- 🔓 Defuse the cyber-attack logic bomb
-- ⏰ Stop the Operation BLACKOUT in the next 7 hours
-- 🏆 Save 1,200 lives + 50,000 jobs + national security
+### Prerequisites
+- Docker Desktop (recommended)
+- Node.js 18+ (for local dev)
+- PostgreSQL 16+ (if not using Docker)
 
-**Based on the 2022 Tamil film "Beast" starring Vijay** – adapted for your cybersecurity competition.
-
----
-
-## 📂 Documentation Structure
-
-```
-docs/
-├── DELIVERY-COMPLETE.md          ⭐ Executive Summary
-├── MASTER-INDEX.md               📖 Complete File Index
-├── README-STORY.md               📖 Role-Based Paths
-├── PROJECT-SUMMARY.md            🎯 Next Steps
-├── story/
-│   ├── BEAST-STORY-NARRATIVE.md  🎬 Full Story (15,000 words)
-│   ├── CHALLENGE-STORY-MAP.md    📋 9 Challenges Mapped
-│   └── VISUAL-STORY-FLOW.md      🎨 Timeline & Marketing
-└── implementation/
-    ├── COMIC-BOOK-IMPLEMENTATION.md  🎨 Visual Novel Guide
-    ├── INTEGRATION-GUIDE.md          🛠️ Technical Steps
-    ├── IMAGE-GENERATION-PROMPTS.md   📸 AI Illustrations
-    └── IMPLEMENTATION-CHECKLIST.md   ✅ Progress Tracker
-```
-
----
-
-## 🚀 QUICK START
-
-### For Decision Makers (5 min read)
-1. [DELIVERY-COMPLETE.md](docs/DELIVERY-COMPLETE.md) – Mission overview
-2. [PROJECT-SUMMARY.md](docs/PROJECT-SUMMARY.md) – Implementation recommendations
-3. **Decision:** Choose tier (Minimal/Comic Book/Premium)
-
-### For Developers (Start here)
-1. [COMIC-BOOK-IMPLEMENTATION.md](docs/implementation/COMIC-BOOK-IMPLEMENTATION.md) – Visual novel guide
-2. [INTEGRATION-GUIDE.md](docs/implementation/INTEGRATION-GUIDE.md) – Technical integration
-3. [CHALLENGE-STORY-MAP.md](docs/story/CHALLENGE-STORY-MAP.md) – Challenge data
-
-### For Designers
-1. [COMIC-BOOK-IMPLEMENTATION.md](docs/implementation/COMIC-BOOK-IMPLEMENTATION.md#🎨-character-illustration-specifications) – Character specs
-2. [IMAGE-GENERATION-PROMPTS.md](docs/implementation/IMAGE-GENERATION-PROMPTS.md) – AI generation prompts
-
-### For Marketers
-1. [VISUAL-STORY-FLOW.md](docs/story/VISUAL-STORY-FLOW.md#📱-social-media-templates) – Social media templates
-
-### For Project Managers
-1. [IMPLEMENTATION-CHECKLIST.md](docs/implementation/IMPLEMENTATION-CHECKLIST.md) – Progress tracking
-
----
-
-## ✨ WHAT'S INCLUDED
-
-### 📖 Complete Story Package (~37,000 words)
-- ✅ Cinematic narrative based on Beast (2022)
-- ✅ 9 CTF challenges mapped to story moments
-- ✅ Character bios and dialogue for 9 characters
-- ✅ Linear progression (Prologue → 5 Acts → Epilogue)
-
-### 🎨 Comic Book Visual Novel Implementation
-- ✅ Character illustration specifications (15 images)
-- ✅ AI generation prompts for all characters
-- ✅ CSS speech bubble components
-- ✅ Responsive design (mobile, tablet, desktop)
-- ✅ No video/audio complexity (just images + text)
-
-### 🛠️ Implementation Guide
-- ✅ 3 effort tiers (Minimal/Comic Book/Premium)
-- ✅ Database schema updates
-- ✅ React component templates
-- ✅ Technical integration steps
-- ✅ Quality checklist
-- 🌐 **Three.js Animated Background** (cyber grid, particles)
-- 🎭 **GSAP Smooth Animations** (60 FPS transitions)
-- 📱 **Desktop-Optimized** (1280px minimum, no mobile needed)
-- ⚡ **Real-Time Updates** (WebSocket activity feed)
-
-
-
-### 📊 Expected Impact
-- **+15-20% participation** increase
-- **+20% completion rate** improvement  
-- **+25% return rate** for future events
-- **90%+ satisfaction** vs 75% baseline
-
-### 💰 Implementation Tiers
-
-| Tier | Time | Cost | Impact |
-|------|------|------|--------|
-| **Minimal** | 2-3 days | $0 | Medium |
-| **Comic Book** ⭐ | 1-2 weeks | $100-500 | High |
-| **Premium** | 3-4 weeks | $500+ | Max |
-
----
-
-## 📚 STORY AT A GLANCE
-
-**Protagonist:** Veera Raghavan (RAW Agent)  
-**Crisis:** 1,200 hostages in mall siege  
-**Antagonist:** Umar Saif (Terrorist leader)  
-**Cyber Threat:** Operation BLACKOUT (Feb 14 deadline)  
-**Stakes:** 50,000 jobs + ₹2,000 crore + national infrastructure  
-
-**Based On:** Beast (2022) Tamil film starring Vijay  
-
----
-
-## 🎯 YOUR NEXT STEP
-
-1. **Review:** [docs/DELIVERY-COMPLETE.md](docs/DELIVERY-COMPLETE.md)
-2. **Decide:** Implementation tier
-3. **Read:** [docs/PROJECT-SUMMARY.md](docs/PROJECT-SUMMARY.md)
-4. **Assign:** Team roles
-
----
-
-## 🔗 IMPORTANT LINKS
-
-| Link | Purpose |
-|------|---------|
-| [docs/MASTER-INDEX.md](docs/MASTER-INDEX.md) | File index & quick reference |
-| [docs/story/BEAST-STORY-NARRATIVE.md](docs/story/BEAST-STORY-NARRATIVE.md) | Full story (15,000 words) |
-| [docs/implementation/COMIC-BOOK-IMPLEMENTATION.md](docs/implementation/COMIC-BOOK-IMPLEMENTATION.md) | Visual novel guide |
-| [docs/implementation/IMAGE-GENERATION-PROMPTS.md](docs/implementation/IMAGE-GENERATION-PROMPTS.md) | AI character prompts |
-| [docs/implementation/INTEGRATION-GUIDE.md](docs/implementation/INTEGRATION-GUIDE.md) | Technical integration |
-| [docs/implementation/IMPLEMENTATION-CHECKLIST.md](docs/implementation/IMPLEMENTATION-CHECKLIST.md) | Progress tracker |
-
----
-
-## 🚀 QUICK START
+### Start with Docker (easiest)
 
 ```bash
-# 1. Review the delivery
-open docs/DELIVERY-COMPLETE.md
+# 1. Clone and navigate
+git clone <repository-url>
+cd hackthebox
 
-# 2. Choose your tier
-open docs/PROJECT-SUMMARY.md
+# 2. Configure environment
+cp .env.example .env
+# Edit .env with your credentials
 
-# 3. Start reading based on your role
-# Developers → docs/implementation/COMIC-BOOK-IMPLEMENTATION.md
-# Designers → docs/implementation/IMAGE-GENERATION-PROMPTS.md
-# Marketers → docs/story/VISUAL-STORY-FLOW.md
-# Managers → docs/implementation/IMPLEMENTATION-CHECKLIST.md
+# 3. Start all services
+docker-compose up -d
+
+# 4. Initialize database
+docker-compose exec backend npm run prisma:migrate
+docker-compose exec backend npm run prisma:seed
+
+# 5. Access the platform
+# Frontend: http://localhost:3000
+# Backend:  http://localhost:3001
 ```
 
----
-
-## 📞 HELP & SUPPORT
-
-- **File Structure Questions?** → [docs/MASTER-INDEX.md](docs/MASTER-INDEX.md)
-- **What to Read?** → [docs/README-STORY.md](docs/README-STORY.md)
-- **Story Details?** → [docs/story/BEAST-STORY-NARRATIVE.md](docs/story/BEAST-STORY-NARRATIVE.md)
-- **How to Implement?** → [docs/implementation/INTEGRATION-GUIDE.md](docs/implementation/INTEGRATION-GUIDE.md)
-- **Image Generation?** → [docs/implementation/IMAGE-GENERATION-PROMPTS.md](docs/implementation/IMAGE-GENERATION-PROMPTS.md)
-
----
-
-## 🎬 THE VISION
-
-Transform your Hack The Box competition from a standard CTF into an **unforgettable cinematic experience** where participants:
-
-✅ Feel emotionally connected to characters  
-✅ Experience real stakes (saving 1,200 lives)  
-✅ Get professional animations and visuals  
-✅ Remember this event for YEARS  
-✅ Tell their friends about the amazing story  
-
----
-
-## 📝 Project Info
-
-**Created:** February 10, 2026  
-**Status:** ✅ Production Ready  
-**Total Documentation:** ~37,000 words across 11 files  
-**Story Basis:** Beast (2022) by Nelson Dilipkumar  
-
----
-
-## 🏆 LET'S BUILD SOMETHING LEGENDARY
-
-**Start here:** [docs/DELIVERY-COMPLETE.md](docs/DELIVERY-COMPLETE.md) 🚀
-
-*Help Veera Raghavan save 1,200 hostages. The city's fate rests in your hands.*
-- Port numbers
-
-### 3. Start the Platform
-
-```bash
-docker compose up --build
-```
-
-**First startup takes 3-5 minutes** (downloading images, building, database migration)
-
-### 4. Access the Platform
-
-Once you see both services running:
-
-- **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:3001/api
-- **Admin Panel:** http://localhost:3000/admin (after login)
-
-### 5. Login
-
-**Admin Account:**
-- Username: `admin`
+**Default Admin Login:**
+- Email: `admin@hackthebox.local`
 - Password: `admin123`
 
-**Test Accounts:**
-- Username: `user1` to `user5`
-- Password: `test123`
-
-## 📱 For LAN Access
-
-To access from other devices on your network:
-
-1. Find your machine's IP address:
-   ```bash
-   # Windows
-   ipconfig
-   
-   # Linux/Mac
-   ifconfig
-   ```
-
-2. Access from other devices:
-   - Frontend: `http://YOUR_IP:3000`
-   - Example: `http://192.168.1.100:3000`
-
-3. Update `.env` for LAN mode:
-   ```env
-   NEXT_PUBLIC_API_URL=http://YOUR_IP:3001/api
-   ```
-
-4. Restart containers:
-   ```bash
-   docker compose down
-   docker compose up --build
-   ```
-
-## 🎮 Usage Guide
-
-### For Participants
-
-1. **Register/Login** at http://localhost:3000
-2. **Create or Join a Team** - Required to submit flags
-3. **View Challenges** - Navigate to Challenges page
-4. **Submit Flags** - Enter flags to earn points
-5. **Check Scoreboard** - Live rankings updated every 10 seconds
-
-### For Admins
-
-1. **Login as Admin** (credentials above)
-2. **Go to Admin Panel** at http://localhost:3000/admin
-3. **Manage Rounds:**
-   - Activate rounds to make challenges available
-   - Complete rounds when finished
-   - Lock Round 3 after first team wins (automatic)
-
-4. **Create Challenges:**
-   - Select a round
-   - Enter title, description, points
-   - Set the flag (will be encrypted)
-   - Optional: Add hints, max attempts
-
-5. **Monitor Competition:**
-   - View real-time statistics
-   - Track submissions
-   - Monitor team progress
+📖 **Full Documentation:** See [GETTING-STARTED.md](./GETTING-STARTED.md)
 
 ## 🏗️ Architecture
 
 ```
-hack-the-box/
+┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
+│                 │         │                 │         │                 │
+│  Next.js 15     │────────▶│   NestJS 10     │────────▶│ PostgreSQL 16   │
+│  Frontend       │   HTTP  │   Backend API   │  Prisma │   Database      │
+│  (Port 3000)    │◀────────│  (Port 3001)    │◀────────│  (Port 5433)    │
+│                 │         │                 │         │                 │
+└─────────────────┘         └─────────────────┘         └─────────────────┘
+                                     │
+                                     │
+                                     ▼
+                            ┌─────────────────┐
+                            │                 │
+                            │   Redis 7       │
+                            │   Cache/Queue   │
+                            │   (Port 6380)   │
+                            │                 │
+                            └─────────────────┘
+```
+
+## 📁 Project Structure
+
+```
+hackthebox/
 ├── apps/
-│   ├── frontend/          # Next.js application
-│   │   ├── app/          # Pages (App Router)
-│   │   ├── components/   # UI components
-│   │   └── lib/          # API client, utilities
+│   ├── backend/              # NestJS API Server
+│   │   ├── src/
+│   │   │   ├── auth/         # JWT authentication
+│   │   │   ├── challenges/   # Challenge CRUD
+│   │   │   ├── submissions/  # Flag validation
+│   │   │   ├── teams/        # Team management
+│   │   │   ├── scoreboard/   # Rankings & stats
+│   │   │   └── admin/        # Admin operations
+│   │   ├── prisma/
+│   │   │   ├── schema.prisma # Database schema
+│   │   │   └── seed.ts       # Initial data
+│   │   └── Dockerfile
 │   │
-│   └── backend/          # NestJS API
-│       ├── src/
-│       │   ├── auth/     # JWT authentication
-│       │   ├── users/    # User management
-│       │   ├── teams/    # Team operations
-│       │   ├── rounds/   # Round control
-│       │   ├── challenges/  # Challenge CRUD
-│       │   ├── submissions/ # Flag validation
-│       │   ├── scoreboard/  # Live rankings
-│       │   └── admin/    # Admin operations
-│       │
-│       └── prisma/       # Database schema & migrations
+│   └── frontend/             # Next.js Frontend
+│       ├── app/              # App router pages
+│       │   ├── page.tsx      # Landing page
+│       │   ├── login/        # Authentication
+│       │   ├── challenges/   # Challenge interface
+│       │   ├── dashboard/    # User dashboard
+│       │   ├── scoreboard/   # Live rankings
+│       │   └── admin/        # Admin panel
+│       ├── components/       # React components
+│       │   ├── story/        # Character dialogues
+│       │   └── ui/           # UI primitives
+│       ├── lib/
+│       │   └── api.ts        # API client
+│       └── Dockerfile
 │
-├── docker-compose.yml    # Container orchestration
-└── .env                 # Configuration
+├── docs/                     # Documentation
+├── docker-compose.yml        # Container orchestration
+├── .env.example              # Environment template
+├── GETTING-STARTED.md        # Setup guide
+└── README.md                 # This file
 ```
 
-## 🔐 Security Features
+## 🛠️ Technology Stack
 
-- **Password Hashing:** bcrypt (10 rounds)
-- **Flag Storage:** Flags stored as bcrypt hashes
-- **JWT Auth:** Secure token-based authentication
-- **Rate Limiting:** 10 requests per minute default
-- **Role-Based Access:** PARTICIPANT, ADMIN, JUDGE
-- **Input Validation:** All endpoints validated
-- **SQL Injection Protection:** Prisma ORM
+### Frontend
+- **Framework:** Next.js 15 (App Router)
+- **Language:** TypeScript 5
+- **Styling:** Tailwind CSS 3
+- **UI Components:** Custom + shadcn/ui
+- **State:** React Hooks
+- **HTTP Client:** Native Fetch API
 
-## 🎯 Round Types Explained
+### Backend
+- **Framework:** NestJS 10
+- **Language:** TypeScript 5
+- **Database:** PostgreSQL 16 with Prisma ORM
+- **Authentication:** JWT + bcrypt
+- **Validation:** class-validator
+- **Email:** Nodemailer (SMTP)
+- **Cache:** Redis 7
 
-### Round 1: Decode the Secret
-- Static cryptography challenges
-- Base64, Caesar cipher, XOR, etc.
-- Fixed scores per challenge
-- No attempt limits (unless set)
+### DevOps
+- **Containerization:** Docker + Docker Compose
+- **Database Migrations:** Prisma Migrate
+- **Process Manager:** Node.js
+- **Reverse Proxy:** (add nginx/Caddy for production)
 
-### Round 2: Find & Crack
-- Hash cracking challenges
-- MD5, SHA-256, etc.
-- Rate-limited submissions (5 per minute)
-- Max attempts enforced per challenge
+## 🔐 Environment Configuration
 
-### Round 3: Catch the Flag
-- Single final challenge
-- First team to submit correct flag wins
-- **Round automatically locks** after first correct submission
-- Highest point value
+Required environment variables:
 
-## 🛠️ Management Commands
+```env
+# Database
+POSTGRES_PASSWORD=secure_password
+DATABASE_URL=postgresql://...
 
-### Stop the Platform
+# JWT
+JWT_SECRET=minimum-32-character-secret-key
+
+# Email (for OTP)
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=app-specific-password
+
+# Redis
+REDIS_PASSWORD=secure_redis_password
+
+# Ports
+BACKEND_PORT=3001
+NEXTJS_PORT=3000
+```
+
+See `.env.example` for complete configuration.
+
+## 📚 Documentation
+
+- [Getting Started Guide](./GETTING-STARTED.md) - Complete setup instructions
+- [Database Schema](./apps/backend/prisma/schema.prisma) - Prisma schema
+- [Character System](./docs/implementation/COMIC-BOOK-IMPLEMENTATION.md) - Visual storytelling
+- [Deployment Guide](./docs/DEPLOYMENT-COMPLETE.md) - Production deployment
+
+## 🧪 Development
+
+### Run Tests
 ```bash
-docker compose down
+# Backend
+cd apps/backend
+npm run test
+
+# Frontend
+cd apps/frontend
+npm run test
 ```
 
-### View Logs
+### Database Operations
 ```bash
-docker compose logs -f
+# Create migration
+docker-compose exec backend npx prisma migrate dev --name migration_name
+
+# Reset database
+docker-compose exec backend npx prisma migrate reset
+
+# Open Prisma Studio
+docker-compose exec backend npx prisma studio
 ```
 
-### Reset Database (keeps structure)
-Use Admin Panel → Danger Zone → Reset Competition
-
-Or manually:
+### Rebuild Containers
 ```bash
-docker compose down -v
-docker compose up --build
+# Rebuild specific service
+docker-compose up -d --build backend
+
+# Rebuild all
+docker-compose up -d --build
 ```
 
-### Seed Database Again
-```bash
-docker compose exec backend npm run prisma:seed
-```
+## 🌐 Network Access
 
-### Backup Database
-```bash
-docker compose exec postgres pg_dump -U hackthebox hackthebox > backup.sql
-```
+To access from other devices on your local network:
 
-## 📊 Seeded Data
+1. Find your machine's IP: `ipconfig` (Windows) or `ifconfig` (Linux/Mac)
+2. Update frontend `.env`: `NEXT_PUBLIC_API_URL=http://YOUR_IP:3001`
+3. Access from other devices: `http://YOUR_IP:3000`
 
-The platform comes pre-loaded with:
+## 🔒 Security Considerations
 
-- 1 Admin user
-- 5 Test participants
-- 3 Rounds (Round 1 active by default)
-- 6 Sample challenges:
-  - 3 in Round 1 (100-200 points each)
-  - 2 in Round 2 (250-300 points each)
-  - 1 in Round 3 (1000 points)
+- ✅ OTP-based authentication (no passwords for participants)
+- ✅ JWT tokens with expiration
+- ✅ Bcrypt password hashing
+- ✅ Input validation with class-validator
+- ⚠️ Rate limiting (Redis required)
+- ⚠️ CORS configured for frontend origin
+- 🔴 HTTPS required for production
+- 🔴 Change all default credentials
+- 🔴 Strong JWT_SECRET (32+ chars)
 
-### Sample Challenge Solutions
+## 📦 Docker Services
 
-**Round 1:**
-1. Base64 Basics → `HackTheBox2026`
-2. Caesar Cipher → `Welcome The Box`
-3. Simple XOR → `easy`
-
-**Round 2:**
-1. MD5 Hash Cracker → `password`
-2. SHA-256 Mystery → `password123`
-
-**Round 3:**
-1. The Final Flag → `HTB{y0u_4r3_th3_ch4mp10n}`
+| Service | Internal Port | External Port | Purpose |
+|---------|--------------|---------------|---------|
+| Frontend | 3000 | 3000 | Next.js App |
+| Backend | 3001 | 3001 | NestJS API |
+| PostgreSQL | 5432 | 5433 | Database |
+| Redis | 6379 | 6380 | Cache/Queue |
 
 ## 🐛 Troubleshooting
 
-### Port Already in Use
+### Port Conflicts
 ```bash
-# Find and stop conflicting services
-docker compose down
-# Or change ports in .env
+# Check what's using port
+netstat -ano | findstr :3000  # Windows
+lsof -i :3000                 # Linux/Mac
+
+# Change ports in .env
+BACKEND_PORT=4000
+NEXTJS_PORT=3001
 ```
 
-### Database Connection Failed
+### Database Issues
 ```bash
-# Wait for postgres to be ready (check logs)
-docker compose logs postgres
+# Check container status
+docker-compose ps
 
-# Restart if needed
-docker compose restart backend
+# View logs
+docker-compose logs postgres
+
+# Restart database
+docker-compose restart postgres
 ```
 
-### Frontend Can't Connect to Backend
-- Check `NEXT_PUBLIC_API_URL` in `.env`
-- Ensure backend is running: `docker compose ps`
-- Check backend logs: `docker compose logs backend`
+### Frontend Can't Connect
+1. Verify backend is running: `curl http://localhost:3001/health`
+2. Check `NEXT_PUBLIC_API_URL` in frontend `.env`
+3. Inspect browser console for errors
 
-### Build Errors
-```bash
-# Clean rebuild
-docker compose down -v
-docker compose build --no-cache
-docker compose up
-```
+## 📝 License
 
-## 🔧 Development Mode
+MIT License - see LICENSE file for details
 
-To run in development (with hot reload):
+## 👥 Contributors
 
-**Backend:**
-```bash
-cd apps/backend
-npm install
-npm run start:dev
-```
+Built with ❤️ for the cybersecurity community
 
-**Frontend:**
-```bash
-cd apps/frontend
-npm install
-npm run dev
-```
+## 🤝 Contributing
 
-Update `.env`:
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
-```
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open Pull Request
 
-## 📈 Scaling for 100+ Users
+## 📞 Support
 
-Current setup handles 100 users easily. For more:
-
-1. **Increase Docker Resources:**
-   - Docker Desktop → Settings → Resources
-   - Set CPU: 4+ cores, RAM: 8+ GB
-
-2. **Database Tuning:**
-   - Add to docker-compose.yml under postgres:
-     ```yaml
-     command: postgres -c max_connections=200
-     ```
-
-3. **Rate Limiting:**
-   - Adjust in `apps/backend/src/app.module.ts`
-
-## 🎨 Customization
-
-### Change Theme Colors
-Edit `apps/frontend/app/globals.css` - CSS variables
-
-### Add Custom Challenges
-Use Admin Panel or directly via API:
-```bash
-POST /api/admin/challenges
-{
-  "roundId": "...",
-  "title": "My Challenge",
-  "description": "...",
-  "flag": "solution",
-  "points": 300,
-  "order": 1
-}
-```
-
-### Modify Scoring
-Edit `apps/backend/src/submissions/submissions.service.ts`
-
-## 📝 API Documentation
-
-### Key Endpoints
-
-**Authentication:**
-- POST `/api/auth/register` - Create account
-- POST `/api/auth/login` - Login
-
-**Teams:**
-- POST `/api/teams` - Create team
-- POST `/api/teams/join` - Join team
-- GET `/api/teams` - List all teams
-
-**Challenges:**
-- GET `/api/rounds/current` - Active round
-- GET `/api/challenges` - All challenges
-
-**Submissions:**
-- POST `/api/submissions` - Submit flag
-
-**Scoreboard:**
-- GET `/api/scoreboard` - Live rankings
-
-All endpoints require JWT token in `Authorization: Bearer <token>` header (except auth routes).
-
-## 📄 License
-
-This is an educational project for CTF competitions. Use responsibly.
-
-## 🤝 Support
-
-For issues or questions:
-1. Check logs: `docker compose logs`
-2. Verify all services running: `docker compose ps`
-3. Review troubleshooting section above
-
-## 🎉 Credits
-
-Built with:
-- Next.js 15
-- NestJS 10
-- PostgreSQL 16
-- Redis 7
-- shadcn/ui components
-- Tailwind CSS
+For issues and questions:
+- Check [GETTING-STARTED.md](./GETTING-STARTED.md)
+- Review logs: `docker-compose logs [service]`
+- Open an issue on GitHub
 
 ---
 
-**Ready to hack? Start the platform and let the competition begin! 🚀**
+**Built with ❤️ for the cybersecurity community**

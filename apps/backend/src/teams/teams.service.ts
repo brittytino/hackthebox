@@ -30,6 +30,8 @@ export class TeamsService {
     const team = await this.prisma.team.create({
       data: {
         name: dto.name,
+        member1Name: dto.member1Name,
+        member2Name: dto.member2Name,
         members: {
           connect: { id: userId },
         },

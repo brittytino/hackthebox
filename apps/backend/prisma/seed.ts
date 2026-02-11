@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Seeding database...');
+  console.log('🌱 Starting database seed...');
 
   // Create Admin User
   const adminPassword = await bcrypt.hash('admin123', 10);
@@ -16,94 +16,12 @@ async function main() {
       username: 'admin',
       passwordHash: adminPassword,
       role: 'ADMIN',
+      isVerified: true,
     },
   });
   console.log('✅ Admin user created:', admin.username);
-
-  // Create Judge User
-  const judgePassword = await bcrypt.hash('judge123', 10);
-  const judge = await prisma.user.upsert({
-    where: { email: 'judge@hackthebox.local' },
-    update: {},
-    create: {
-      email: 'judge@hackthebox.local',
-      username: 'judge',
-      passwordHash: judgePassword,
-      role: 'JUDGE',
-    },
-  });
-  console.log('✅ Judge user created:', judge.username);
-
-  // Create Test Users
-  const testUsers: any[] = [];
-  for (let i = 1; i <= 5; i++) {
-    const password = await bcrypt.hash('test123', 10);
-    const user = await prisma.user.upsert({
-      where: { email: `user${i}@test.local` },
-      update: {},
-      create: {
-        email: `user${i}@test.local`,
-        username: `user${i}`,
-        passwordHash: password,
-        role: 'PARTICIPANT',
-      },
-    });
-    testUsers.push(user);
-  }
-  console.log(`✅ Created ${testUsers.length} test users`);
-
-  // Create Sample Teams
-  const team1 = await prisma.team.upsert({
-    where: { name: 'Alpha Team' },
-    update: {},
-    create: {
-      name: 'Alpha Team',
-      qualified: false,
-    },
-  });
-
-  const team2 = await prisma.team.upsert({
-    where: { name: 'Beta Squad' },
-    update: {},
-    create: {
-      name: 'Beta Squad',
-      qualified: false,
-    },
-  });
-
-  // Assign users to teams
-  if (testUsers.length >= 2) {
-    await prisma.user.update({
-      where: { id: testUsers[0].id },
-      data: { teamId: team1.id },
-    });
-
-    await prisma.user.update({
-      where: { id: testUsers[1].id },
-      data: { teamId: team2.id },
-    });
-  }
-
-  // Initialize scores for teams
-  await prisma.score.upsert({
-    where: { teamId: team1.id },
-    update: {},
-    create: {
-      teamId: team1.id,
-      totalPoints: 0,
-    },
-  });
-
-  await prisma.score.upsert({
-    where: { teamId: team2.id },
-    update: {},
-    create: {
-      teamId: team2.id,
-      totalPoints: 0,
-    },
-  });
-
-  console.log('✅ Created 2 sample teams with members');
+  console.log('   📧 Email: admin@hackthebox.local');
+  console.log('   🔑 Password: admin123');
 
   // Create Rounds
   const round1 = await prisma.round.upsert({

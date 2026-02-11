@@ -3,9 +3,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
   if (token) {
@@ -42,6 +42,16 @@ export const api = {
   login: (data: { username: string; password: string }) =>
     apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
 
+  auth: {
+    sendOTP: (data: { email: string }) =>
+      apiRequest('/auth/send-otp', { method: 'POST', body: JSON.stringify(data) }),
+    verifyOTP: (data: { email: string; otp: string }) =>
+      apiRequest('/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
+    createTeam: (data: { teamName: string; member1Name: string; member2Name: string }) =>
+      apiRequest('/auth/create-team', { method: 'POST', body: JSON.stringify(data) }),
+    profile: () => apiRequest('/auth/profile'),
+  },
+
   // Users
   getProfile: () => apiRequest('/users/me'),
   
@@ -67,6 +77,13 @@ export const api = {
   getChallengesByRound: (roundId: string) => apiRequest(`/challenges/round/${roundId}`),
   
   getChallenge: (id: string) => apiRequest(`/challenges/${id}`),
+  
+  challenges: {
+    getCurrent: () => apiRequest('/challenges/current'),
+    getActivity: () => apiRequest('/challenges/activity'),
+    submitFlag: (data: { flag: string }) => apiRequest('/submissions', { method: 'POST', body: JSON.stringify(data) }),
+    getLeaderboard: () => apiRequest('/scoreboard'),
+  },
 
   // Submissions
   submitFlag: (data: { challengeId: string; flag: string }) =>

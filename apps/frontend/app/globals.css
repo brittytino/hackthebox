@@ -4,103 +4,112 @@
 
 @layer base {
   :root {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 95%;
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 14%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 142 76% 36%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 142 76% 36%;
-    --radius: 0.5rem;
-    --chart-1: 142 76% 36%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* Summertime Saga Inspired Palette */
+    --vn-bg-dark: #0f172a;
+    --vn-panel-bg: rgba(15, 23, 42, 0.95);
+    --vn-panel-border: #3b82f6;
+    --vn-primary: #3b82f6; /* Bright Blue */
+    --vn-secondary: #ec4899; /* Pink/Magenta */
+    --vn-accent: #f59e0b; /* Amber/Gold for stats */
+    --vn-text: #f8fafc;
+    --vn-text-muted: #94a3b8;
+    
+    --vn-dialogue-bg: rgba(0, 0, 0, 0.9);
+    --vn-name-bg: #1d4ed8; /* Blue-700 */
   }
-}
 
-@layer base {
-  * {
-    @apply border-border;
-  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-black text-white antialiased overflow-hidden h-screen w-screen m-0 p-0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 }
 
-@keyframes scan {
-  0% {
-    transform: translateY(-100%);
+@layer components {
+  /* The Main Game Container - Forces 16:9 or full coverage */
+  .vn-root {
+    @apply fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat overflow-hidden;
   }
-  100% {
-    transform: translateY(100%);
-  }
-}
 
-@keyframes pulse-success {
-  0%, 100% {
-    opacity: 0.1;
+  /* Character Sprite Positioning */
+  .vn-character {
+    @apply absolute bottom-0 transition-all duration-500 ease-in-out pointer-events-none;
+    height: 85vh; /* Standard sprite height */
+    width: auto;
+    max-width: 45vw; /* slightly wider */
+    filter: drop-shadow(0 0 20px rgba(0,0,0,0.6));
+    object-fit: contain;
+    z-index: 10;
   }
-  50% {
-    opacity: 0.3;
-  }
-}
+  
+  .vn-character.left { @apply left-[5%] origin-bottom-left; }
+  .vn-character.center { @apply left-1/2 -translate-x-1/2 origin-bottom; }
+  .vn-character.right { @apply right-[5%] origin-bottom-right; }
 
-@keyframes pulse-danger {
-  0%, 100% {
-    opacity: 0.2;
+  /* Breathing Animation for "Alive" feel */
+  @keyframes breathe {
+    0%, 100% { transform: scale(1.0); }
+    50% { transform: scale(1.01) translateY(-0.3%); }
   }
-  50% {
-    opacity: 0.5;
+  .vn-breathe {
+    animation: breathe 5s infinite ease-in-out;
   }
-}
 
-@keyframes glitch {
-  0% {
-    transform: translate(0);
+  /* Dialogue Box - Bottom Card Style (More like visual novel engines) */
+  .vn-dialogue-box {
+    @apply absolute bottom-[5vh] left-1/2 -translate-x-1/2 w-[90%] md:w-[80%] lg:w-[70%] p-6 md:p-8 rounded-xl border-2 border-slate-600/50 shadow-[0_0_50px_rgba(0,0,0,0.8)];
+    background: rgba(10, 15, 30, 0.95);
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 22vh;
+    z-index: 50;
   }
-  20% {
-    transform: translate(-2px, 2px);
-  }
-  40% {
-    transform: translate(-2px, -2px);
-  }
-  60% {
-    transform: translate(2px, 2px);
-  }
-  80% {
-    transform: translate(2px, -2px);
-  }
-  100% {
-    transform: translate(0);
-  }
-}
 
-.animate-scan {
-  animation: scan 3s linear infinite;
-}
+  /* Name Tag - Distinct "Game" Style - Overlapping the box */
+  .vn-name-tag {
+    @apply absolute -top-5 left-0 px-8 py-2 text-xl font-bold tracking-wider uppercase border-l-4 border-blue-500 shadow-lg;
+    background: linear-gradient(90deg, #1e3a8a 0%, #1e40af 100%);
+    color: #fff;
+    transform: skewX(-12deg) translateX(20px);
+    clip-path: polygon(0 0, 95% 0, 100% 100%, 5% 100%); /* Angled edges */
+  }
+  
+  /* Fix text straightness inside skewed box */
+  .vn-name-tag span {
+    display: block;
+    transform: skewX(12deg);
+  }
 
-.animate-pulse-success {
-  animation: pulse-success 2s ease-in-out infinite;
-}
+  /* Dialogue Text */
+  .vn-text {
+    @apply text-lg md:text-2xl leading-relaxed text-slate-100 font-medium mt-4 font-sans tracking-wide;
+    text-shadow: 1px 1px 0px rgba(0,0,0,1);
+  }
 
-.animate-pulse-danger {
-  animation: pulse-danger 1s ease-in-out infinite;
-}
+  /* Glass Panels for Menus */
+  .glass-panel {
+    @apply bg-slate-900/90 backdrop-blur-xl border border-blue-500/30 rounded-2xl shadow-2xl;
+  }
 
-.animate-glitch {
-  animation: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  /* Choice Buttons - Stacked in center */
+  .vn-choice-container {
+    @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 w-full max-w-xl z-[100];
+  }
+
+  .vn-choice-btn {
+    @apply w-full px-8 py-4 text-center text-xl font-bold text-white transition-all transform hover:scale-105 active:scale-95 cursor-pointer rounded-lg;
+    background: linear-gradient(90deg, rgba(30, 58, 138, 0.9) 0%, rgba(59, 130, 246, 0.8) 100%);
+    border: 2px solid #60a5fa;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  }
+  .vn-choice-btn:hover {
+    background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.8);
+  }
+
+  /* HUD Elements (Phone, Map, Time) */
+  .vn-hud-icon {
+    @apply w-14 h-14 rounded-full bg-slate-800/90 border-2 border-blue-500/50 flex items-center justify-center text-blue-400 hover:text-white hover:bg-blue-600 hover:border-blue-400 transition-all cursor-pointer shadow-lg hover:shadow-blue-500/50 hover:scale-110;
+  }
 }

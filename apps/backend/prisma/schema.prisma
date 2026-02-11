@@ -29,12 +29,15 @@ enum RoundStatus {
 model User {
   id            String        @id @default(uuid())
   email         String        @unique
-  username      String        @unique
-  passwordHash  String
+  username      String?       @unique
+  passwordHash  String?
   role          UserRole      @default(PARTICIPANT)
   teamId        String?
   team          Team?         @relation(fields: [teamId], references: [id])
   submissions   Submission[]
+  otpHash       String?
+  otpExpiry     DateTime?
+  isVerified    Boolean       @default(false)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -46,6 +49,8 @@ model User {
 model Team {
   id            String        @id @default(uuid())
   name          String        @unique
+  member1Name   String
+  member2Name   String
   members       User[]
   submissions   Submission[]
   scores        Score[]
@@ -53,11 +58,14 @@ model Team {
   qualified     Boolean       @default(false)
   qualifiedAt   DateTime?
   disqualified  Boolean       @default(false)
+  currentLevel  Int           @default(1)
+  startedAt     DateTime      @default(now())
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
   @@index([name])
   @@index([qualified])
+  @@index([currentLevel])
 }
 
 model Round {
@@ -83,18 +91,23 @@ model Challenge {
   round         Round         @relation(fields: [roundId], references: [id], onDelete: Cascade)
   title         String
   description   String
+  storyContext  String?       // Story narrative for this challenge
+  characterMessage String?     // Message from Veera/Vikram/etc
   points        Int
   flagHash      String
   maxAttempts   Int?
   order         Int
   hints         String?
+  hintPenalty   Int           @default(50) // Points deducted for using hint
   isActive      Boolean       @default(true)
+  difficulty    String        @default("MEDIUM") // EASY, MEDIUM, HARD
   submissions   Submission[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
   @@index([roundId])
   @@index([isActive])
+  @@index([order])
 }
 
 model Submission {
@@ -169,4 +182,35 @@ model StoryState {
   finalOutcome      String?       // CITY_SAVED or BREACH_EXECUTED
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
+}
+
+model OTPLog {
+  id            String        @id @default(uuid())
+  email         String
+  attempts      Int           @default(0)
+  lastAttempt   DateTime?
+  blockedUntil  DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([email])
+  @@index([blockedUntil])
+}
+
+model Activity {
+  id            String        @id @default(uuid())
+  teamId        String
+  teamName      String
+  challengeId   String?
+  challengeTitle String?
+  roundNumber   Int
+  levelNumber   Int
+  actionType    String        // SOLVED, HINT_USED, STARTED_ROUND
+  storyMessage  String?       // "Team X helped Veera locate command center"
+  points        Int?
+  createdAt     DateTime      @default(now())
+
+  @@index([createdAt])
+  @@index([teamId])
+  @@index([actionType])
 }

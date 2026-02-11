@@ -149,12 +149,15 @@ const SCENES: Record<string, Scene> = {
   "end_demo": {
     id: "end_demo",
     background: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b",
-    characters: [],
-    speaker: "System",
-    dialogue: "End of Demo. Proceed to Dashboard?",
+    characters: [
+      { name: "veera", emotion: "determined", position: "center" }
+    ],
+    speaker: "Veera",
+    dialogue: "The past haunts me... but there's no time to dwell on it. The city needs protection. Let's get to work.",
      choices: [
-      { text: "Go to Dashboard", nextSceneId: "dashboard_redirect" },
-      { text: "Replay", nextSceneId: "start" }
+      { text: "Begin Mission", nextSceneId: "challenges_redirect" },
+      { text: "View Dashboard", nextSceneId: "dashboard_redirect" },
+      { text: "Replay Story", nextSceneId: "start" }
     ]
   }
 };
@@ -221,6 +224,9 @@ export default function StoryPage() {
         if (scene.nextSceneId === "dashboard_redirect") {
             router.push("/dashboard");
             return;
+        } else if (scene.nextSceneId === "challenges_redirect") {
+            router.push("/challenges");
+            return;
         }
         setCurrentSceneId(scene.nextSceneId);
       }
@@ -285,6 +291,8 @@ export default function StoryPage() {
                   if (choice.action) choice.action();
                   if (choice.nextSceneId === "dashboard_redirect") {
                       router.push("/dashboard");
+                  } else if (choice.nextSceneId === "challenges_redirect") {
+                      router.push("/challenges");
                   } else {
                       setCurrentSceneId(choice.nextSceneId);
                   }

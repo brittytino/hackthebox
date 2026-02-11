@@ -41,15 +41,15 @@ export default function LandingPage() {
 
         {/* Game Menu */}
         <div className="flex flex-col gap-4 w-full max-w-md px-4">
-          <Link href="/story" className="group relative overflow-hidden bg-blue-900/40 hover:bg-blue-800/60 border border-blue-500/30 backdrop-blur-sm rounded-lg p-4 transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+          <Link href="/login" className="group relative overflow-hidden bg-blue-900/40 hover:bg-blue-800/60 border border-blue-500/30 backdrop-blur-sm rounded-lg p-4 transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)]">
              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-blue-600 rounded-lg group-hover:rotate-12 transition-transform shadow-lg">
-                    <Play className="w-6 h-6 text-white text-fill-white" fill="currentColor" />
+                    <User className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white tracking-wide">NEW GAME</h3>
-                    <p className="text-blue-300 text-xs">Start Episode 1: The Breach</p>
+                    <h3 className="text-xl font-bold text-white tracking-wide">LOGIN</h3>
+                    <p className="text-blue-300 text-xs">Access Your Mission</p>
                   </div>
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity text-blue-400 font-bold text-2xl">
@@ -58,29 +58,32 @@ export default function LandingPage() {
              </div>
           </Link>
 
-          <button className="group relative overflow-hidden bg-slate-800/40 hover:bg-slate-700/60 border border-slate-600/30 backdrop-blur-sm rounded-lg p-4 transition-all hover:scale-105">
+          <Link href="/register" className="group relative overflow-hidden bg-purple-900/40 hover:bg-purple-800/60 border border-purple-500/30 backdrop-blur-sm rounded-lg p-4 transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]">
              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-slate-700 rounded-lg group-hover:rotate-12 transition-transform">
-                    <RotateCcw className="w-6 h-6 text-slate-300" />
+                  <div className="p-3 bg-purple-600 rounded-lg group-hover:rotate-12 transition-transform shadow-lg">
+                    <Play className="w-6 h-6 text-white text-fill-white" fill="currentColor" />
                   </div>
                   <div className="text-left">
-                    <h3 className="text-xl font-bold text-slate-200 tracking-wide">LOAD GAME</h3>
-                    <p className="text-slate-400 text-xs">Continue Section 4: Mall Siege</p>
+                    <h3 className="text-xl font-bold text-white tracking-wide">NEW AGENT</h3>
+                    <p className="text-purple-300 text-xs">Register for the Mission</p>
                   </div>
                 </div>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity text-purple-400 font-bold text-2xl">
+                  &gt;
+                </div>
              </div>
-          </button>
+          </Link>
 
           <div className="grid grid-cols-2 gap-4">
-            <button className="bg-slate-800/40 hover:bg-slate-700/60 border border-slate-600/30 backdrop-blur-sm rounded-lg p-4 flex items-center justify-center gap-2 hover:text-blue-400 transition-colors">
-              <Settings className="w-5 h-5" />
-              <span className="font-bold">SETTINGS</span>
-            </button>
-            <button className="bg-slate-800/40 hover:bg-slate-700/60 border border-slate-600/30 backdrop-blur-sm rounded-lg p-4 flex items-center justify-center gap-2 hover:text-pink-400 transition-colors">
-              <User className="w-5 h-5" />
-              <span className="font-bold">CREDITS</span>
-            </button>
+            <Link href="/story" className="bg-slate-800/40 hover:bg-slate-700/60 border border-slate-600/30 backdrop-blur-sm rounded-lg p-4 flex items-center justify-center gap-2 hover:text-blue-400 transition-colors group">
+              <RotateCcw className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+              <span className="font-bold">STORY</span>
+            </Link>
+            <Link href="/scoreboard" className="bg-slate-800/40 hover:bg-slate-700/60 border border-slate-600/30 backdrop-blur-sm rounded-lg p-4 flex items-center justify-center gap-2 hover:text-pink-400 transition-colors group">
+              <Settings className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+              <span className="font-bold">RANKINGS</span>
+            </Link>
           </div>
         </div>
       </div>

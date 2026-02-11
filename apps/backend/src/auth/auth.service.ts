@@ -287,7 +287,10 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findFirst({
       where: {
-        email: dto.email,
+        OR: [
+          { email: dto.username },
+          { username: dto.username },
+        ],
         isVerified: true,
       },
       include: {
@@ -299,8 +302,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (!user.team) {
-      throw new UnauthorizedException('Team not found');
+    // Verify password if it exists
+    if (user.passwordHash) {
+      const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
     }
 
     const token = this.generateToken(user.id);

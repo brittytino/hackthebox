@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
-import { ArrowLeft, Lock, User, Terminal } from 'lucide-react';
+import { ArrowLeft, Shield, User, Lock, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,276 +23,132 @@ export default function LoginPage() {
 
     try {
       const result = await api.login({ username: formData.username, password: formData.password });
-
       localStorage.setItem('token', result.access_token);
       localStorage.setItem('user', JSON.stringify(result.user));
-      
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Failed to login. Please check your credentials.');
+      setError(err.message || 'Invalid username or password');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
-      {/* Illustrated Background - Cityscape at dusk */}
-      <div className="absolute inset-0 bg-gradient-to-b from-indigo-900 via-purple-900 to-slate-900">
-        {/* Animated stars */}
-        <div className="absolute inset-0 overflow-hidden opacity-40">
-          {[...Array(50)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute bg-white rounded-full animate-pulse"
-              style={{
-                width: Math.random() * 3 + 1 + 'px',
-                height: Math.random() * 3 + 1 + 'px',
-                top: Math.random() * 100 + '%',
-                left: Math.random() * 100 + '%',
-                animationDelay: Math.random() * 3 + 's',
-                animationDuration: Math.random() * 2 + 2 + 's',
-              }}
-            />
-          ))}
-        </div>
-        
-        {/* Cityscape silhouette */}
-        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent">
-          <svg viewBox="0 0 1200 300" className="absolute bottom-0 w-full h-full opacity-70">
-            <rect x="0" y="150" width="80" height="150" fill="#1a1a2e" />
-            <rect x="90" y="120" width="60" height="180" fill="#16213e" />
-            <rect x="160" y="100" width="100" height="200" fill="#0f3460" />
-            <rect x="270" y="130" width="70" height="170" fill="#1a1a2e" />
-            <rect x="350" y="80" width="90" height="220" fill="#16213e" />
-            <rect x="450" y="110" width="80" height="190" fill="#0f3460" />
-            <rect x="540" y="90" width="110" height="210" fill="#1a1a2e" />
-            <rect x="660" y="120" width="75" height="180" fill="#16213e" />
-            <rect x="745" y="100" width="95" height="200" fill="#0f3460" />
-            <rect x="850" y="130" width="80" height="170" fill="#1a1a2e" />
-            <rect x="940" y="110" width="90" height="190" fill="#16213e" />
-            <rect x="1040" y="140" width="70" height="160" fill="#0f3460" />
-            <rect x="1120" y="120" width="80" height="180" fill="#1a1a2e" />
-          </svg>
-          
-          {/* Building windows */}
-          <div className="absolute bottom-0 w-full h-full">
-            {[...Array(40)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute bg-yellow-300/60 animate-pulse"
-                style={{
-                  width: '4px',
-                  height: '6px',
-                  bottom: Math.random() * 200 + 50 + 'px',
-                  left: Math.random() * 100 + '%',
-                  animationDelay: Math.random() * 3 + 's',
-                  animationDuration: Math.random() * 2 + 2 + 's',
-                }}
-              />
-            ))}
-          </div>
-        </div>
+    <div className="vn-scene">
+      {/* Background Image - Cyberpunk Office */}
+      <div 
+        className="vn-background"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1920&q=80)',
+        }}
+      />
+      
+      {/* Overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70 z-[1]" />
 
-        {/* Glowing orbs */}
-        <div className="absolute top-20 left-1/4 w-64 h-64 bg-cyan-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-40 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
-      </div>
+      {/* Character Illustration - Left Side */}
+      <div 
+        className="vn-character left"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'drop-shadow(0 0 30px rgba(59,130,246,0.4))'
+        }}
+      />
 
-      {/* Character silhouette - left side */}
-      <div className="absolute left-10 bottom-0 hidden lg:block z-10 opacity-80">
-        <div className="relative w-64 h-96">
-          {/* Hacker silhouette */}
-          <div className="absolute bottom-0 w-full h-full">
-            <svg viewBox="0 0 200 400" className="w-full h-full drop-shadow-2xl">
-              <defs>
-                <linearGradient id="char-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: '#60a5fa', stopOpacity: 0.8 }} />
-                  <stop offset="100%" style={{ stopColor: '#3b82f6', stopOpacity: 0.3 }} />
-                </linearGradient>
-              </defs>
-              {/* Body */}
-              <ellipse cx="100" cy="340" rx="50" ry="15" fill="#0f172a" opacity="0.5" />
-              <rect x="70" y="200" width="60" height="140" rx="5" fill="url(#char-gradient)" />
-              {/* Head */}
-              <circle cx="100" cy="160" r="35" fill="url(#char-gradient)" />
-              {/* Hood */}
-              <path d="M 65 160 Q 100 130 135 160 L 130 190 Q 100 170 70 190 Z" fill="url(#char-gradient)" opacity="0.9" />
-              {/* Arms */}
-              <rect x="40" y="220" width="25" height="80" rx="5" fill="url(#char-gradient)" />
-              <rect x="135" y="220" width="25" height="80" rx="5" fill="url(#char-gradient)" />
-              {/* Laptop glow */}
-              <ellipse cx="100" cy="280" rx="40" ry="10" fill="#22d3ee" opacity="0.6" />
-              <rect x="60" y="275" width="80" height="3" fill="#22d3ee" opacity="0.8" />
-            </svg>
-          </div>
-          {/* Glow effect */}
-          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-32 h-32 bg-cyan-500/30 rounded-full blur-2xl" />
-        </div>
-      </div>
-
-      {/* Back button - visual novel style */}
-      <Link href="/" className="absolute top-6 left-6 z-30">
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-900/80 hover:bg-slate-800/90 backdrop-blur-md rounded-xl border-2 border-purple-500/40 hover:border-purple-400/60 transition-all group shadow-lg shadow-purple-500/20">
-          <ArrowLeft className="h-5 w-5 text-purple-300 group-hover:text-purple-200 transition-colors" />
-          <span className="text-purple-300 group-hover:text-purple-200 font-semibold transition-colors">Back</span>
-        </button>
+      {/* Back Button */}
+      <Link 
+        href="/"
+        className="absolute top-8 left-8 z-[60] px-6 py-3 bg-black/60 hover:bg-black/80 backdrop-blur-md border-2 border-white/20 hover:border-blue-400/50 rounded-xl text-white hover:text-blue-400 transition-all flex items-center gap-2 group"
+      >
+        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+        <span className="font-bold">Back to Home</span>
       </Link>
 
-      {/* Main login container - Visual Novel style */}
-      <div className="relative z-20 w-full max-w-5xl mx-4 flex items-center justify-center lg:justify-end">
-        {/* Login panel - game UI style */}
-        <div className="relative w-full max-w-md">
-          {/* Decorative corner elements */}
-          <div className="absolute -top-3 -left-3 w-12 h-12 border-t-4 border-l-4 border-cyan-400 rounded-tl-2xl" />
-          <div className="absolute -top-3 -right-3 w-12 h-12 border-t-4 border-r-4 border-purple-400 rounded-tr-2xl" />
-          <div className="absolute -bottom-3 -left-3 w-12 h-12 border-b-4 border-l-4 border-cyan-400 rounded-bl-2xl" />
-          <div className="absolute -bottom-3 -right-3 w-12 h-12 border-b-4 border-r-4 border-purple-400 rounded-br-2xl" />
-          
-          {/* Main panel */}
-          <div className="bg-slate-900/90 backdrop-blur-xl border-2 border-purple-500/50 rounded-2xl p-8 shadow-2xl shadow-purple-500/30 relative overflow-hidden">
-            {/* Animated background pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute inset-0" style={{
-                backgroundImage: 'repeating-linear-gradient(90deg, rgba(168, 85, 247, 0.1) 0px, transparent 1px, transparent 40px), repeating-linear-gradient(0deg, rgba(168, 85, 247, 0.1) 0px, transparent 1px, transparent 40px)',
-              }} />
-            </div>
+      {/* Login Form - Visual Novel Dialogue Box Style */}
+      <div className="vn-dialogue-box">
+        {/* Name Tag */}
+        <div className="vn-name-tag">
+          <span>🔐 SYSTEM ACCESS</span>
+        </div>
 
-            {/* Character dialogue box style header */}
-            <div className="relative mb-6">
-              <div className="bg-gradient-to-r from-purple-600 to-cyan-600 p-0.5 rounded-xl mb-4">
-                <div className="bg-slate-900 rounded-xl p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
-                      <Terminal className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-white">System Access</h2>
-                      <p className="text-xs text-purple-300">Operation Cipher Strike</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-300 italic">
-                    "Enter your credentials to join the mission..."
-                  </p>
-                </div>
+        {/* Content */}
+        <div className="vn-dialogue-content">
+          <div className="mb-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/50">
+                <Shield className="w-8 h-8 text-white" />
               </div>
-              
-              <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
-                Welcome Back, Agent
-              </h1>
-            </div>
-
-            {/* Form - Game UI style */}
-            <form onSubmit={handleSubmit} className="space-y-5 relative">
-              {/* Username field */}
-              <div className="relative">
-                <label htmlFor="username" className="block text-sm font-semibold text-purple-300 mb-2 flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Agent ID
-                </label>
-                <div className="relative">
-                  <input
-                    id="username"
-                    type="text"
-                    placeholder="Enter your agent ID"
-                    value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 pl-4 bg-slate-800/50 border-2 border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:bg-slate-800/70 transition-all shadow-inner"
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Password field */}
-              <div className="relative">
-                <label htmlFor="password" className="block text-sm font-semibold text-purple-300 mb-2 flex items-center gap-2">
-                  <Lock className="h-4 w-4" />
-                  Security Code
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type="password"
-                    placeholder="Enter security code"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 pl-4 bg-slate-800/50 border-2 border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:bg-slate-800/70 transition-all shadow-inner"
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Error message - game style */}
-              {error && (
-                <div className="relative p-4 bg-red-900/30 border-2 border-red-500/50 rounded-xl backdrop-blur-sm">
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-white text-xs font-bold">!</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-red-300 mb-1">Access Denied</p>
-                      <p className="text-xs text-red-200">{error}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Submit button - game style */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-xl font-bold text-white text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-purple-500/50 hover:shadow-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 relative overflow-hidden group"
-              >
-                <span className="relative z-10">
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                      Accessing System...
-                    </span>
-                  ) : (
-                    'Begin Mission'
-                  )}
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
-            </form>
-
-            {/* Sign up link - game style */}
-            <div className="mt-6 text-center p-4 bg-slate-800/30 rounded-xl border border-purple-500/20">
-              <p className="text-gray-300 text-sm">
-                New recruit?{' '}
-                <Link href="/register" className="text-cyan-400 hover:text-cyan-300 font-bold transition-colors underline decoration-cyan-400/30 hover:decoration-cyan-300">
-                  Register Here
-                </Link>
-              </p>
-            </div>
-
-            {/* Demo credentials - game style hint box */}
-            <div className="mt-4 p-4 bg-gradient-to-r from-cyan-900/20 to-purple-900/20 rounded-xl border border-cyan-500/30 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl" />
-              <div className="relative">
-                <p className="text-xs text-gray-300 font-semibold mb-2 flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" />
-                  Demo Credentials
-                </p>
-                <p className="text-xs text-cyan-300 font-mono">
-                  <span className="text-purple-300">ID:</span> admin@hackthebox.local
-                </p>
-                <p className="text-xs text-cyan-300 font-mono">
-                  <span className="text-purple-300">Code:</span> admin123
-                </p>
+              <div>
+                <h2 className="text-3xl font-bold text-white drop-shadow-lg">Welcome Back, Agent</h2>
+                <p className="text-blue-200 text-sm mt-1">Please verify your identity to continue</p>
               </div>
             </div>
           </div>
 
-          {/* Bottom glow effect */}
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-3/4 h-6 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 blur-xl opacity-50" />
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/20 backdrop-blur-sm border-2 border-red-500 rounded-xl flex items-center gap-3 animate-pulse">
+              <AlertCircle className="w-5 h-5 text-red-300" />
+              <p className="text-red-100 text-sm font-semibold">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-blue-200 ml-2">Username</label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-300" />
+                <input
+                  type="text"
+                  required
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  className="w-full bg-black/40 backdrop-blur-sm border-2 border-blue-400/30 focus:border-blue-400 rounded-xl py-4 pl-12 pr-4 text-white text-lg placeholder-blue-300/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  placeholder="Enter your username"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-blue-200 ml-2">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-300" />
+                <input
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full bg-black/40 backdrop-blur-sm border-2 border-blue-400/30 focus:border-blue-400 rounded-xl py-4 pl-12 pr-4 text-white text-lg placeholder-blue-300/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  placeholder="Enter your password"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full mt-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-xl font-bold py-5 rounded-xl shadow-lg shadow-blue-500/50 hover:shadow-blue-600/60 transform hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-3">
+                  <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                  Authenticating...
+                </span>
+              ) : (
+                'Login to System'
+              )}
+            </button>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-blue-200 text-base">
+              Don't have an account?{' '}
+              <Link href="/register" className="text-yellow-300 hover:text-yellow-200 font-bold underline decoration-2 hover:decoration-yellow-200 transition-all">
+                Register Here
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -4,33 +4,32 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
-import { ArrowLeft, Lock, User, Mail, Terminal, Check } from 'lucide-react';
+import { ArrowLeft, UserPlus, User, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [step, setStep] = useState(1); // 1: Basic Info, 2: Success
-  
+  const [step, setStep] = useState(1); // 1: Form, 2: Success
+
   const [formData, setFormData] = useState({
-    email: '',
     username: '',
+    email: '',
     password: '',
-    confirmPassword: '',
+    confirmPassword: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    // Validation
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('ENCRYPTION KEY MISMATCH (Passwords do not match)');
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError('KEY STRENGTH INSUFFICIENT (Min 6 chars)');
       return;
     }
 
@@ -38,22 +37,28 @@ export default function RegisterPage() {
 
     try {
       const result = await api.register({
-        email: formData.email,
         username: formData.username,
-        password: formData.password,
+        email: formData.email,
+        password: formData.password
       });
 
-      localStorage.setItem('token', result.access_token);
-      localStorage.setItem('user', JSON.stringify(result.user));
-      
+      // Auto-login logic (save token)
+      if (result.access_token) {
+        localStorage.setItem('token', result.access_token);
+      }
+      if (result.user) {
+         localStorage.setItem('user', JSON.stringify(result.user));
+      }
+
       setStep(2);
       
-      // Redirect to story after showing success
+      // Auto redirect after success animation
       setTimeout(() => {
-        router.push('/story');
-      }, 2000);
+        router.push('/story'); // Redirect to story start for new agents
+      }, 3000);
+
     } catch (err: any) {
-      setError(err.message || 'Failed to register. Please try again.');
+      setError(err.message || 'REGISTRATION REJECTED: SERVER ERROR');
     } finally {
       setLoading(false);
     }
@@ -61,324 +66,175 @@ export default function RegisterPage() {
 
   if (step === 2) {
     return (
-      <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
-        {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-900 via-purple-900 to-slate-900">
-          <div className="absolute inset-0 overflow-hidden opacity-40">
-            {[...Array(50)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute bg-white rounded-full animate-pulse"
-                style={{
-                  width: Math.random() * 3 + 1 + 'px',
-                  height: Math.random() * 3 + 1 + 'px',
-                  top: Math.random() * 100 + '%',
-                  left: Math.random() * 100 + '%',
-                  animationDelay: Math.random() * 3 + 's',
-                  animationDuration: Math.random() * 2 + 2 + 's',
-                }}
-              />
-            ))}
+      <div className="vn-scene">
+        <div 
+          className="vn-background"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80)',
+          }}
+        />
+        <div className="absolute inset-0 bg-black/60 z-[1]" />
+        
+        <div className="absolute inset-0 flex items-center justify-center z-[50]">
+          <div className="bg-black/80 backdrop-blur-xl border-4 border-green-500 rounded-3xl p-16 text-center shadow-2xl shadow-green-500/50 animate-in zoom-in duration-700">
+            <div className="w-32 h-32 mx-auto mb-8 bg-green-500/20 rounded-full flex items-center justify-center border-4 border-green-500 shadow-[0_0_40px_rgba(34,197,94,0.8)] animate-pulse">
+              <CheckCircle className="w-16 h-16 text-green-400" />
+            </div>
+            <h2 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">Registration Successful!</h2>
+            <p className="text-green-300 text-xl mb-8">Welcome to the team, Agent!</p>
+            <div className="w-80 h-3 bg-slate-800 rounded-full mx-auto overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-green-500 to-blue-500 animate-[width_3s_ease-out_forwards] w-full origin-left" />
+            </div>
+            <p className="text-slate-400 text-sm mt-4">Redirecting to story intro...</p>
           </div>
-        </div>
-
-        {/* Success Message */}
-        <div className="relative z-20 text-center">
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-2xl shadow-green-500/50 animate-bounce">
-            <Check className="h-12 w-12 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-4">Welcome, Agent!</h1>
-          <p className="text-purple-300 text-lg">Initiating story briefing...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
-      {/* Illustrated Background - Cityscape at dusk */}
-      <div className="absolute inset-0 bg-gradient-to-b from-indigo-900 via-purple-900 to-slate-900">
-        {/* Animated stars */}
-        <div className="absolute inset-0 overflow-hidden opacity-40">
-          {[...Array(50)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute bg-white rounded-full animate-pulse"
-              style={{
-                width: Math.random() * 3 + 1 + 'px',
-                height: Math.random() * 3 + 1 + 'px',
-                top: Math.random() * 100 + '%',
-                left: Math.random() * 100 + '%',
-                animationDelay: Math.random() * 3 + 's',
-                animationDuration: Math.random() * 2 + 2 + 's',
-              }}
-            />
-          ))}
-        </div>
-        
-        {/* Cityscape silhouette */}
-        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent">
-          <svg viewBox="0 0 1200 300" className="absolute bottom-0 w-full h-full opacity-70">
-            <rect x="0" y="150" width="80" height="150" fill="#1a1a2e" />
-            <rect x="90" y="120" width="60" height="180" fill="#16213e" />
-            <rect x="160" y="100" width="100" height="200" fill="#0f3460" />
-            <rect x="270" y="130" width="70" height="170" fill="#1a1a2e" />
-            <rect x="350" y="80" width="90" height="220" fill="#16213e" />
-            <rect x="450" y="110" width="80" height="190" fill="#0f3460" />
-            <rect x="540" y="90" width="110" height="210" fill="#1a1a2e" />
-            <rect x="660" y="120" width="75" height="180" fill="#16213e" />
-            <rect x="745" y="100" width="95" height="200" fill="#0f3460" />
-            <rect x="850" y="130" width="80" height="170" fill="#1a1a2e" />
-            <rect x="940" y="110" width="90" height="190" fill="#16213e" />
-            <rect x="1040" y="140" width="70" height="160" fill="#0f3460" />
-            <rect x="1120" y="120" width="80" height="180" fill="#1a1a2e" />
-          </svg>
-          
-          {/* Building windows */}
-          <div className="absolute bottom-0 w-full h-full">
-            {[...Array(40)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute bg-yellow-300/60 animate-pulse"
-                style={{
-                  width: '4px',
-                  height: '6px',
-                  bottom: Math.random() * 200 + 50 + 'px',
-                  left: Math.random() * 100 + '%',
-                  animationDelay: Math.random() * 3 + 's',
-                  animationDuration: Math.random() * 2 + 2 + 's',
-                }}
-              />
-            ))}
-          </div>
-        </div>
+    <div className="vn-scene">
+      {/* Background Image - Tech Office */}
+      <div 
+        className="vn-background"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80)',
+        }}
+      />
+      
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/70 z-[1]" />
 
-        {/* Glowing orbs */}
-        <div className="absolute top-20 left-1/4 w-64 h-64 bg-cyan-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-40 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
-      </div>
+      {/* Character - Right Side */}
+      <div 
+        className="vn-character right"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'drop-shadow(0 0 30px rgba(234,88,12,0.4))'
+        }}
+      />
 
-      {/* Character silhouette - right side */}
-      <div className="absolute right-10 bottom-0 hidden lg:block z-10 opacity-80">
-        <div className="relative w-64 h-96">
-          {/* Hacker silhouette */}
-          <div className="absolute bottom-0 w-full h-full">
-            <svg viewBox="0 0 200 400" className="w-full h-full drop-shadow-2xl">
-              <defs>
-                <linearGradient id="char-gradient-reg" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: '#a78bfa', stopOpacity: 0.8 }} />
-                  <stop offset="100%" style={{ stopColor: '#8b5cf6', stopOpacity: 0.3 }} />
-                </linearGradient>
-              </defs>
-              {/* Body */}
-              <ellipse cx="100" cy="340" rx="50" ry="15" fill="#0f172a" opacity="0.5" />
-              <rect x="70" y="200" width="60" height="140" rx="5" fill="url(#char-gradient-reg)" />
-              {/* Head */}
-              <circle cx="100" cy="160" r="35" fill="url(#char-gradient-reg)" />
-              {/* Hood */}
-              <path d="M 65 160 Q 100 130 135 160 L 130 190 Q 100 170 70 190 Z" fill="url(#char-gradient-reg)" opacity="0.9" />
-              {/* Arms */}
-              <rect x="40" y="220" width="25" height="80" rx="5" fill="url(#char-gradient-reg)" />
-              <rect x="135" y="220" width="25" height="80" rx="5" fill="url(#char-gradient-reg)" />
-              {/* Laptop glow */}
-              <ellipse cx="100" cy="280" rx="40" ry="10" fill="#a78bfa" opacity="0.6" />
-              <rect x="60" y="275" width="80" height="3" fill="#a78bfa" opacity="0.8" />
-            </svg>
-          </div>
-          {/* Glow effect */}
-          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-32 h-32 bg-purple-500/30 rounded-full blur-2xl" />
-        </div>
-      </div>
-
-      {/* Back button - visual novel style */}
-      <Link href="/" className="absolute top-6 left-6 z-30">
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-900/80 hover:bg-slate-800/90 backdrop-blur-md rounded-xl border-2 border-purple-500/40 hover:border-purple-400/60 transition-all group shadow-lg shadow-purple-500/20">
-          <ArrowLeft className="h-5 w-5 text-purple-300 group-hover:text-purple-200 transition-colors" />
-          <span className="text-purple-300 group-hover:text-purple-200 font-semibold transition-colors">Back</span>
-        </button>
+      {/* Back Button */}
+      <Link 
+        href="/"
+        className="absolute top-8 left-8 z-[60] px-6 py-3 bg-black/60 hover:bg-black/80 backdrop-blur-md border-2 border-white/20 hover:border-orange-400/50 rounded-xl text-white hover:text-orange-400 transition-all flex items-center gap-2 group"
+      >
+        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+        <span className="font-bold">Back to Home</span>
       </Link>
 
-      {/* Main register container - Visual Novel style */}
-      <div className="relative z-20 w-full max-w-5xl mx-4 flex items-center justify-center lg:justify-start">
-        {/* Register panel - game UI style */}
-        <div className="relative w-full max-w-md">
-          {/* Decorative corner elements */}
-          <div className="absolute -top-3 -left-3 w-12 h-12 border-t-4 border-l-4 border-cyan-400 rounded-tl-2xl" />
-          <div className="absolute -top-3 -right-3 w-12 h-12 border-t-4 border-r-4 border-purple-400 rounded-tr-2xl" />
-          <div className="absolute -bottom-3 -left-3 w-12 h-12 border-b-4 border-l-4 border-cyan-400 rounded-bl-2xl" />
-          <div className="absolute -bottom-3 -right-3 w-12 h-12 border-b-4 border-r-4 border-purple-400 rounded-br-2xl" />
-          
-          {/* Main panel */}
-          <div className="bg-slate-900/90 backdrop-blur-xl border-2 border-purple-500/50 rounded-2xl p-8 shadow-2xl shadow-purple-500/30 relative overflow-hidden">
-            {/* Animated background pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute inset-0" style={{
-                backgroundImage: 'repeating-linear-gradient(90deg, rgba(168, 85, 247, 0.1) 0px, transparent 1px, transparent 40px), repeating-linear-gradient(0deg, rgba(168, 85, 247, 0.1) 0px, transparent 1px, transparent 40px)',
-              }} />
-            </div>
+      {/* Registration Form - VN Dialogue Box */}
+      <div className="vn-dialogue-box">
+        <div className="vn-name-tag">
+          <span>🎯 NEW RECRUIT</span>
+        </div>
 
-            {/* Character dialogue box style header */}
-            <div className="relative mb-6">
-              <div className="bg-gradient-to-r from-purple-600 to-cyan-600 p-0.5 rounded-xl mb-4">
-                <div className="bg-slate-900 rounded-xl p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                      <Terminal className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-white">Agent Registration</h2>
-                      <p className="text-xs text-purple-300">Operation Cipher Strike</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-300 italic">
-                    "Welcome, recruit. Complete your profile to join the team..."
-                  </p>
-                </div>
+        <div className="vn-dialogue-content max-h-[60vh] overflow-y-auto">
+          <div className="mb-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/50">
+                <UserPlus className="w-8 h-8 text-white" />
               </div>
-              
-              <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
-                Join The Mission
-              </h1>
-            </div>
-
-            {/* Form - Game UI style */}
-            <form onSubmit={handleSubmit} className="space-y-4 relative">
-              {/* Email field */}
-              <div className="relative">
-                <label htmlFor="email" className="block text-sm font-semibold text-purple-300 mb-2 flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email Address
-                </label>
-                <div className="relative">
-                  <input
-                    id="email"
-                    type="email"
-                    placeholder="agent@hackthebox.local"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 pl-4 bg-slate-800/50 border-2 border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:bg-slate-800/70 transition-all shadow-inner"
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
-                  </div>
-                </div>
+              <div>
+                <h2 className="text-3xl font-bold text-white drop-shadow-lg">Join the Agency</h2>
+                <p className="text-orange-200 text-sm mt-1">Create your agent profile</p>
               </div>
-
-              {/* Username field */}
-              <div className="relative">
-                <label htmlFor="username" className="block text-sm font-semibold text-purple-300 mb-2 flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Agent Codename
-                </label>
-                <div className="relative">
-                  <input
-                    id="username"
-                    type="text"
-                    placeholder="Choose your codename"
-                    value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 pl-4 bg-slate-800/50 border-2 border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:bg-slate-800/70 transition-all shadow-inner"
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{ animationDelay: '0.3s' }} />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Password field */}
-              <div className="relative">
-                <label htmlFor="password" className="block text-sm font-semibold text-purple-300 mb-2 flex items-center gap-2">
-                  <Lock className="h-4 w-4" />
-                  Security Code
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type="password"
-                    placeholder="Minimum 6 characters"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 pl-4 bg-slate-800/50 border-2 border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:bg-slate-800/70 transition-all shadow-inner"
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse" style={{ animationDelay: '0.6s' }} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Confirm Password field */}
-              <div className="relative">
-                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-purple-300 mb-2 flex items-center gap-2">
-                  <Lock className="h-4 w-4" />
-                  Confirm Security Code
-                </label>
-                <div className="relative">
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Re-enter your security code"
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 pl-4 bg-slate-800/50 border-2 border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:bg-slate-800/70 transition-all shadow-inner"
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse" style={{ animationDelay: '0.9s' }} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Error message - game style */}
-              {error && (
-                <div className="relative p-4 bg-red-900/30 border-2 border-red-500/50 rounded-xl backdrop-blur-sm">
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-white text-xs font-bold">!</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-red-300 mb-1">Registration Failed</p>
-                      <p className="text-xs text-red-200">{error}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Submit button - game style */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-xl font-bold text-white text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-purple-500/50 hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 relative overflow-hidden group"
-              >
-                <span className="relative z-10">
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                      Creating Profile...
-                    </span>
-                  ) : (
-                    'Complete Registration'
-                  )}
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
-            </form>
-
-            {/* Login link - game style */}
-            <div className="mt-6 text-center p-4 bg-slate-800/30 rounded-xl border border-purple-500/20">
-              <p className="text-gray-300 text-sm">
-                Already registered?{' '}
-                <Link href="/login" className="text-cyan-400 hover:text-cyan-300 font-bold transition-colors underline decoration-cyan-400/30 hover:decoration-cyan-300">
-                  Login Here
-                </Link>
-              </p>
             </div>
           </div>
 
-          {/* Bottom glow effect */}
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-3/4 h-6 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 blur-xl opacity-50" />
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/20 backdrop-blur-sm border-2 border-red-500 rounded-xl flex items-center gap-3 animate-pulse">
+              <AlertCircle className="w-5 h-5 text-red-300" />
+              <p className="text-red-100 text-sm font-semibold">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-orange-200 ml-2">Username</label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-300" />
+                <input
+                  type="text"
+                  required
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  className="w-full bg-black/40 backdrop-blur-sm border-2 border-orange-400/30 focus:border-orange-400 rounded-xl py-3 pl-12 pr-4 text-white text-base placeholder-orange-300/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
+                  placeholder="Choose a username"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-orange-200 ml-2">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-300" />
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full bg-black/40 backdrop-blur-sm border-2 border-orange-400/30 focus:border-orange-400 rounded-xl py-3 pl-12 pr-4 text-white text-base placeholder-orange-300/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
+                  placeholder="your.email@example.com"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-orange-200 ml-2">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-300" />
+                <input
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full bg-black/40 backdrop-blur-sm border-2 border-orange-400/30 focus:border-orange-400 rounded-xl py-3 pl-12 pr-4 text-white text-base placeholder-orange-300/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
+                  placeholder="Min. 6 characters"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-orange-200 ml-2">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-300" />
+                <input
+                  type="password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className="w-full bg-black/40 backdrop-blur-sm border-2 border-orange-400/30 focus:border-orange-400 rounded-xl py-3 pl-12 pr-4 text-white text-base placeholder-orange-300/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
+                  placeholder="Re-enter password"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full mt-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-xl font-bold py-4 rounded-xl shadow-lg shadow-orange-500/50 hover:shadow-orange-600/60 transform hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-3">
+                  <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                  Creating Account...
+                </span>
+              ) : (
+                'Create Account'
+              )}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-orange-200 text-base">
+              Already have an account?{' '}
+              <Link href="/login" className="text-yellow-300 hover:text-yellow-200 font-bold underline decoration-2 hover:decoration-yellow-200 transition-all">
+                Login Here
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -22,63 +22,76 @@
     @apply bg-black text-white antialiased overflow-hidden h-screen w-screen m-0 p-0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
+
+  /* Fallback for any vn-root usage */
+  .vn-root {
+    @apply fixed inset-0 w-full h-full overflow-hidden bg-black;
+  }
 }
 
 @layer components {
-  /* The Main Game Container - Forces 16:9 or full coverage */
-  .vn-root {
-    @apply fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat overflow-hidden;
+  /* Visual Novel Scene Container */
+  .vn-scene {
+    @apply fixed inset-0 w-full h-full overflow-hidden;
   }
 
-  /* Character Sprite Positioning */
+  /* Full-Screen Background Image */
+  .vn-background {
+    @apply absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat;
+    z-index: 0;
+  }
+
+  /* Character Sprite Positioning - Visual Novel Style */
   .vn-character {
-    @apply absolute bottom-0 transition-all duration-500 ease-in-out pointer-events-none;
-    height: 85vh; /* Standard sprite height */
-    width: auto;
-    max-width: 45vw; /* slightly wider */
-    filter: drop-shadow(0 0 20px rgba(0,0,0,0.6));
-    object-fit: contain;
+    @apply absolute bottom-0 transition-all duration-700 ease-in-out pointer-events-none;
+    height: 75vh;
+    width: 35vw;
+    max-width: 500px;
+    min-width: 300px;
     z-index: 10;
   }
   
-  .vn-character.left { @apply left-[5%] origin-bottom-left; }
-  .vn-character.center { @apply left-1/2 -translate-x-1/2 origin-bottom; }
-  .vn-character.right { @apply right-[5%] origin-bottom-right; }
-
-  /* Breathing Animation for "Alive" feel */
-  @keyframes breathe {
-    0%, 100% { transform: scale(1.0); }
-    50% { transform: scale(1.01) translateY(-0.3%); }
-  }
-  .vn-breathe {
-    animation: breathe 5s infinite ease-in-out;
-  }
-
-  /* Dialogue Box - Bottom Card Style (More like visual novel engines) */
-  .vn-dialogue-box {
-    @apply absolute bottom-[5vh] left-1/2 -translate-x-1/2 w-[90%] md:w-[80%] lg:w-[70%] p-6 md:p-8 rounded-xl border-2 border-slate-600/50 shadow-[0_0_50px_rgba(0,0,0,0.8)];
-    background: rgba(10, 15, 30, 0.95);
-    backdrop-filter: blur(12px);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    min-height: 22vh;
-    z-index: 50;
-  }
-
-  /* Name Tag - Distinct "Game" Style - Overlapping the box */
-  .vn-name-tag {
-    @apply absolute -top-5 left-0 px-8 py-2 text-xl font-bold tracking-wider uppercase border-l-4 border-blue-500 shadow-lg;
-    background: linear-gradient(90deg, #1e3a8a 0%, #1e40af 100%);
-    color: #fff;
-    transform: skewX(-12deg) translateX(20px);
-    clip-path: polygon(0 0, 95% 0, 100% 100%, 5% 100%); /* Angled edges */
+  .vn-character.left { 
+    @apply left-[2%]; 
   }
   
-  /* Fix text straightness inside skewed box */
+  .vn-character.center { 
+    @apply left-1/2 -translate-x-1/2; 
+  }
+  
+  .vn-character.right { 
+    @apply right-[2%]; 
+  }
+
+  /* Dialogue Box - Bottom Overlay (Visual Novel Style) */
+  .vn-dialogue-box {
+    @apply absolute bottom-[3vh] left-1/2 -translate-x-1/2 w-[92%] md:w-[85%] lg:w-[75%] xl:w-[70%] p-8 md:p-10 rounded-2xl shadow-2xl;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.97) 0%, rgba(30, 41, 59, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.1);
+    z-index: 50;
+    max-height: 65vh;
+  }
+  
+  /* Dialogue Content Area */
+  .vn-dialogue-content {
+    @apply relative;
+  }
+
+  /* Name Tag - Visual Novel Style */
+  .vn-name-tag {
+    @apply absolute -top-6 left-8 px-8 py-3 text-lg font-bold tracking-widest uppercase shadow-xl;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: #fff;
+    border-radius: 12px 12px 0 0;
+    border: 2px solid rgba(59, 130, 246, 0.5);
+    border-bottom: none;
+    box-shadow: 0 -4px 20px rgba(59, 130, 246, 0.4);
+  }
+  
   .vn-name-tag span {
-    display: block;
-    transform: skewX(12deg);
+    @apply drop-shadow-lg;
   }
 
   /* Dialogue Text */

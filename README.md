@@ -1,95 +1,173 @@
-# 🎯 Operation Cipher Strike - CTF Platform
+# Operation Cipher Strike - CTF Platform
 
-A production-grade Capture The Flag (CTF) competition platform with modern character-driven visual storytelling, built with Next.js, NestJS, and PostgreSQL.
-
-![Tech Stack](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
-![NestJS](https://img.shields.io/badge/NestJS-10-E0234E?logo=nestjs)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)
-
-## ✨ Features
-
-### 🎮 Participant Experience
-- **OTP-based Authentication** - Secure email-based registration
-- **Team Management** - 2-member teams with real-time tracking
-- **Character-Driven Story** - 5 characters with 15 unique expressions
-- **Progressive Challenges** - Sequential challenge unlocking
-- **Live Scoreboard** - Real-time rankings and activity feed
-- **Modern UI** - Cyberpunk-themed, responsive design
-
-### 👨‍💼 Admin Panel
-- **Challenge Management** - CRUD operations for challenges
-- **Team Oversight** - View, qualify, disqualify teams
-- **Live Monitoring** - Real-time submission tracking
-- **Score Adjustments** - Manual point modifications
-- **Competition Control** - Start, pause, reset events
-
-### 🔧 Technical Features
-- **RESTful API** - NestJS with Prisma ORM
-- **Type-Safe** - Full TypeScript coverage
-- **Dockerized** - One-command deployment
-- **Real-time Updates** - Live activity feeds
-- **Secure** - JWT authentication, bcrypt hashing
-- **Rate Limited** - Redis-based rate limiting
-- **Email Integration** - SMTP for OTP delivery
+A complete Capture The Flag (CTF) platform with Docker support for Windows, Linux, and macOS.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Docker Desktop (recommended)
-- Node.js 18+ (for local dev)
-- PostgreSQL 16+ (if not using Docker)
+- **Docker Desktop** installed and running
+- **4GB RAM** minimum available for Docker
+- **Git** (optional, for cloning)
 
-### Start with Docker (easiest)
+### Installation & Setup
 
+#### Windows
+1. Make sure Docker Desktop is running
+2. Double-click `start.bat` or run in PowerShell/CMD:
+   ```cmd
+   start.bat
+   ```
+
+#### Linux/Mac
+1. Make Docker is running
+2. Run the startup script:
+   ```bash
+   chmod +x start.sh
+   ./start.sh
+   ```
+
+The script will:
+- ✅ Check if Docker is running
+- 📝 Create `.env` file if it doesn't exist (from `.env.example`)
+- 🐳 Pull required Docker images
+- 🏗️ Build and start all containers
+- 🗄️ Initialize the database with migrations
+- 🌱 Seed admin user and challenges
+- 🌐 Open your browser to `http://localhost:3000`
+
+### First Time Setup
+
+If it's your first time running the platform:
+
+1. The script will create a `.env` file and open it in Notepad (Windows)
+2. Update these values **before** proceeding:
+   - `POSTGRES_PASSWORD` - Strong database password
+   - `REDIS_PASSWORD` - Strong Redis password
+   - `SMTP_USER` - Your Gmail address (for OTP emails)
+   - `SMTP_PASS` - Gmail app password (16 characters from Google)
+3. Save the file and press any key to continue
+
+> **Note:** To get a Gmail app password:
+> 1. Go to your Google Account → Security
+> 2. Enable 2-Step Verification
+> 3. Go to App Passwords
+> 4. Generate a new app password for "Mail"
+> 5. Copy the 16-character password (with spaces)
+
+## 🎯 Access the Platform
+
+Once running, access these URLs:
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3001
+- **Health Check**: http://localhost:3001/api/health
+
+### Default Admin Credentials
+
+```
+Email:    admin@hackthebox.local
+Password: admin123
+```
+
+⚠️ **Change these credentials after first login!**
+
+## 🛠️ Docker Commands
+
+### View logs (all services)
 ```bash
-# 1. Clone and navigate
-git clone <repository-url>
-cd hackthebox
-
-# 2. Configure environment
-cp .env.example .env
-# Edit .env with your credentials
-
-# 3. Start all services
-docker-compose up -d
-
-# 4. Initialize database
-docker-compose exec backend npm run prisma:migrate
-docker-compose exec backend npm run prisma:seed
-
-# 5. Access the platform
-# Frontend: http://localhost:3000
-# Backend:  http://localhost:3001
+docker-compose logs -f
 ```
 
-**Default Admin Login:**
-- Email: `admin@hackthebox.local`
-- Password: `admin123`
-
-📖 **Full Documentation:** See [GETTING-STARTED.md](./GETTING-STARTED.md)
-
-## 🏗️ Architecture
-
+### View logs (specific service)
+```bash
+docker-compose logs -f backend
+docker-compose logs -f frontend
 ```
-┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
-│                 │         │                 │         │                 │
-│  Next.js 15     │────────▶│   NestJS 10     │────────▶│ PostgreSQL 16   │
-│  Frontend       │   HTTP  │   Backend API   │  Prisma │   Database      │
-│  (Port 3000)    │◀────────│  (Port 3001)    │◀────────│  (Port 5433)    │
-│                 │         │                 │         │                 │
-└─────────────────┘         └─────────────────┘         └─────────────────┘
-                                     │
-                                     │
-                                     ▼
-                            ┌─────────────────┐
-                            │                 │
-                            │   Redis 7       │
-                            │   Cache/Queue   │
-                            │   (Port 6380)   │
-                            │                 │
-                            └─────────────────┘
+
+### Stop all services
+```bash
+docker-compose down
+```
+
+### Stop and remove all data (fresh start)
+```bash
+docker-compose down -v
+```
+
+### Restart a specific service
+```bash
+docker-compose restart backend
+docker-compose restart frontend
+```
+
+### Check service status
+```bash
+docker-compose ps
+```
+
+### Rebuild containers after code changes
+```bash
+docker-compose up -d --build
+```
+
+## 📦 What's Included
+
+### Services
+- **PostgreSQL 16** - Database on port `5433`
+- **Redis 7** - Cache/Session store on port `6380`
+- **Backend** - NestJS API on port `3001`
+- **Frontend** - Next.js 15 on port `3000`
+
+### Features
+- ✅ User authentication with JWT
+- ✅ Team management
+- ✅ Multi-round CTF challenges
+- ✅ Real-time scoreboard with SSE
+- ✅ Admin dashboard
+- ✅ Email OTP verification
+- ✅ Challenge submission tracking
+- ✅ Story-driven gameplay
+- ✅ Responsive UI with Tailwind CSS
+
+## 🔧 Troubleshooting
+
+### Docker not running
+**Error**: `Docker is not running!`
+**Fix**: Start Docker Desktop and wait until it's fully running
+
+### Port already in use
+**Error**: `bind: address already in use`
+**Fix**: Stop services using ports 3000, 3001, 5433, or 6380
+```bash
+# Windows
+netstat -ano | findstr :3000
+taskkill /PID <PID> /F
+
+# Linux/Mac
+sudo lsof -ti:3000 | xargs kill -9
+```
+
+### Build fails
+**Error**: Build errors during `docker-compose up`
+**Fix**: Clean Docker cache and rebuild
+```bash
+docker system prune -a
+docker-compose up -d --build
+```
+
+### Database connection failed
+**Error**: `Connection refused` or `ECONNREFUSED`
+**Fix**: Wait for PostgreSQL to fully start (can take 10-20 seconds)
+```bash
+docker-compose logs postgres
+```
+
+### Frontend shows errors
+**Error**: API connection errors
+**Fix**: Ensure backend is running and check `.env.local`:
+```bash
+docker-compose logs backend
+# Verify NEXT_PUBLIC_API_URL=http://localhost:3001 in apps/frontend/.env.local
 ```
 
 ## 📁 Project Structure
@@ -97,215 +175,68 @@ docker-compose exec backend npm run prisma:seed
 ```
 hackthebox/
 ├── apps/
-│   ├── backend/              # NestJS API Server
-│   │   ├── src/
-│   │   │   ├── auth/         # JWT authentication
-│   │   │   ├── challenges/   # Challenge CRUD
-│   │   │   ├── submissions/  # Flag validation
-│   │   │   ├── teams/        # Team management
-│   │   │   ├── scoreboard/   # Rankings & stats
-│   │   │   └── admin/        # Admin operations
-│   │   ├── prisma/
-│   │   │   ├── schema.prisma # Database schema
-│   │   │   └── seed.ts       # Initial data
+│   ├── backend/          # NestJS backend API
+│   │   ├── src/          # Source code
+│   │   ├── prisma/       # Database schema & migrations
 │   │   └── Dockerfile
-│   │
-│   └── frontend/             # Next.js Frontend
-│       ├── app/              # App router pages
-│       │   ├── page.tsx      # Landing page
-│       │   ├── login/        # Authentication
-│       │   ├── challenges/   # Challenge interface
-│       │   ├── dashboard/    # User dashboard
-│       │   ├── scoreboard/   # Live rankings
-│       │   └── admin/        # Admin panel
-│       ├── components/       # React components
-│       │   ├── story/        # Character dialogues
-│       │   └── ui/           # UI primitives
-│       ├── lib/
-│       │   └── api.ts        # API client
+│   └── frontend/         # Next.js frontend
+│       ├── app/          # App router pages
+│       ├── components/   # React components
 │       └── Dockerfile
-│
-├── docs/                     # Documentation
-├── docker-compose.yml        # Container orchestration
-├── .env.example              # Environment template
-├── GETTING-STARTED.md        # Setup guide
-└── README.md                 # This file
+├── docs/                 # Documentation
+├── docker-compose.yml    # Docker orchestration
+├── start.bat            # Windows startup script
+├── start.sh             # Linux/Mac startup script
+└── .env                 # Environment variables
 ```
 
-## 🛠️ Technology Stack
+## 🔐 Security Notes
 
-### Frontend
-- **Framework:** Next.js 15 (App Router)
-- **Language:** TypeScript 5
-- **Styling:** Tailwind CSS 3
-- **UI Components:** Custom + shadcn/ui
-- **State:** React Hooks
-- **HTTP Client:** Native Fetch API
+1. **Change default passwords** after initial setup
+2. **Never commit** `.env` files to version control
+3. **Use strong passwords** for production deployments
+4. **Configure SMTP** properly for email functionality
+5. **Firewall rules** - Ensure proper network security
 
-### Backend
-- **Framework:** NestJS 10
-- **Language:** TypeScript 5
-- **Database:** PostgreSQL 16 with Prisma ORM
-- **Authentication:** JWT + bcrypt
-- **Validation:** class-validator
-- **Email:** Nodemailer (SMTP)
-- **Cache:** Redis 7
+## 🌐 Production Deployment
 
-### DevOps
-- **Containerization:** Docker + Docker Compose
-- **Database Migrations:** Prisma Migrate
-- **Process Manager:** Node.js
-- **Reverse Proxy:** (add nginx/Caddy for production)
+For production deployment:
 
-## 🔐 Environment Configuration
+1. Update `.env` with production values:
+   - Strong database passwords
+   - Production domain URLs
+   - Real SMTP credentials
+   - Secure JWT secret (32+ characters)
 
-Required environment variables:
+2. Configure reverse proxy (nginx/traefik)
 
-```env
-# Database
-POSTGRES_PASSWORD=secure_password
-DATABASE_URL=postgresql://...
+3. Enable HTTPS/SSL
 
-# JWT
-JWT_SECRET=minimum-32-character-secret-key
+4. Set `NODE_ENV=production` in backend
 
-# Email (for OTP)
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=app-specific-password
+5. Configure backup strategy for PostgreSQL volumes
 
-# Redis
-REDIS_PASSWORD=secure_redis_password
+## 🆘 Support
 
-# Ports
-BACKEND_PORT=3001
-NEXTJS_PORT=3000
-```
+If you encounter issues:
 
-See `.env.example` for complete configuration.
+1. Check the logs: `docker-compose logs -f`
+2. Verify Docker is running: `docker info`
+3. Ensure all ports are available
+4. Try a clean restart: `docker-compose down -v && start.bat`
 
-## 📚 Documentation
+## 📄 License
 
-- [Getting Started Guide](./GETTING-STARTED.md) - Complete setup instructions
-- [Database Schema](./apps/backend/prisma/schema.prisma) - Prisma schema
-- [Character System](./docs/implementation/COMIC-BOOK-IMPLEMENTATION.md) - Visual storytelling
-- [Deployment Guide](./docs/DEPLOYMENT-COMPLETE.md) - Production deployment
-
-## 🧪 Development
-
-### Run Tests
-```bash
-# Backend
-cd apps/backend
-npm run test
-
-# Frontend
-cd apps/frontend
-npm run test
-```
-
-### Database Operations
-```bash
-# Create migration
-docker-compose exec backend npx prisma migrate dev --name migration_name
-
-# Reset database
-docker-compose exec backend npx prisma migrate reset
-
-# Open Prisma Studio
-docker-compose exec backend npx prisma studio
-```
-
-### Rebuild Containers
-```bash
-# Rebuild specific service
-docker-compose up -d --build backend
-
-# Rebuild all
-docker-compose up -d --build
-```
-
-## 🌐 Network Access
-
-To access from other devices on your local network:
-
-1. Find your machine's IP: `ipconfig` (Windows) or `ifconfig` (Linux/Mac)
-2. Update frontend `.env`: `NEXT_PUBLIC_API_URL=http://YOUR_IP:3001`
-3. Access from other devices: `http://YOUR_IP:3000`
-
-## 🔒 Security Considerations
-
-- ✅ OTP-based authentication (no passwords for participants)
-- ✅ JWT tokens with expiration
-- ✅ Bcrypt password hashing
-- ✅ Input validation with class-validator
-- ⚠️ Rate limiting (Redis required)
-- ⚠️ CORS configured for frontend origin
-- 🔴 HTTPS required for production
-- 🔴 Change all default credentials
-- 🔴 Strong JWT_SECRET (32+ chars)
-
-## 📦 Docker Services
-
-| Service | Internal Port | External Port | Purpose |
-|---------|--------------|---------------|---------|
-| Frontend | 3000 | 3000 | Next.js App |
-| Backend | 3001 | 3001 | NestJS API |
-| PostgreSQL | 5432 | 5433 | Database |
-| Redis | 6379 | 6380 | Cache/Queue |
-
-## 🐛 Troubleshooting
-
-### Port Conflicts
-```bash
-# Check what's using port
-netstat -ano | findstr :3000  # Windows
-lsof -i :3000                 # Linux/Mac
-
-# Change ports in .env
-BACKEND_PORT=4000
-NEXTJS_PORT=3001
-```
-
-### Database Issues
-```bash
-# Check container status
-docker-compose ps
-
-# View logs
-docker-compose logs postgres
-
-# Restart database
-docker-compose restart postgres
-```
-
-### Frontend Can't Connect
-1. Verify backend is running: `curl http://localhost:3001/health`
-2. Check `NEXT_PUBLIC_API_URL` in frontend `.env`
-3. Inspect browser console for errors
-
-## 📝 License
-
-MIT License - see LICENSE file for details
-
-## 👥 Contributors
-
-Built with ❤️ for the cybersecurity community
+This project is for educational purposes. See LICENSE file for details.
 
 ## 🤝 Contributing
 
+Contributions are welcome! Please follow standard Git workflow:
 1. Fork the repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open Pull Request
-
-## 📞 Support
-
-For issues and questions:
-- Check [GETTING-STARTED.md](./GETTING-STARTED.md)
-- Review logs: `docker-compose logs [service]`
-- Open an issue on GitHub
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
 ---
 
-**Built with ❤️ for the cybersecurity community**
+**Happy Hacking!** 🎯🔐

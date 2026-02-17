@@ -1,7 +1,7 @@
 @echo off
 REM ============================================
 REM Operation Cipher Strike CTF Platform
-REM Quick Start Script for Windows
+REM Universal Start Script for Windows
 REM ============================================
 
 setlocal enabledelayedexpansion
@@ -9,7 +9,7 @@ setlocal enabledelayedexpansion
 echo.
 echo ========================================
 echo   Operation Cipher Strike CTF Platform
-echo   Quick Start Script
+echo   Universal Start Script
 echo ========================================
 echo.
 
@@ -32,70 +32,89 @@ if not exist ".env" (
     copy .env.example .env >nul
     echo.
     echo [IMPORTANT] Please edit .env file and update:
-    echo   - POSTGRES_PASSWORD
-    echo   - REDIS_PASSWORD  
+    echo   - POSTGRES_PASSWORD (strong password)
+    echo   - REDIS_PASSWORD (strong password)
     echo   - SMTP_USER (your Gmail address)
-    echo   - SMTP_PASS (Gmail app password - 16 chars with spaces)
+    echo   - SMTP_PASS (Gmail app password - 16 chars)
     echo.
-    echo Waiting for you to edit .env file...
+    echo Opening .env file in notepad...
     start notepad .env
     echo.
-    echo Press any key after editing .env file...
     pause
 )
 
+REM Check if backend/.env exists
+if not exist "apps\backend\.env" (
+    echo [INFO] Creating backend .env file...
+    copy apps\backend\.env.example apps\backend\.env >nul 2>&1
+)
+
+REM Check if frontend/.env.local exists
+if not exist "apps\frontend\.env.local" (
+    echo [INFO] Creating frontend .env.local file...
+    copy apps\frontend\.env.example apps\frontend\.env.local >nul 2>&1
+)
+
 echo [1/5] Pre-pulling required Docker images...
-echo Pulling PostgreSQL 16 Alpine...
 docker pull postgres:16-alpine >nul 2>&1
-if errorlevel 1 (
-    echo [WARNING] Could not pre-pull postgres, will try during compose
-)
-
-echo Pulling Redis 7 Alpine...
 docker pull redis:7-alpine >nul 2>&1
-if errorlevel 1 (
-    echo [WARNING] Could not pre-pull redis, will try during compose
-)
-
+echo [OK] Images ready
 echo.
-echo [2/5] Starting Docker containers...
+
+echo [2/5] Building and starting Docker containers...
 docker-compose down -v >nul 2>&1
 timeout /t 2 /nobreak >nul
 
-docker-compose up -d
+docker-compose up -d --build
 if errorlevel 1 (
     echo [ERROR] Failed to start containers
-    echo Trying again...
+    echo Retrying...
     timeout /t 5 /nobreak >nul
-    docker-compose up -d
+    docker-compose up -d --build
     if errorlevel 1 (
-        echo [ERROR] Still failed. Check Docker Desktop is running properly.
+        echo [ERROR] Still failed. Check Docker Desktop logs.
+        echo.
+        echo Common fixes:
+        echo   1. Restart Docker Desktop
+        echo   2. Check if ports 3000, 3001, 5433, 6380 are available
+        echo   3. Run: docker system prune -a
         pause
         exit /b 1
     )
 )
+echo [OK] Containers started
 echo.
 
 echo [3/5] Waiting for services to be healthy...
-echo Waiting for PostgreSQL (database)...
+echo Waiting for PostgreSQL database...
+set RETRIES=30
 :wait_postgres
 docker-compose exec -T postgres pg_isready -U postgres >nul 2>&1
 if errorlevel 1 (
+    set /a RETRIES-=1
+    if !RETRIES! LSS 1 (
+        echo [ERROR] Database failed to start within 60 seconds
+        echo Check logs: docker-compose logs postgres
+        pause
+        exit /b 1
+    )
     timeout /t 2 /nobreak >nul
     goto wait_postgres
 )
-echo Database is ready!
+echo [OK] Database is ready
 echo.
 
-echo [4/5] Running database initialization...
+echo [4/5] Initializing database...
 echo Running migrations...
-docker-compose exec -T backend npm run prisma:migrate:deploy >nul 2>&1
+docker-compose exec -T backend npx prisma migrate deploy
 if errorlevel 1 (
-    echo [WARNING] Migrations may have failed, trying seed anyway...
+    echo [WARNING] Migrations failed, trying to generate Prisma client...
+    docker-compose exec -T backend npx prisma generate
 )
 
-echo Seeding database...
-docker-compose exec -T backend npm run prisma:seed
+echo Seeding database with admin user and challenges...
+docker-compose exec -T backend npx prisma db seed
+echo [OK] Database initialized
 echo.
 
 echo [5/5] Checking service status...
@@ -118,10 +137,12 @@ echo   Password:  admin123
 echo.
 echo Useful commands:
 echo   docker-compose logs -f           (view logs)
+echo   docker-compose logs -f backend   (backend logs only)
 echo   docker-compose down              (stop all)
 echo   docker-compose restart backend   (restart service)
+echo   docker-compose ps                (service status)
 echo.
-echo Opening browser...
+echo Opening browser in 3 seconds...
 timeout /t 3 /nobreak >nul
 start http://localhost:3000
 echo.

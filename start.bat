@@ -126,10 +126,10 @@ echo   Setup Complete!
 echo ========================================
 echo.
 echo Access points:
-echo   Frontend:  http://localhost:3000
-echo   Backend:   http://localhost:3001
-echo   Database:  localhost:5433 (PostgreSQL)
-echo   Redis:     localhost:6380
+echo   Frontend:  http://10.1.50.223:3000
+echo   Backend:   http://10.1.50.223:3001
+echo   Database:  10.1.50.223:5433 (PostgreSQL)
+echo   Redis:     10.1.50.223:6380
 echo.
 echo Admin Login:
 echo   Email:     admin@hackthebox.local
@@ -144,7 +144,7 @@ echo   docker-compose ps                (service status)
 echo.
 echo Opening browser in 3 seconds...
 timeout /t 3 /nobreak >nul
-start http://localhost:3000
+start http://10.1.50.223:3000
 echo.
 echo [SUCCESS] Platform is running!
 echo.

@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Ensure API_URL always ends with /api
+const API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL.replace(/\/$/, '')}/api`;
 
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -36,10 +38,10 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
 
 export const api = {
   // Auth
-  register: (data: { email: string; username: string; password: string }) =>
+  register: (data: { email: string; teamName: string; participant1Name: string; participant2Name: string; password: string }) =>
     apiRequest('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   
-  login: (data: { username: string; password: string }) =>
+  login: (data: { email: string; password: string }) =>
     apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
 
   auth: {

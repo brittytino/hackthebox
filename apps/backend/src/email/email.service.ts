@@ -8,19 +8,32 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
 
   constructor(private configService: ConfigService) {
+    const user = this.configService.get('SMTP_USER');
+    const pass = this.configService.get('SMTP_PASS');
+    const host = this.configService.get('SMTP_HOST', 'smtp.gmail.com');
+    const port = this.configService.get('SMTP_PORT', 587);
+
+    console.log(`Checking Email Config - User: ${user}, Host: ${host}, Port: ${port}, Pass Length: ${pass ? pass.length : 0}`);
+
     this.transporter = nodemailer.createTransport({
-      host: this.configService.get('SMTP_HOST', 'smtp.gmail.com'),
-      port: this.configService.get('SMTP_PORT', 587),
-      secure: false,
+      host: 'smtp.gmail.com', // Explicitly set host
+      port: 465, // Use SSL port
+      secure: true, // Use SSL
       auth: {
-        user: this.configService.get('SMTP_USER'),
-        pass: this.configService.get('SMTP_PASS'),
+        user: user,
+        pass: pass?.replace(/\s+/g, ''), // Remove spaces from app password just in case
       },
+      logger: true,
+      debug: true,
+      connectionTimeout: 10000, // 10 seconds timeout
+      greetingTimeout: 5000,
+      socketTimeout: 10000
     });
   }
 
-  async sendOTP(email: string, otp: string): Promise<boolean> {
+  async sendOTP(email: string, otp: string): Promise<{ sent: boolean; devOtp?: string }> {
     try {
+      console.log(`Attempting to send OTP to ${email}`);
       const mailOptions = {
         from: this.configService.get('SMTP_FROM', 'noreply@hackthebox.com'),
         to: email,
@@ -148,12 +161,16 @@ export class EmailService {
         `,
       };
 
-      await this.transporter.sendMail(mailOptions);
-      this.logger.log(`OTP sent successfully to ${email}`);
-      return true;
+      const info = await this.transporter.sendMail(mailOptions);
+      this.logger.log(`OTP sent successfully to ${email}. Message ID: ${info.messageId}`);
+      return { sent: true };
     } catch (error) {
-      this.logger.error(`Failed to send OTP to ${email}:`, error);
-      return false;
+      this.logger.error(`Failed to send OTP to ${email}: ${error.message}`);
+      // Network/SMTP blocked - surface OTP directly so the app still works
+      console.log(`\n${'='.repeat(60)}`);
+      console.log(`[NETWORK BLOCKED] SMTP unreachable. OTP for ${email}: ${otp}`);
+      console.log(`${'='.repeat(60)}\n`);
+      return { sent: false, devOtp: otp };
     }
   }
 

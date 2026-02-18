@@ -25,6 +25,9 @@ RUN npm run build
 # Verify dist folder exists and show contents
 RUN ls -la /app/ && echo "=== Dist folder ===" && ls -la /app/dist/
 
+# Fix line endings
+RUN sed -i 's/\r$//' /app/entrypoint.sh
+
 # Make entrypoint executable
 RUN chmod +x /app/entrypoint.sh
 

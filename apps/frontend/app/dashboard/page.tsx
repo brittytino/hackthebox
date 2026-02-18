@@ -1,10 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
-import { Users, Trophy, Flag, LogOut, Target, Zap, Clock, Award, Shield } from 'lucide-react';
+import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
+import { Users, Trophy, Flag, Target, Zap, Clock, Award, Shield, ChevronRight } from 'lucide-react';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -15,10 +16,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
+    if (!token) { router.push('/login'); return; }
 
     const loadData = async () => {
       try {
@@ -26,21 +24,18 @@ export default function DashboardPage() {
           api.getProfile(),
           api.getCurrentRound(),
         ]);
-
         setUser(profileData);
         setCurrentRound(roundData);
-
         if (profileData.team) {
           const stats = await api.getTeamStats(profileData.team.id);
           setTeamStats(stats);
         }
-      } catch (error) {
-        console.error('Failed to load dashboard data:', error);
+      } catch {
+        // silent
       } finally {
         setLoading(false);
       }
     };
-
     loadData();
   }, [router]);
 
@@ -50,250 +45,302 @@ export default function DashboardPage() {
     router.push('/login');
   };
 
+  const roundNum = currentRound?.number || 1;
+  const totalScore = teamStats?.score ?? user?.team?.score ?? 0;
+  const members: any[] = user?.team?.members ?? [];
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-purple-300 text-lg font-semibold">Loading Mission Control...</p>
+      <div className="game-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="game-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')`, filter: 'brightness(0.15) saturate(0.6)' }} />
+        <div className="game-bg-overlay" />
+        <div className="scanlines" />
+        <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
+          <div style={{ width: '60px', height: '60px', border: '3px solid rgba(109,40,217,0.3)', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+          <div className="game-label" style={{ color: '#a78bfa' }}>LOADING MISSION CONTROL...</div>
         </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(30)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute bg-purple-500/20 rounded-full animate-pulse"
-            style={{
-              width: Math.random() * 4 + 1 + 'px',
-              height: Math.random() * 4 + 1 + 'px',
-              top: Math.random() * 100 + '%',
-              left: Math.random() * 100 + '%',
-              animationDelay: Math.random() * 3 + 's',
-              animationDuration: Math.random() * 2 + 2 + 's',
-            }}
-          />
-        ))}
-      </div>
+    <div className="game-root">
+      <div className="game-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')`, filter: 'brightness(0.15) saturate(0.6)' }} />
+      <div className="game-bg-overlay" />
+      <div className="scanlines" />
+      <HalfCircleMenu />
 
-      {/* Header - Game UI Style */}
-      <header className="relative z-10 border-b-2 border-purple-500/30 bg-slate-900/80 backdrop-blur-xl">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-purple-500/50">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                  Operation Cipher Strike
-                </h1>
-                <p className="text-xs text-purple-300">Mission Control Interface</p>
-              </div>
+      <div
+        className="game-scroll"
+        style={{ position: 'relative', zIndex: 10, width: '100%', height: '100%', overflowY: 'auto', padding: '32px 40px 40px' }}
+      >
+        {/* HEADER */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px' }}>
+          <div>
+            <div className="game-label" style={{ color: '#06b6d4', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="status-dot active" />
+              MISSION CONTROL — ACTIVE
             </div>
-            
-            <nav className="flex items-center gap-3">
-              <Link href="/dashboard">
-                <button className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg border border-purple-500/30 transition-all font-semibold text-sm">
-                  Dashboard
-                </button>
-              </Link>
-              <Link href="/challenges">
-                <button className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 hover:text-white rounded-lg border border-slate-600/30 transition-all font-semibold text-sm">
-                  Challenges
-                </button>
-              </Link>
-              <Link href="/scoreboard">
-                <button className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 hover:text-white rounded-lg border border-slate-600/30 transition-all font-semibold text-sm">
-                  Scoreboard
-                </button>
-              </Link>
-              {user?.role === 'ADMIN' && (
-                <Link href="/admin">
-                  <button className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg border border-red-500/30 transition-all font-semibold text-sm">
-                    Admin
-                  </button>
-                </Link>
-              )}
-              <button 
-                onClick={handleLogout}
-                className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 hover:text-red-400 rounded-lg border border-slate-600/30 hover:border-red-500/30 transition-all font-semibold text-sm flex items-center gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Exit
-              </button>
-            </nav>
+            <h1 className="game-title glow-purple" style={{ fontSize: '32px', color: '#e9d5ff', marginBottom: '6px' }}>
+              Welcome back, {user?.participant1Name || user?.name || 'Operative'}
+            </h1>
+            {user?.team && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Shield size={14} color="#a78bfa" />
+                <span style={{ color: '#a78bfa', fontSize: '15px', fontWeight: 600 }}>
+                  {user.team.name}
+                </span>
+                <span className="round-badge round-1" style={{ fontSize: '10px' }}>
+                  TEAM ACTIVE
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <Link href="/challenges" className="btn-game-primary" style={{ fontSize: '12px', padding: '10px 20px' }}>
+              <Target size={14} /> Start Mission
+            </Link>
+            <button onClick={handleLogout} className="btn-game-danger" style={{ fontSize: '12px', padding: '10px 18px' }}>
+              Logout
+            </button>
           </div>
         </div>
-      </header>
 
-      <main className="container mx-auto px-6 py-8 relative z-10">
-        {/* Welcome Header - Visual Novel Style */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border-2 border-purple-500/30 rounded-2xl p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-2xl font-bold text-white shadow-xl">
-                {user?.username?.charAt(0).toUpperCase() || 'A'}
-              </div>
-              <div>
-                <h2 className="text-3xl font-bold text-white mb-1">
-                  Welcome back, <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">{user?.username}</span>!
-                </h2>
-                <p className="text-purple-300 flex items-center gap-2">
-                  {user?.team ? (
-                    <>
-                      <Users className="h-4 w-4" />
-                      <span className="font-semibold">{user.team.name}</span>
-                      <span className="text-purple-400">• Team Status: Active</span>
-                    </>
-                  ) : (
-                    <>
-                      <Target className="h-4 w-4" />
-                      <span className="text-yellow-400 font-semibold">No team assigned - Join a team to begin!</span>
-                    </>
-                  )}
-                </p>
-              </div>
+        {/* TOP accent line */}
+        <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(109,40,217,0.6), rgba(6,182,212,0.4), transparent)', marginBottom: '32px' }} />
+
+        {/* STAT CARDS */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px', marginBottom: '28px' }}>
+          <div className="stat-card">
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, #7c3aed, #a78bfa)' }} />
+            <div className="game-label" style={{ color: '#6b7280', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Users size={11} /> TEAM NAME
+            </div>
+            <div className="stat-card-value glow-purple" style={{ fontSize: '22px', color: '#e9d5ff', wordBreak: 'break-word' }}>
+              {user?.team?.name || '—'}
+            </div>
+            <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '6px' }}>
+              {members.length} operative{members.length !== 1 ? 's' : ''} enlisted
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, #f59e0b, #fbbf24)' }} />
+            <div className="game-label" style={{ color: '#6b7280', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Trophy size={11} /> TOTAL POINTS
+            </div>
+            <div className="stat-card-value glow-gold" style={{ color: '#fbbf24' }}>
+              {totalScore.toLocaleString()}
+            </div>
+            <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '6px' }}>Score accumulated</div>
+          </div>
+
+          <div className="stat-card">
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, #06b6d4, #67e8f9)' }} />
+            <div className="game-label" style={{ color: '#6b7280', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Zap size={11} /> CURRENT ROUND
+            </div>
+            <div className="stat-card-value glow-cyan" style={{ color: '#67e8f9' }}>
+              {roundNum} / 3
+            </div>
+            <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '6px' }}>
+              {currentRound?.name || 'Loading...'}
             </div>
           </div>
         </div>
 
-        {/* Stats Cards - Game UI Style */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Team Card */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur opacity-50 group-hover:opacity-75 transition-opacity" />
-            <div className="relative bg-slate-900/90 backdrop-blur-xl border-2 border-purple-500/50 rounded-2xl p-6 hover:scale-105 transition-transform">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                  <Users className="h-6 w-6 text-purple-400" />
-                </div>
-                <div className="px-3 py-1 bg-purple-500/20 rounded-full text-xs font-semibold text-purple-300">
-                  SQUAD
-                </div>
+        {/* MAIN GRID */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px' }}>
+          {/* LEFT — Round progress + current round details */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            {/* Round Progress */}
+            <div className="game-panel-bordered" style={{ padding: '24px 28px' }}>
+              <div className="game-heading" style={{ fontSize: '14px', color: '#e9d5ff', marginBottom: '22px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Award size={16} color="#fbbf24" /> OPERATION PROGRESS
               </div>
-              <h3 className="text-sm font-semibold text-purple-300 mb-2">Your Team</h3>
-              <div className="text-3xl font-bold text-white mb-4">
-                {user?.team ? user.team.name : 'No Team'}
-              </div>
-              {!user?.team && (
-                <Link href="/challenges">
-                  <button className="w-full py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-semibold text-white hover:scale-105 transition-all text-sm">
-                    Join Team
-                  </button>
-                </Link>
-              )}
-            </div>
-          </div>
-
-          {/* Points Card */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl blur opacity-50 group-hover:opacity-75 transition-opacity" />
-            <div className="relative bg-slate-900/90 backdrop-blur-xl border-2 border-cyan-500/50 rounded-2xl p-6 hover:scale-105 transition-transform">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-                  <Trophy className="h-6 w-6 text-cyan-400" />
-                </div>
-                <div className="px-3 py-1 bg-cyan-500/20 rounded-full text-xs font-semibold text-cyan-300">
-                  SCORE
-                </div>
-              </div>
-              <h3 className="text-sm font-semibold text-cyan-300 mb-2">Total Points</h3>
-              <div className="text-3xl font-bold text-white mb-1">
-                {teamStats?.totalPoints || 0}
-              </div>
-              <p className="text-xs text-cyan-300/70 flex items-center gap-1">
-                <Award className="h-3 w-3" />
-                {teamStats?.solvedChallenges || 0} challenges completed
-              </p>
-            </div>
-          </div>
-
-          {/* Round Card */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl blur opacity-50 group-hover:opacity-75 transition-opacity" />
-            <div className="relative bg-slate-900/90 backdrop-blur-xl border-2 border-yellow-500/50 rounded-2xl p-6 hover:scale-105 transition-transform">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center">
-                  <Flag className="h-6 w-6 text-yellow-400" />
-                </div>
-                <div className={`px-3 py-1 rounded-full text-xs font-semibold ${currentRound ? 'bg-green-500/20 text-green-300' : 'bg-gray-500/20 text-gray-300'}`}>
-                  {currentRound ? 'ACTIVE' : 'PENDING'}
-                </div>
-              </div>
-              <h3 className="text-sm font-semibold text-yellow-300 mb-2">Current Round</h3>
-              <div className="text-xl font-bold text-white mb-1">
-                {currentRound ? currentRound.name : 'No Active Round'}
-              </div>
-              {currentRound && (
-                <p className="text-xs text-yellow-300/70 flex items-center gap-1">
-                  <Zap className="h-3 w-3" />
-                  {currentRound.challenges?.length || 0} missions available
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Current Round Details - Visual Novel Style */}
-        {currentRound && (
-          <div className="relative group mb-8">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-2xl blur opacity-30" />
-            <div className="relative bg-slate-900/90 backdrop-blur-xl border-2 border-purple-500/50 rounded-2xl p-8">
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center">
-                      <Flag className="h-5 w-5 text-white" />
+              <div style={{ display: 'flex', gap: '0', position: 'relative' }}>
+                {/* connector line */}
+                <div style={{ position: 'absolute', top: '20px', left: '40px', right: '40px', height: '2px', background: 'rgba(109,40,217,0.3)', zIndex: 0 }} />
+                {[
+                  { n: 1, label: 'THE BREACH DISCOVERY', color: roundNum >= 1 ? '#7c3aed' : '#2a1a5e' },
+                  { n: 2, label: 'INFILTRATION', color: roundNum >= 2 ? '#7c3aed' : '#2a1a5e' },
+                  { n: 3, label: 'THE FINAL STRIKE', color: roundNum >= 3 ? '#7c3aed' : '#2a1a5e' },
+                ].map(r => (
+                  <div key={r.n} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+                    <div
+                      style={{
+                        width: '40px', height: '40px', borderRadius: '50%',
+                        background: roundNum > r.n ? 'linear-gradient(135deg,#10b981,#059669)' : roundNum === r.n ? 'linear-gradient(135deg,#7c3aed,#a78bfa)' : 'rgba(20,10,50,0.9)',
+                        border: `2px solid ${r.color}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: roundNum === r.n ? '0 0 20px rgba(124,58,237,0.6)' : 'none',
+                        fontSize: '15px', fontWeight: 800, color: roundNum >= r.n ? '#fff' : '#4b5563',
+                      }}
+                    >
+                      {roundNum > r.n ? '' : r.n}
                     </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-white">{currentRound.name}</h3>
-                      <p className="text-sm text-purple-300">Active Mission</p>
+                    <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                      <div className={`round-badge round-${r.n}`} style={{ fontSize: '9px' }}>ROUND {r.n}</div>
+                      <div style={{ color: roundNum >= r.n ? '#c4b5fd' : '#4b5563', fontSize: '11px', marginTop: '6px', lineHeight: 1.4, maxWidth: '100px' }}>
+                        {r.label}
+                      </div>
                     </div>
                   </div>
-                  <p className="text-gray-300 max-w-2xl">{currentRound.description}</p>
-                </div>
-                <div className="px-4 py-2 bg-purple-500/20 rounded-xl border border-purple-500/30">
-                  <p className="text-xs text-purple-300 mb-1">Round Type</p>
-                  <p className="text-sm font-bold text-white">{currentRound.type}</p>
-                </div>
+                ))}
               </div>
-              
-              <Link href="/challenges">
-                <button className="px-8 py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-xl font-bold text-white hover:scale-105 transition-all shadow-xl shadow-purple-500/50 flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Start Mission
-                </button>
-              </Link>
-            </div>
-          </div>
-        )}
 
-        {!currentRound && (
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-500 to-slate-500 rounded-2xl blur opacity-20" />
-            <div className="relative bg-slate-900/90 backdrop-blur-xl border-2 border-slate-600/50 rounded-2xl p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mx-auto mb-4">
-                <Clock className="h-8 w-8 text-slate-400" />
+              <div style={{ marginTop: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '7px' }}>
+                  <span className="game-label">Overall Completion</span>
+                  <span style={{ color: '#a78bfa', fontSize: '12px', fontWeight: 700 }}>
+                    {Math.round(((roundNum - 1) / 3) * 100)}%
+                  </span>
+                </div>
+                <div className="progress-track">
+                  <div className="progress-fill" style={{ width: `${Math.round(((roundNum - 1) / 3) * 100)}%` }} />
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">No Active Mission</h3>
-              <p className="text-gray-400 mb-6">
-                The operation hasn't started yet. Prepare your team and check back soon!
-              </p>
-              <Link href="/scoreboard">
-                <button className="px-6 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg border border-slate-600/30 transition-all font-semibold">
-                  View Scoreboard
-                </button>
-              </Link>
+            </div>
+
+            {/* Current Round Details */}
+            {currentRound ? (
+              <div className="game-panel-bordered" style={{ padding: '24px 28px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+                  <div>
+                    <div className={`round-badge round-${roundNum}`} style={{ marginBottom: '10px' }}>
+                      ROUND {roundNum} — ACTIVE
+                    </div>
+                    <h2 className="game-heading" style={{ fontSize: '18px', color: '#e9d5ff' }}>
+                      {currentRound.name || 'Current Round'}
+                    </h2>
+                  </div>
+                  <Clock size={24} color="#6b7280" />
+                </div>
+
+                <p style={{ color: '#a78bfa', fontSize: '14px', lineHeight: 1.7, marginBottom: '20px' }}>
+                  {currentRound.description || 'Your team is currently engaged in active cyber operations. Complete all challenges to advance to the next round.'}
+                </p>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <Link href="/challenges" className="btn-game-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                    <Flag size={15} /> Start Mission <ChevronRight size={14} />
+                  </Link>
+                  <Link href="/story" className="btn-game-secondary" style={{ flex: 1, justifyContent: 'center' }}>
+                    Mission Briefing
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="game-panel" style={{ padding: '24px 28px', textAlign: 'center' }}>
+                <Target size={32} color="#4b5563" style={{ margin: '0 auto 12px' }} />
+                <p style={{ color: '#6b7280' }}>No active round at the moment. Stand by...</p>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT — Team members */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <div className="game-panel-bordered" style={{ padding: '22px 22px' }}>
+              <div className="game-heading" style={{ fontSize: '13px', color: '#e9d5ff', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Users size={14} color="#a78bfa" /> TEAM ROSTER
+              </div>
+              {user?.team ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {members.length > 0 ? members.map((m: any, i: number) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '12px',
+                        padding: '12px 14px', background: 'rgba(109,40,217,0.08)',
+                        border: '1px solid rgba(109,40,217,0.2)', borderRadius: '10px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '36px', height: '36px', borderRadius: '50%',
+                          background: `linear-gradient(135deg, ${i === 0 ? '#7c3aed,#a78bfa' : '#064e3b,#10b981'})`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '14px', fontWeight: 700, color: '#fff', flexShrink: 0,
+                        }}
+                      >
+                        {(m.name || m.participant1Name || '?')[0].toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {m.name || m.participant1Name || `Operative ${i + 1}`}
+                        </div>
+                        <div className="game-label" style={{ color: '#6b7280', fontSize: '10px' }}>
+                          {i === 0 ? 'LEAD AGENT' : 'AGENT'}
+                        </div>
+                      </div>
+                      <span className="status-dot active" />
+                    </div>
+                  )) : (
+                    <>
+                      {user?.participant1Name && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: 'rgba(109,40,217,0.08)', border: '1px solid rgba(109,40,217,0.2)', borderRadius: '10px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg,#7c3aed,#a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: '#fff' }}>
+                            {user.participant1Name[0].toUpperCase()}
+                          </div>
+                          <div>
+                            <div style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: 600 }}>{user.participant1Name}</div>
+                            <div className="game-label" style={{ color: '#6b7280', fontSize: '10px' }}>LEAD AGENT</div>
+                          </div>
+                          <span className="status-dot active" />
+                        </div>
+                      )}
+                      {user?.participant2Name && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: 'rgba(109,40,217,0.08)', border: '1px solid rgba(109,40,217,0.2)', borderRadius: '10px' }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg,#064e3b,#10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: '#fff' }}>
+                            {user.participant2Name[0].toUpperCase()}
+                          </div>
+                          <div>
+                            <div style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: 600 }}>{user.participant2Name}</div>
+                            <div className="game-label" style={{ color: '#6b7280', fontSize: '10px' }}>AGENT</div>
+                          </div>
+                          <span className="status-dot active" />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                  <Users size={28} color="#4b5563" style={{ margin: '0 auto 10px' }} />
+                  <p style={{ color: '#6b7280', fontSize: '13px' }}>Join a team to begin operations</p>
+                </div>
+              )}
+            </div>
+
+            {/* Quick links */}
+            <div className="game-panel" style={{ padding: '20px 22px' }}>
+              <div className="game-label" style={{ marginBottom: '14px', color: '#6b7280' }}>QUICK ACCESS</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {[
+                  { href: '/challenges', icon: Target, label: 'Active Missions', color: '#06b6d4' },
+                  { href: '/leaderboard', icon: Trophy, label: 'Agent Rankings', color: '#fbbf24' },
+                  { href: '/story', icon: Shield, label: 'Mission Briefing', color: '#f9a8d4' },
+                ].map(item => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="menu-btn"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <item.icon size={15} color={item.color} />
+                    <span style={{ color: '#e2e8f0', fontSize: '13px', fontWeight: 600 }}>{item.label}</span>
+                    <ChevronRight size={13} color="#6b7280" style={{ marginLeft: 'auto' }} />
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
-        )}
-      </main>
+        </div>
+      </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

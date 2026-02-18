@@ -1,4 +1,4 @@
-import {
+ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
@@ -139,6 +139,7 @@ export class AuthService {
 
     const user = await this.prisma.user.findUnique({
       where: { email },
+      include: { team: true },
     });
 
     if (!user || !user.otpHash || !user.otpExpiry) {
@@ -157,6 +158,18 @@ export class AuthService {
       throw new BadRequestException('Invalid OTP');
     }
 
+    // Initialize story progress if not already done
+    if (user.teamId) {
+      const existingProgress = await this.prisma.storyProgress.findFirst({
+        where: { teamId: user.teamId },
+      });
+      if (!existingProgress) {
+        await this.prisma.storyProgress.create({
+          data: { teamId: user.teamId, currentRound: 1 },
+        });
+      }
+    }
+
     // Mark as verified
     await this.prisma.user.update({
       where: { email },
@@ -170,19 +183,25 @@ export class AuthService {
     // Reset OTP log attempts
     await this.prisma.oTPLog.updateMany({
       where: { email },
-      data: {
-        attempts: 0,
-        blockedUntil: null,
-      },
+      data: { attempts: 0, blockedUntil: null },
     });
 
     this.logger.log(`OTP verified for ${email}`);
+
+    const token = this.generateToken(user.id);
 
     return {
       success: true,
       message: 'OTP verified successfully',
       email,
       verified: true,
+      access_token: token,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        teamName: user.team?.name,
+      },
     };
   }
 
@@ -287,10 +306,7 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findFirst({
       where: {
-        OR: [
-          { email: dto.username },
-          { username: dto.username },
-        ],
+        email: dto.email,
         isVerified: true,
       },
       include: {
@@ -302,12 +318,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Verify password if it exists
-    if (user.passwordHash) {
-      const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Invalid credentials');
-      }
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const token = this.generateToken(user.id);
@@ -317,47 +334,96 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        username: user.username,
         role: user.role,
+        teamName: user.team?.name,
       },
       team: user.team,
     };
   }
 
-  // Old register method for backward compatibility (can be removed)
+  // Register: Step 1 - collect info, create team, send OTP
   async register(dto: RegisterDto) {
-    const existingUser = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ email: dto.email }, { username: dto.username }],
-      },
+    const { email, password, teamName, participant1Name, participant2Name } = dto;
+
+    // Check if email already registered and verified
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
     });
 
-    if (existingUser) {
-      throw new ConflictException('User already exists');
+    if (existingUser?.isVerified) {
+      throw new ConflictException('Email already registered. Please login.');
     }
 
-    const passwordHash = await bcrypt.hash(dto.password, 10);
+    // Check if team name is taken by a different user's verified team
+    const existingTeam = await this.prisma.team.findUnique({
+      where: { name: teamName },
+    });
 
-    const user = await this.prisma.user.create({
+    if (existingTeam) {
+      throw new ConflictException('Team name already taken. Choose a different team name.');
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = await bcrypt.hash(otp, 10);
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Create team
+    const team = await this.prisma.team.create({
       data: {
-        email: dto.email,
-        username: dto.username,
-        passwordHash,
-        isVerified: true,
+        name: teamName,
+        member1Name: participant1Name,
+        member2Name: participant2Name,
       },
     });
 
-    const token = this.generateToken(user.id);
-
-    return {
-      access_token: token,
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        role: user.role,
+    // Initialize score for team
+    await this.prisma.score.create({
+      data: {
+        teamId: team.id,
+        totalPoints: 0,
       },
+    });
+
+    // Create or update user
+    if (existingUser) {
+      await this.prisma.user.update({
+        where: { id: existingUser.id },
+        data: { passwordHash, otpHash, otpExpiry, teamId: team.id },
+      });
+    } else {
+      await this.prisma.user.create({
+        data: {
+          email,
+          passwordHash,
+          isVerified: false,
+          otpHash,
+          otpExpiry,
+          teamId: team.id,
+        },
+      });
+    }
+
+    // Send OTP - if email fails, return OTP in response so UI can display it
+    const emailResult = await this.emailService.sendOTP(email, otp);
+
+    const response: any = {
+      success: true,
+      email,
+      teamName,
     };
+
+    if (emailResult.sent) {
+      response.message = 'OTP sent to your email. Check your inbox.';
+    } else {
+      // SMTP blocked (likely network/firewall) – surface OTP so flow can continue
+      response.message = 'Email delivery is blocked on this network. Your OTP is shown below.';
+      response.devOtp = emailResult.devOtp;
+    }
+
+    return response;
   }
 
   private generateToken(userId: string): string {

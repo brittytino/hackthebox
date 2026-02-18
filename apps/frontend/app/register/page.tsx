@@ -1,242 +1,406 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
-import { ArrowLeft, UserPlus, User, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import {
+  ArrowLeft, UserPlus, Users, Mail, Lock, AlertTriangle,
+  CheckCircle, Smartphone, ShieldAlert,
+} from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [step, setStep] = useState(1); // 1: Form, 2: Success
+  const [step, setStep] = useState(1);
+  const [otp, setOtp] = useState('');
+  const [devOtp, setDevOtp] = useState('');
 
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
+    teamName: '',
+    participant1Name: '',
+    participant2Name: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
+    if (!formData.participant1Name.trim() || !formData.participant2Name.trim()) {
+      setError('Both participant names are required'); return;
+    }
     if (formData.password !== formData.confirmPassword) {
-      setError('ENCRYPTION KEY MISMATCH (Passwords do not match)');
-      return;
+      setError('Passwords do not match'); return;
     }
-
     if (formData.password.length < 6) {
-      setError('KEY STRENGTH INSUFFICIENT (Min 6 chars)');
-      return;
+      setError('Password must be at least 6 characters'); return;
     }
-
     setLoading(true);
-
     try {
       const result = await api.register({
-        username: formData.username,
         email: formData.email,
-        password: formData.password
+        teamName: formData.teamName,
+        participant1Name: formData.participant1Name,
+        participant2Name: formData.participant2Name,
+        password: formData.password,
       });
-
-      // Auto-login logic (save token)
-      if (result.access_token) {
-        localStorage.setItem('token', result.access_token);
-      }
-      if (result.user) {
-         localStorage.setItem('user', JSON.stringify(result.user));
-      }
-
+      if (result.devOtp) setDevOtp(result.devOtp);
       setStep(2);
-      
-      // Auto redirect after success animation
-      setTimeout(() => {
-        router.push('/story'); // Redirect to story start for new agents
-      }, 3000);
-
     } catch (err: any) {
-      setError(err.message || 'REGISTRATION REJECTED: SERVER ERROR');
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (step === 2) {
-    return (
-      <div className="vn-scene">
-        <div 
-          className="vn-background"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80)',
-          }}
-        />
-        <div className="absolute inset-0 bg-black/60 z-[1]" />
-        
-        <div className="absolute inset-0 flex items-center justify-center z-[50]">
-          <div className="bg-black/80 backdrop-blur-xl border-4 border-green-500 rounded-3xl p-16 text-center shadow-2xl shadow-green-500/50 animate-in zoom-in duration-700">
-            <div className="w-32 h-32 mx-auto mb-8 bg-green-500/20 rounded-full flex items-center justify-center border-4 border-green-500 shadow-[0_0_40px_rgba(34,197,94,0.8)] animate-pulse">
-              <CheckCircle className="w-16 h-16 text-green-400" />
-            </div>
-            <h2 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">Registration Successful!</h2>
-            <p className="text-green-300 text-xl mb-8">Welcome to the team, Agent!</p>
-            <div className="w-80 h-3 bg-slate-800 rounded-full mx-auto overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-green-500 to-blue-500 animate-[width_3s_ease-out_forwards] w-full origin-left" />
-            </div>
-            <p className="text-slate-400 text-sm mt-4">Redirecting to story intro...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!otp.trim()) { setError('Please enter the OTP'); return; }
+    setLoading(true);
+    try {
+      const result = await api.auth.verifyOTP({ email: formData.email, otp });
+      if (result.token) {
+        localStorage.setItem('token', result.token);
+        if (result.user) localStorage.setItem('user', JSON.stringify(result.user));
+      }
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="vn-scene">
-      {/* Background Image - Tech Office */}
-      <div 
-        className="vn-background"
+    <div className="game-root">
+      <div
+        className="game-bg"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80)',
+          backgroundImage: `url('https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=2070')`,
+          filter: 'brightness(0.15) saturate(0.6)',
         }}
       />
-      
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/70 z-[1]" />
+      <div className="game-bg-overlay" />
+      <div className="scanlines" />
 
-      {/* Character - Right Side */}
-      <div 
-        className="vn-character right"
+      <div
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          filter: 'drop-shadow(0 0 30px rgba(234,88,12,0.4))'
+          position: 'relative', zIndex: 10, width: '100%', height: '100%',
+          display: 'flex', overflow: 'hidden',
         }}
-      />
-
-      {/* Back Button */}
-      <Link 
-        href="/"
-        className="absolute top-8 left-8 z-[60] px-6 py-3 bg-black/60 hover:bg-black/80 backdrop-blur-md border-2 border-white/20 hover:border-orange-400/50 rounded-xl text-white hover:text-orange-400 transition-all flex items-center gap-2 group"
       >
-        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-        <span className="font-bold">Back to Home</span>
-      </Link>
+        {/* LEFT PANEL */}
+        <div
+          style={{
+            width: '42%', height: '100%', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', padding: '40px 44px',
+            borderRight: '1px solid rgba(109,40,217,0.3)', position: 'relative',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
+              background: 'linear-gradient(90deg, transparent, #7c3aed, #06b6d4, transparent)',
+            }}
+          />
 
-      {/* Registration Form - VN Dialogue Box */}
-      <div className="vn-dialogue-box">
-        <div className="vn-name-tag">
-          <span>🎯 NEW RECRUIT</span>
-        </div>
-
-        <div className="vn-dialogue-content max-h-[60vh] overflow-y-auto">
-          <div className="mb-6">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/50">
-                <UserPlus className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h2 className="text-3xl font-bold text-white drop-shadow-lg">Join the Agency</h2>
-                <p className="text-orange-200 text-sm mt-1">Create your agent profile</p>
-              </div>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div
+              style={{
+                width: '80px', height: '80px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #4c1d95, #7c3aed)',
+                border: '2px solid rgba(167,139,250,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 18px', boxShadow: '0 0 40px rgba(109,40,217,0.5)',
+              }}
+            >
+              <ShieldAlert size={36} color="#e9d5ff" />
+            </div>
+            <div className="game-title glow-purple" style={{ fontSize: '22px', color: '#e9d5ff', marginBottom: '4px' }}>
+              Operation
+            </div>
+            <div className="game-title glow-cyan" style={{ fontSize: '30px', color: '#67e8f9' }}>
+              Cipher Strike
             </div>
           </div>
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-500/20 backdrop-blur-sm border-2 border-red-500 rounded-xl flex items-center gap-3 animate-pulse">
-              <AlertCircle className="w-5 h-5 text-red-300" />
-              <p className="text-red-100 text-sm font-semibold">{error}</p>
+          <div className="game-panel-bordered" style={{ padding: '26px 28px', maxWidth: '400px', width: '100%' }}>
+            <div className="game-label" style={{ color: '#f59e0b', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="status-dot warning" />
+              MISSION BRIEFING
+            </div>
+            <p style={{ color: '#c4b5fd', lineHeight: 1.8, fontSize: '14px', marginBottom: '16px' }}>
+              The city is under siege. A cyber-terrorist network has infiltrated critical infrastructure.
+            </p>
+            <p style={{ color: '#a78bfa', lineHeight: 1.8, fontSize: '14px', marginBottom: '16px' }}>
+              <strong style={{ color: '#e9d5ff' }}>Your expertise is needed.</strong> The city needs you.
+              Operation BLACKOUT activates February&nbsp;14 at midnight.
+            </p>
+            <div
+              style={{
+                padding: '12px 16px',
+                background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.3)',
+                borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start',
+              }}
+            >
+              <Smartphone size={16} color="#06b6d4" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <p style={{ color: '#67e8f9', fontSize: '13px', lineHeight: 1.7, margin: 0 }}>
+                Register your team to receive encrypted mission channels and begin the counter-operation.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', marginTop: '24px' }}>
+            <span className="round-badge round-1">Round 1</span>
+            <span className="round-badge round-2">Round 2</span>
+            <span className="round-badge round-3">Round 3</span>
+          </div>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+            <span className="diff-badge diff-easy">9 Missions</span>
+            <span className="diff-badge diff-hard">Real Intel</span>
+          </div>
+
+          <Link
+            href="/login"
+            style={{
+              position: 'absolute', bottom: '28px', left: '44px',
+              display: 'flex', alignItems: 'center', gap: '8px',
+              color: '#6b7280', fontSize: '13px', textDecoration: 'none',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#6b7280')}
+          >
+            <ArrowLeft size={14} />
+            Back to Login
+          </Link>
+        </div>
+
+        {/* RIGHT PANEL */}
+        <div
+          className="game-scroll"
+          style={{
+            width: '58%', height: '100%', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', padding: '40px 56px', overflowY: 'auto',
+          }}
+        >
+          {step === 1 ? (
+            <div style={{ width: '100%', maxWidth: '500px', animation: 'fadeIn 0.5s ease' }}>
+              <div style={{ marginBottom: '30px' }}>
+                <div className="game-label" style={{ color: '#06b6d4', marginBottom: '8px' }}>
+                  OPERATIVE REGISTRATION
+                </div>
+                <h1 className="game-title glow-purple" style={{ fontSize: '26px', color: '#e9d5ff', marginBottom: '8px' }}>
+                  Enlist Your Team
+                </h1>
+                <p style={{ color: '#6b7280', fontSize: '13px' }}>
+                  Form your unit and join the counter-terrorism cyber operation.
+                </p>
+              </div>
+
+              {error && (
+                <div className="game-alert-error" style={{ marginBottom: '18px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                  <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: '2px' }} />
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label className="game-label" style={{ display: 'block', marginBottom: '7px' }}>
+                    <Users size={10} style={{ display: 'inline', marginRight: '5px' }} />
+                    Team Designation
+                  </label>
+                  <input
+                    className="game-input"
+                    type="text"
+                    placeholder="e.g. SHADOW_OPS"
+                    value={formData.teamName}
+                    onChange={e => setFormData(p => ({ ...p, teamName: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label className="game-label" style={{ display: 'block', marginBottom: '7px' }}>Agent 1 Name</label>
+                    <input
+                      className="game-input"
+                      type="text"
+                      placeholder="First operative"
+                      value={formData.participant1Name}
+                      onChange={e => setFormData(p => ({ ...p, participant1Name: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="game-label" style={{ display: 'block', marginBottom: '7px' }}>Agent 2 Name</label>
+                    <input
+                      className="game-input"
+                      type="text"
+                      placeholder="Second operative"
+                      value={formData.participant2Name}
+                      onChange={e => setFormData(p => ({ ...p, participant2Name: e.target.value }))}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="game-label" style={{ display: 'block', marginBottom: '7px' }}>
+                    <Mail size={10} style={{ display: 'inline', marginRight: '5px' }} />
+                    Secure Contact Email
+                  </label>
+                  <input
+                    className="game-input"
+                    type="email"
+                    placeholder="team@ops.secure"
+                    value={formData.email}
+                    onChange={e => setFormData(p => ({ ...p, email: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label className="game-label" style={{ display: 'block', marginBottom: '7px' }}>
+                      <Lock size={10} style={{ display: 'inline', marginRight: '5px' }} />
+                      Passphrase
+                    </label>
+                    <input
+                      className="game-input"
+                      type="password"
+                      placeholder="Min. 6 chars"
+                      value={formData.password}
+                      onChange={e => setFormData(p => ({ ...p, password: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="game-label" style={{ display: 'block', marginBottom: '7px' }}>Confirm</label>
+                    <input
+                      className="game-input"
+                      type="password"
+                      placeholder="Repeat passphrase"
+                      value={formData.confirmPassword}
+                      onChange={e => setFormData(p => ({ ...p, confirmPassword: e.target.value }))}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn-game-primary"
+                  disabled={loading}
+                  style={{ width: '100%', marginTop: '6px', opacity: loading ? 0.7 : 1 }}
+                >
+                  {loading ? (
+                    <>
+                      <div style={{ width: '15px', height: '15px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                      Initiating Protocol...
+                    </>
+                  ) : (
+                    <><UserPlus size={15} /> Enlist Team</>
+                  )}
+                </button>
+              </form>
+
+              <p style={{ marginTop: '22px', textAlign: 'center', fontSize: '13px', color: '#6b7280' }}>
+                Already enlisted?{' '}
+                <Link href="/login" style={{ color: '#a78bfa', textDecoration: 'none' }}>
+                  Access Command Center
+                </Link>
+              </p>
+            </div>
+          ) : (
+            <div style={{ width: '100%', maxWidth: '420px', animation: 'fadeIn 0.5s ease' }}>
+              <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                <div
+                  style={{
+                    width: '68px', height: '68px', borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #064e3b, #10b981)',
+                    border: '2px solid rgba(16,185,129,0.5)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 18px', boxShadow: '0 0 30px rgba(16,185,129,0.4)',
+                  }}
+                >
+                  <CheckCircle size={30} color="#6ee7b7" />
+                </div>
+                <div className="game-label" style={{ color: '#10b981', marginBottom: '8px' }}>IDENTITY VERIFICATION</div>
+                <h2 className="game-heading" style={{ fontSize: '20px', color: '#e9d5ff', marginBottom: '10px' }}>
+                  Confirm Your Identity
+                </h2>
+                <p style={{ color: '#6b7280', fontSize: '13px' }}>
+                  An encrypted OTP was transmitted to{' '}
+                  <span style={{ color: '#a78bfa' }}>{formData.email}</span>
+                </p>
+              </div>
+
+              {devOtp && (
+                <div className="game-alert-info" style={{ marginBottom: '18px', textAlign: 'center' }}>
+                  <div className="game-label" style={{ color: '#f59e0b', marginBottom: '6px' }}>DEV MODE — OTP</div>
+                  <div style={{ fontSize: '30px', letterSpacing: '10px', color: '#fbbf24', fontWeight: 700 }}>{devOtp}</div>
+                </div>
+              )}
+
+              {error && (
+                <div className="game-alert-error" style={{ marginBottom: '18px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                  <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: '2px' }} />
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleVerifyOTP} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label className="game-label" style={{ display: 'block', marginBottom: '9px' }}>
+                    <Smartphone size={10} style={{ display: 'inline', marginRight: '5px' }} />
+                    Enter 6-Digit OTP
+                  </label>
+                  <input
+                    className="game-input"
+                    type="text"
+                    placeholder="000000"
+                    value={otp}
+                    onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    maxLength={6}
+                    style={{ textAlign: 'center', fontSize: '26px', letterSpacing: '10px' }}
+                    autoFocus
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="btn-game-primary"
+                  disabled={loading || otp.length < 6}
+                  style={{ width: '100%', opacity: loading || otp.length < 6 ? 0.6 : 1 }}
+                >
+                  {loading ? (
+                    <>
+                      <div style={{ width: '15px', height: '15px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                      Verifying Code...
+                    </>
+                  ) : (
+                    <><CheckCircle size={15} /> Verify &amp; Activate</>
+                  )}
+                </button>
+              </form>
+
+              <button
+                onClick={() => { setStep(1); setError(''); setDevOtp(''); setOtp(''); }}
+                className="btn-game-secondary"
+                style={{ width: '100%', marginTop: '10px' }}
+              >
+                <ArrowLeft size={14} /> Back to Registration
+              </button>
             </div>
           )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-orange-200 ml-2">Username</label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-300" />
-                <input
-                  type="text"
-                  required
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full bg-black/40 backdrop-blur-sm border-2 border-orange-400/30 focus:border-orange-400 rounded-xl py-3 pl-12 pr-4 text-white text-base placeholder-orange-300/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
-                  placeholder="Choose a username"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-orange-200 ml-2">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-300" />
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-black/40 backdrop-blur-sm border-2 border-orange-400/30 focus:border-orange-400 rounded-xl py-3 pl-12 pr-4 text-white text-base placeholder-orange-300/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
-                  placeholder="your.email@example.com"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-orange-200 ml-2">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-300" />
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full bg-black/40 backdrop-blur-sm border-2 border-orange-400/30 focus:border-orange-400 rounded-xl py-3 pl-12 pr-4 text-white text-base placeholder-orange-300/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
-                  placeholder="Min. 6 characters"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-bold text-orange-200 ml-2">Confirm Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-300" />
-                <input
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="w-full bg-black/40 backdrop-blur-sm border-2 border-orange-400/30 focus:border-orange-400 rounded-xl py-3 pl-12 pr-4 text-white text-base placeholder-orange-300/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
-                  placeholder="Re-enter password"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-xl font-bold py-4 rounded-xl shadow-lg shadow-orange-500/50 hover:shadow-orange-600/60 transform hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-3">
-                  <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating Account...
-                </span>
-              ) : (
-                'Create Account'
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-orange-200 text-base">
-              Already have an account?{' '}
-              <Link href="/login" className="text-yellow-300 hover:text-yellow-200 font-bold underline decoration-2 hover:decoration-yellow-200 transition-all">
-                Login Here
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

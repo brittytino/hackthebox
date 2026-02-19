@@ -260,8 +260,8 @@ export default function AdminPage() {
             <Link href="/challenges">
               <Button variant="ghost">Challenges</Button>
             </Link>
-            <Link href="/scoreboard">
-              <Button variant="ghost">Scoreboard</Button>
+            <Link href="/leaderboard">
+              <Button variant="ghost">Leaderboard</Button>
             </Link>
             <Link href="/admin">
               <Button variant="ghost">Admin</Button>

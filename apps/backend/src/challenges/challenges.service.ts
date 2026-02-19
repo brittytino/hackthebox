@@ -6,10 +6,30 @@
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class ChallengesService {
   constructor(private prisma: PrismaService) {}
+
+  // Calculate team-specific flag for challenges 1.3 and 2.3
+  private calculateTeamSpecificFlag(
+    teamName: string,
+    challengeOrder: number,
+  ): string {
+    if (challengeOrder === 3) {
+      // Level 1.3: MD5(teamName|2|1|CIPHER2026)
+      const input = `${teamName}|2|1|CIPHER2026`;
+      const hash = crypto.createHash('md5').update(input).digest('hex');
+      return `ctf{${hash.substring(0, 8)}}`;
+    } else if (challengeOrder === 6) {
+      // Level 2.3: SHA256(teamName+5+CIPHER2026)
+      const input = `${teamName}5CIPHER2026`;
+      const hash = crypto.createHash('sha256').update(input).digest('hex');
+      return `ctf{${hash.substring(0, 8)}}`;
+    }
+    return '';
+  }
 
   // Get current challenge for a team (based on linear progression)
   async getCurrentChallenge(userId: string) {
@@ -151,7 +171,25 @@ export class ChallengesService {
     }
 
     // Verify flag
-    const isCorrect = await bcrypt.compare(flag, challenge.flagHash);
+    let isCorrect = false;
+
+    // Check if this is a team-specific challenge
+    const isTeamSpecific = await bcrypt.compare(
+      '__TEAM_SPECIFIC__',
+      challenge.flagHash,
+    );
+
+    if (isTeamSpecific) {
+      // Calculate the team's specific flag
+      const expectedFlag = this.calculateTeamSpecificFlag(
+        team.name,
+        challenge.order,
+      );
+      isCorrect = flag.toLowerCase() === expectedFlag.toLowerCase();
+    } else {
+      // Normal flag verification
+      isCorrect = await bcrypt.compare(flag.toLowerCase(), challenge.flagHash);
+    }
 
     // Create submission
     const submission = await this.prisma.submission.create({
@@ -280,15 +318,15 @@ export class ChallengesService {
   // Get story message for activity feed
   private getStoryMessage(teamName: string, level: number): string {
     const messages = {
-      1: `${teamName} decoded Saravana's intercepted transmission`,
-      2: `${teamName} located Server Room ER-42`,
-      3: `${teamName} cracked the time-locked vault`,
-      4: `${teamName} decrypted the terrorist database`,
-      5: `${teamName} accessed the admin panel with JWT tokens`,
-      6: `${teamName} exposed Operation BLACKOUT`,
-      7: `${teamName} decoded the payload fragments`,
-      8: `${teamName} defused the logic bomb`,
-      9: `${teamName} STOPPED OPERATION BLACKOUT! City saved!`,
+      1: `${teamName} decoded the intercepted transmission - Command center located`,
+      2: `${teamName} unlocked Server Room ER-42 with fragmented access codes`,
+      3: `${teamName} cracked the time-locked vault - Attack plans recovered`,
+      4: `${teamName} broke through the corrupted hash trail - Home Minister exposed!`,
+      5: `${teamName} infiltrated admin panel via JWT token - Evidence collected`,
+      6: `${teamName} unlocked the pattern lock - Operation BLACKOUT revealed`,
+      7: `${teamName} decoded the payload fragments - Attack mechanism understood`,
+      8: `${teamName} defused the logic bomb - Mall siege ended`,
+      9: `🎉 ${teamName} CRACKED THE MASTER VAULT! OPERATION BLACKOUT TERMINATED! 🎉`,
     };
 
     return messages[level] || `${teamName} completed level ${level}`;

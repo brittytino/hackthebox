@@ -1,8 +1,11 @@
 ﻿'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { gsap } from 'gsap';
 import { api } from '@/lib/api';
+import GameLayout from '@/components/game/GameLayout';
+import Character from '@/components/game/Character';
 import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
 import { Flag, Lock, CheckCircle, ChevronRight, Zap, AlertTriangle, Eye, Terminal, Activity } from 'lucide-react';
 
@@ -105,77 +108,121 @@ export default function ChallengesPage() {
     }
   };
 
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Animate challenge cards on mount
+  useEffect(() => {
+    if (cardRefs.current.length > 0) {
+      gsap.fromTo(
+        cardRefs.current,
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.08,
+          duration: 0.4,
+          ease: 'power2.out',
+        }
+      );
+    }
+  }, [selectedLevel]);
+
   if (loading) {
     return (
-      <div className="game-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="game-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2070')`, filter: 'brightness(0.15) saturate(0.6)' }} />
-        <div className="game-bg-overlay" />
-        <div className="scanlines" />
-        <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
-          <div style={{ width: '56px', height: '56px', border: '3px solid rgba(6,182,212,0.3)', borderTopColor: '#06b6d4', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 14px' }} />
-          <div className="game-label" style={{ color: '#06b6d4' }}>DECRYPTING MISSION DATA...</div>
+      <GameLayout backgroundImage="/images/background/cyber-warfare.jpg" showScanlines>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="w-14 h-14 border-3 border-cyan-600/30 border-t-cyan-500 rounded-full animate-spin mx-auto mb-3.5" />
+            <div className="text-sm font-bold tracking-widest text-cyan-500 uppercase">
+              DECRYPTING MISSION DATA...
+            </div>
+          </div>
         </div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
+      </GameLayout>
     );
   }
 
   const rounds = [1, 2, 3];
 
   return (
-    <div className="game-root">
-      <div className="game-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2070')`, filter: 'brightness(0.15) saturate(0.6)' }} />
-      <div className="game-bg-overlay" />
-      <div className="scanlines" />
+    <GameLayout backgroundImage="/images/background/cyber-warfare.jpg" showScanlines>
       <HalfCircleMenu />
+      
+      {/* Character Display - Dynamic based on selected challenge */}
+      {selectedMeta && (
+        <Character
+          character={selectedMeta.character.toLowerCase() as any}
+          expression={selectedState === 'active' ? 'determined' : 'neutral'}
+          position="left"
+          active={selectedState === 'active'}
+        />
+      )}
 
-      {/* LAYOUT: left sidebar | main | right activity */}
-      <div style={{ position: 'relative', zIndex: 10, display: 'grid', gridTemplateColumns: '260px 1fr 280px', height: '100%', overflow: 'hidden' }}>
-
-        {/* LEFT SIDEBAR — all challenges */}
-        <div
-          className="game-scroll"
-          style={{
-            borderRight: '1px solid rgba(109,40,217,0.3)', padding: '20px 14px',
-            overflowY: 'auto', background: 'rgba(5,2,20,0.6)', backdropFilter: 'blur(10px)',
-          }}
-        >
-          <div className="game-label" style={{ color: '#06b6d4', marginBottom: '16px', paddingLeft: '4px' }}>
-            MISSION TREE
+      {/* Three-column layout: Mission Tree | Main Content | Activity Feed */}
+      <div className="relative z-10 grid grid-cols-[260px,1fr,280px] h-full overflow-hidden">
+        
+        {/* LEFT SIDEBAR — Mission Tree */}
+        <div className="border-r border-purple-600/30 p-5 overflow-y-auto bg-slate-950/60 backdrop-blur-md">
+          <div className="text-xs font-bold tracking-widest text-cyan-500 uppercase mb-4 px-1">
+            Mission Tree
           </div>
+          
           {rounds.map(r => (
-            <div key={r} style={{ marginBottom: '18px' }}>
-              <div className={`round-badge round-${r}`} style={{ marginBottom: '10px', display: 'block' }}>
+            <div key={r} className="mb-4.5">
+              <div className={`round-badge round-${r} mb-2.5 block`}>
                 Round {r}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              
+              <div className="flex flex-col gap-1.5">
                 {ALL_CHALLENGES.filter(c => c.round === r).map((c, relIdx) => {
                   const absIdx = ALL_CHALLENGES.indexOf(c);
                   const state = getChallengeState(absIdx);
                   const isSelected = selectedLevel === c.level;
+                  const idx = cardRefs.current.length;
+                  
                   return (
                     <div
                       key={c.level}
+                      ref={(el) => { cardRefs.current[idx] = el; }}
                       onClick={() => state !== 'locked' && setSelectedLevel(c.level)}
-                      style={{
-                        padding: '10px 12px', borderRadius: '10px', cursor: state === 'locked' ? 'not-allowed' : 'pointer',
-                        border: `1px solid ${isSelected ? 'rgba(6,182,212,0.6)' : state === 'solved' ? 'rgba(16,185,129,0.3)' : state === 'active' ? 'rgba(109,40,217,0.5)' : 'rgba(40,30,70,0.5)'}`,
-                        background: isSelected ? 'rgba(6,182,212,0.1)' : state === 'solved' ? 'rgba(16,185,129,0.06)' : state === 'active' ? 'rgba(109,40,217,0.1)' : 'rgba(10,5,20,0.5)',
-                        opacity: state === 'locked' ? 0.38 : 1,
-                        transition: 'all 0.2s',
-                      }}
+                      className={`
+                        p-2.5 px-3 rounded-lg transition-all duration-200 cursor-pointer
+                        ${isSelected ? 'border-cyan-500/60 bg-cyan-500/10' : ''}
+                        ${state === 'solved' ? 'border-emerald-500/30 bg-emerald-500/5' : ''}
+                        ${state === 'active' ? 'border-purple-600/50 bg-purple-600/10' : ''}
+                        ${state === 'locked' ? 'border-slate-700/50 bg-slate-950/50 opacity-40 cursor-not-allowed' : ''}
+                        ${state !== 'locked' ? 'hover:brightness-125' : ''}
+                      `}
+                      style={isSelected || state !== 'locked' ? { border: '1px solid' } : { border: '1px solid rgba(40,30,70,0.5)' }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        {state === 'solved' ? <CheckCircle size={13} color="#10b981" /> : state === 'active' ? <Zap size={13} color="#a78bfa" /> : <Lock size={13} color="#4b5563" />}
-                        <span style={{ color: isSelected ? '#67e8f9' : state === 'solved' ? '#6ee7b7' : state === 'active' ? '#e9d5ff' : '#4b5563', fontSize: '12px', fontWeight: 700 }}>
+                      <div className="flex items-center gap-2 mb-1">
+                        {state === 'solved' ? (
+                          <CheckCircle size={13} className="text-emerald-500" />
+                        ) : state === 'active' ? (
+                          <Zap size={13} className="text-purple-400" />
+                        ) : (
+                          <Lock size={13} className="text-gray-600" />
+                        )}
+                        
+                        <span className={`text-xs font-bold ${
+                          isSelected ? 'text-cyan-400' :
+                          state === 'solved' ? 'text-emerald-300' :
+                          state === 'active' ? 'text-purple-200' :
+                          'text-gray-600'
+                        }`}>
                           {c.level}
                         </span>
+                        
                         <DiffBadge diff={c.difficulty} />
                       </div>
-                      <div style={{ color: isSelected ? '#e2e8f0' : '#9ca3af', fontSize: '11px', paddingLeft: '21px', lineHeight: 1.4 }}>
+                      
+                      <div className={`text-[11px] pl-5 leading-snug ${
+                        isSelected ? 'text-slate-200' : 'text-gray-400'
+                      }`}>
                         {c.name}
                       </div>
-                      <div style={{ color: '#6b7280', fontSize: '10px', paddingLeft: '21px', marginTop: '3px' }}>
+                      
+                      <div className="text-[10px] text-gray-500 pl-5 mt-0.5">
                         {c.points} pts
                       </div>
                     </div>
@@ -186,116 +233,131 @@ export default function ChallengesPage() {
           ))}
         </div>
 
-        {/* MAIN AREA */}
-        <div className="game-scroll" style={{ overflowY: 'auto', padding: '24px 28px' }}>
+        {/* MAIN CONTENT */}
+        <div className="overflow-y-auto p-6 px-7">
           {selectedMeta ? (
             <>
-              {/* Challenge header */}
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <span className={`round-badge round-${selectedMeta.round}`}>Round {selectedMeta.round}</span>
-                  <span style={{ color: '#6b7280', fontSize: '12px' }}>{selectedMeta.type}</span>
+              {/* Challenge Header */}
+              <div className="mb-5">
+                <div className="flex items-center gap-2.5 mb-2.5">
+                  <span className={`round-badge round-${selectedMeta.round}`}>
+                    Round {selectedMeta.round}
+                  </span>
+                  <span className="text-gray-500 text-xs">{selectedMeta.type}</span>
                   <DiffBadge diff={selectedMeta.difficulty} />
-                  {selectedState === 'solved' && <span style={{ color: '#10b981', fontSize: '11px', fontWeight: 700, display:'flex',alignItems:'center',gap:'4px' }}><CheckCircle size={12}/> SOLVED</span>}
-                  {selectedState === 'active' && <span style={{ color: '#a78bfa', fontSize: '11px', fontWeight: 700, display:'flex',alignItems:'center',gap:'4px', animation:'pulse-glow 2s infinite' }}><Zap size={12}/> ACTIVE</span>}
+                  
+                  {selectedState === 'solved' && (
+                    <span className="text-emerald-500 text-[11px] font-bold flex items-center gap-1">
+                      <CheckCircle size={12} /> SOLVED
+                    </span>
+                  )}
+                  
+                  {selectedState === 'active' && (
+                    <span className="text-purple-400 text-[11px] font-bold flex items-center gap-1 animate-pulse">
+                      <Zap size={12} /> ACTIVE
+                    </span>
+                  )}
                 </div>
-                <h1 className="game-title glow-purple" style={{ fontSize: '24px', color: '#e9d5ff', marginBottom: '8px' }}>
+                
+                <h1 className="text-2xl font-bold text-purple-200 mb-2 glow-purple">
                   {selectedMeta.level} — {selectedMeta.name}
                 </h1>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span className="game-label">REWARD:</span>
-                  <span className="glow-gold" style={{ color: '#fbbf24', fontWeight: 700, fontSize: '16px' }}>{selectedMeta.points} PTS</span>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold tracking-wider text-gray-400 uppercase">
+                    Reward:
+                  </span>
+                  <span className="text-amber-500 font-bold text-base glow-gold">
+                    {selectedMeta.points} PTS
+                  </span>
                 </div>
               </div>
 
-              {/* Character dialogue */}
-              <div
-                style={{
-                  position: 'relative',
-                  background: 'linear-gradient(135deg, rgba(5,2,20,0.97), rgba(15,8,40,0.95))',
-                  border: `2px solid rgba(109,40,217,0.5)`,
-                  borderRadius: '14px', padding: '28px 30px 22px', marginBottom: '20px',
-                  boxShadow: '0 0 40px rgba(109,40,217,0.15)',
-                }}
-              >
+              {/* Character Dialogue */}
+              <div className="relative bg-gradient-to-br from-slate-950/95 to-purple-950/90 border-2 border-purple-600/50 rounded-xl p-7 pb-5.5 mb-5 shadow-lg shadow-purple-900/15">
                 <div
+                  className="absolute -top-4.5 left-6 px-4.5 py-1 rounded-t-lg text-[11px] font-bold tracking-[3px] uppercase border border-purple-400/40"
                   style={{
-                    position: 'absolute', top: '-18px', left: '24px',
-                    padding: '4px 18px',
-                    background: `linear-gradient(135deg, #4c1d95, #7c3aed)`,
-                    borderRadius: '8px 8px 0 0',
-                    fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase',
+                    background: 'linear-gradient(135deg, #4c1d95, #7c3aed)',
                     color: getCharColor(selectedMeta.character),
-                    border: '1px solid rgba(167,139,250,0.4)',
                   }}
                 >
                   {selectedMeta.character}
                 </div>
-                <p style={{ fontSize: '16px', lineHeight: 1.8, color: '#e2e8f0', marginTop: '6px' }}>
+                
+                <p className="text-base leading-relaxed text-slate-200 mt-1.5">
                   "{selectedMeta.characterMsg}"
                 </p>
               </div>
 
-              {/* Briefing */}
-              <div className="game-panel-bordered" style={{ padding: '22px 26px', marginBottom: '20px' }}>
-                <div className="game-label" style={{ color: '#06b6d4', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Terminal size={12} /> MISSION BRIEFING
+              {/* Mission Briefing */}
+              <div className="game-panel-bordered p-5.5 px-6.5 mb-5">
+                <div className="text-xs font-bold tracking-widest text-cyan-500 uppercase mb-3 flex items-center gap-1.5">
+                  <Terminal size={12} /> Mission Briefing
                 </div>
-                <p style={{ color: '#c4b5fd', lineHeight: 1.8, fontSize: '15px' }}>{selectedMeta.briefing}</p>
+                
+                <p className="text-purple-200 leading-relaxed text-[15px]">
+                  {selectedMeta.briefing}
+                </p>
 
                 {selectedState === 'active' && challenge?.hint && (
-                  <div style={{ marginTop: '16px' }}>
+                  <div className="mt-4">
                     <button
                       onClick={() => setShowHint(!showHint)}
-                      className="btn-game-secondary"
-                      style={{ fontSize: '12px', padding: '8px 16px' }}
+                      className="btn-game-secondary text-xs px-4 py-2"
                     >
                       <Eye size={13} />
                       {showHint ? 'Hide Hint' : 'Reveal Hint'}
                     </button>
+                    
                     {showHint && (
-                      <div className="game-alert-info" style={{ marginTop: '12px' }}>
-                        <strong style={{ color: '#a78bfa' }}>INTEL: </strong>{challenge.hint}
+                      <div className="game-alert-info mt-3">
+                        <strong className="text-purple-400">INTEL: </strong>
+                        {challenge.hint}
                       </div>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* Flag submission — only for active */}
+              {/* Flag Submission - Only for Active Challenges */}
               {selectedState === 'active' && (
-                <div className="game-panel-bordered" style={{ padding: '22px 26px' }}>
-                  <div className="game-label" style={{ color: '#a78bfa', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Flag size={12} /> SUBMIT INTELLIGENCE
+                <div className="game-panel-bordered p-5.5 px-6.5">
+                  <div className="text-xs font-bold tracking-widest text-purple-400 uppercase mb-3.5 flex items-center gap-1.5">
+                    <Flag size={12} /> Submit Intelligence
                   </div>
-                  <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '12px' }}>
+                  
+                  <form onSubmit={handleSubmit} className="flex gap-3">
                     <input
-                      className="game-input"
+                      className="game-input flex-1"
                       type="text"
                       placeholder="HTB{...} or cipher flag"
                       value={flag}
                       onChange={e => setFlag(e.target.value)}
                       disabled={submitting}
-                      style={{ flex: 1 }}
                     />
+                    
                     <button
                       type="submit"
-                      className="btn-game-primary"
+                      className="btn-game-primary whitespace-nowrap"
                       disabled={submitting || !flag.trim()}
-                      style={{ whiteSpace: 'nowrap', opacity: submitting || !flag.trim() ? 0.6 : 1 }}
+                      style={{ opacity: submitting || !flag.trim() ? 0.6 : 1 }}
                     >
                       {submitting ? (
                         <>
-                          <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                          <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                           Transmitting...
                         </>
                       ) : (
-                        <><Flag size={14} /> Submit Flag</>
+                        <>
+                          <Flag size={14} /> Submit Flag
+                        </>
                       )}
                     </button>
                   </form>
+                  
                   {message && (
-                    <div className={isError ? 'game-alert-error' : 'game-alert-success'} style={{ marginTop: '14px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div className={`${isError ? 'game-alert-error' : 'game-alert-success'} mt-3.5 flex gap-2 items-center`}>
                       {isError ? <AlertTriangle size={14} /> : <CheckCircle size={14} />}
                       {message}
                     </div>
@@ -303,60 +365,60 @@ export default function ChallengesPage() {
                 </div>
               )}
 
+              {/* Challenge Status Messages */}
               {selectedState === 'solved' && (
-                <div className="game-alert-success" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '15px' }}>
+                <div className="game-alert-success flex items-center gap-2.5 text-[15px]">
                   <CheckCircle size={18} />
                   Mission Complete — This flag has been captured. Proceed to the next challenge.
                 </div>
               )}
 
               {selectedState === 'locked' && (
-                <div className="game-alert-info" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="game-alert-info flex items-center gap-2.5">
                   <Lock size={16} />
                   This mission is locked. Complete the current active challenge first.
                 </div>
               )}
             </>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#6b7280' }}>
-              <Flag size={40} style={{ marginBottom: '14px', opacity: 0.4 }} />
+            <div className="flex flex-col items-center justify-center h-full text-gray-500">
+              <Flag size={40} className="mb-3.5 opacity-40" />
               <p>Select a mission from the tree</p>
             </div>
           )}
         </div>
 
-        {/* RIGHT — Activity feed */}
-        <div
-          className="game-scroll"
-          style={{
-            borderLeft: '1px solid rgba(109,40,217,0.3)', padding: '20px 16px',
-            overflowY: 'auto', background: 'rgba(5,2,20,0.6)', backdropFilter: 'blur(10px)',
-          }}
-        >
-          <div className="game-label" style={{ color: '#a78bfa', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Activity size={12} /> LIVE INTEL FEED
-            <span className="status-dot active" style={{ marginLeft: '4px' }} />
+        {/* RIGHT SIDEBAR — Activity Feed */}
+        <div className="border-l border-purple-600/30 p-5 px-4 overflow-y-auto bg-slate-950/60 backdrop-blur-md">
+          <div className="text-xs font-bold tracking-widest text-purple-400 uppercase mb-4 flex items-center gap-1.5">
+            <Activity size={12} /> Live Intel Feed
+            <span className="status-dot active ml-1" />
           </div>
+          
           {activity.length === 0 ? (
-            <p style={{ color: '#4b5563', fontSize: '13px', textAlign: 'center', marginTop: '30px' }}>
+            <p className="text-gray-600 text-[13px] text-center mt-7.5">
               No activity yet. Be the first to solve!
             </p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="flex flex-col gap-2">
               {activity.map((a: any, i: number) => (
                 <div
                   key={i}
-                  className="game-panel"
-                  style={{ padding: '10px 13px', animation: `fadeIn 0.4s ease ${i * 0.05}s both` }}
+                  className="game-panel p-2.5 px-3.5"
+                  style={{ animation: `fadeIn 0.4s ease ${i * 0.05}s both` }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <div className="flex items-center gap-1.5 mb-1">
                     <span className="status-dot active" />
-                    <span style={{ color: '#e2e8f0', fontSize: '12px', fontWeight: 600 }}>{a.teamName || a.team?.name || 'Team'}</span>
+                    <span className="text-slate-200 text-xs font-semibold">
+                      {a.teamName || a.team?.name || 'Team'}
+                    </span>
                   </div>
-                  <div style={{ color: '#6ee7b7', fontSize: '11px', marginBottom: '2px' }}>
+                  
+                  <div className="text-emerald-300 text-[11px] mb-0.5">
                     Captured: {a.challengeName || a.challenge?.name || 'flag'}
                   </div>
-                  <div style={{ color: '#6b7280', fontSize: '10px' }}>
+                  
+                  <div className="text-gray-500 text-[10px]">
                     +{a.points || a.pointsEarned || '?'} pts
                   </div>
                 </div>
@@ -365,8 +427,6 @@ export default function ChallengesPage() {
           )}
         </div>
       </div>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
+    </GameLayout>
   );
 }

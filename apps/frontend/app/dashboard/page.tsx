@@ -1,9 +1,12 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { gsap } from 'gsap';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import GameLayout from '@/components/game/GameLayout';
+import Character from '@/components/game/Character';
 import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
 import { Users, Trophy, Flag, Target, Zap, Clock, Award, Shield, ChevronRight } from 'lucide-react';
 
@@ -45,36 +48,57 @@ export default function DashboardPage() {
     router.push('/login');
   };
 
+  const statsRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Animate stat cards on mount
+  useEffect(() => {
+    if (statsRef.current.length > 0 && !loading) {
+      gsap.fromTo(
+        statsRef.current,
+        { opacity: 0, y: 30 },
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.1,
+          duration: 0.5,
+          ease: 'power2.out',
+        }
+      );
+    }
+  }, [loading]);
+
   const roundNum = currentRound?.number || 1;
   const totalScore = teamStats?.score ?? user?.team?.score ?? 0;
   const members: any[] = user?.team?.members ?? [];
 
   if (loading) {
     return (
-      <div className="game-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="game-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')`, filter: 'brightness(0.15) saturate(0.6)' }} />
-        <div className="game-bg-overlay" />
-        <div className="scanlines" />
-        <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
-          <div style={{ width: '60px', height: '60px', border: '3px solid rgba(109,40,217,0.3)', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
-          <div className="game-label" style={{ color: '#a78bfa' }}>LOADING MISSION CONTROL...</div>
+      <GameLayout backgroundImage="/images/background/command-center.jpg" showScanlines>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="w-15 h-15 border-3 border-purple-600/30 border-t-purple-400 rounded-full animate-spin mx-auto mb-4" />
+            <div className="text-sm font-bold tracking-widest text-purple-400 uppercase">
+              Loading Mission Control...
+            </div>
+          </div>
         </div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
+      </GameLayout>
     );
   }
 
   return (
-    <div className="game-root">
-      <div className="game-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')`, filter: 'brightness(0.15) saturate(0.6)' }} />
-      <div className="game-bg-overlay" />
-      <div className="scanlines" />
+    <GameLayout backgroundImage="/images/background/command-center.jpg" showScanlines>
       <HalfCircleMenu />
-
-      <div
-        className="game-scroll"
-        style={{ position: 'relative', zIndex: 10, width: '100%', height: '100%', overflowY: 'auto', padding: '32px 40px 40px' }}
-      >
+      
+      {/* Character Display */}
+      <Character
+        character="veera"
+        expression="determined"
+        position="left"
+        active={true}
+      />
+      
+      <div className="relative z-10 w-full h-full overflow-y-auto px-10 py-8 pb-10">
         {/* HEADER */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px' }}>
           <div>
@@ -339,8 +363,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
+    </GameLayout>
   );
 }

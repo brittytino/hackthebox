@@ -70,7 +70,7 @@ export class AuthService {
     if (existingUser) {
       user = await this.prisma.user.update({
         where: { id: existingUser.id },
-        data: { passwordHash, isVerified: true, teamId: team.id, otpHash: null, otpExpiry: null, username: teamName },
+        data: { passwordHash, isVerified: true, teamId: team.id, username: teamName },
       });
     } else {
       user = await this.prisma.user.create({

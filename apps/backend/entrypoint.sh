@@ -1,11 +1,11 @@
 #!/bin/sh
 set -e
 
-echo "Syncing database schema..."
-npx prisma db push --accept-data-loss
+echo "=== Syncing database schema ==="
+npx prisma db push
 
-echo "Seeding database..."
-npx prisma db seed || echo "Seeding skipped (may already exist)"
+echo "=== Seeding database (skips if already seeded) ==="
+npx prisma db seed || echo "Seeding skipped (data may already exist)"
 
-echo "Starting application..."
+echo "=== Starting application ==="
 node dist/src/main

@@ -35,8 +35,6 @@ model User {
   teamId        String?
   team          Team?         @relation(fields: [teamId], references: [id])
   submissions   Submission[]
-  otpHash       String?
-  otpExpiry     DateTime?
   isVerified    Boolean       @default(false)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -182,19 +180,6 @@ model StoryState {
   finalOutcome      String?       // CITY_SAVED or BREACH_EXECUTED
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-}
-
-model OTPLog {
-  id            String        @id @default(uuid())
-  email         String
-  attempts      Int           @default(0)
-  lastAttempt   DateTime?
-  blockedUntil  DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  @@index([email])
-  @@index([blockedUntil])
 }
 
 model Activity {

@@ -45,12 +45,6 @@ export const api = {
     apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
 
   auth: {
-    sendOTP: (data: { email: string }) =>
-      apiRequest('/auth/send-otp', { method: 'POST', body: JSON.stringify(data) }),
-    verifyOTP: (data: { email: string; otp: string }) =>
-      apiRequest('/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
-    createTeam: (data: { teamName: string; member1Name: string; member2Name: string }) =>
-      apiRequest('/auth/create-team', { method: 'POST', body: JSON.stringify(data) }),
     profile: () => apiRequest('/auth/profile'),
   },
 

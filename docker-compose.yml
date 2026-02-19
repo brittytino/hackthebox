@@ -29,7 +29,7 @@ services:
     networks:
       - hackthebox_network
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -54,6 +54,8 @@ services:
       SMTP_USER: ${SMTP_USER}
       SMTP_PASS: ${SMTP_PASS}
       SMTP_FROM: ${SMTP_FROM}
+      EVENT_DATE: ${EVENT_DATE}
+      EVENT_NAME: ${EVENT_NAME}
     ports:
       - "0.0.0.0:${BACKEND_PORT}:${BACKEND_PORT}"
     depends_on:

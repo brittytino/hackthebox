@@ -32,6 +32,11 @@ export class ChallengesController {
     );
   }
 
+  @Post(':id/hint')
+  useHint(@Request() req, @Param('id') challengeId: string) {
+    return this.challengesService.useHint(req.user.id, challengeId);
+  }
+
   @Get('leaderboard')
   getLeaderboard() {
     return this.challengesService.getLeaderboard();

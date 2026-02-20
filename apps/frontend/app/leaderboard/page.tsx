@@ -155,7 +155,7 @@ export default function LeaderboardPage() {
                ) : (
                   leaderboard.map((team, index) => (
                     <div 
-                      key={team.id || index}
+                      key={team.teamId || index}
                       className={`group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 hover:scale-[1.01] hover:shadow-lg border border-transparent hover:border-pink-500/30 ${
                          index === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-transparent border-yellow-500/30' :
                          index === 1 ? 'bg-gradient-to-r from-gray-400/20 to-transparent border-gray-400/30' :

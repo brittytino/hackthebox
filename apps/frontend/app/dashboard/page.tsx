@@ -6,8 +6,6 @@ import { gsap } from 'gsap';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import GameLayout from '@/components/game/GameLayout';
-import Character from '@/components/game/Character';
-import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
 import { Users, Trophy, Flag, Target, Zap, Clock, Award, Shield, ChevronRight } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -67,13 +65,15 @@ export default function DashboardPage() {
     }
   }, [loading]);
 
-  const roundNum = currentRound?.number || 1;
-  const totalScore = teamStats?.score ?? user?.team?.score ?? 0;
-  const members: any[] = user?.team?.members ?? [];
+  const roundNum = currentRound?.order || 1;
+  const totalScore = teamStats?.totalPoints ?? 0;
+  const member1 = user?.team?.member1Name || user?.username || '';
+  const member2 = user?.team?.member2Name || '';
+  const memberCount = [member1, member2].filter(Boolean).length;
 
   if (loading) {
     return (
-      <GameLayout backgroundImage="/images/background/command-center.jpg" showScanlines>
+      <GameLayout backgroundImage="/images/background/1.jpg" showScanlines>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="w-15 h-15 border-3 border-purple-600/30 border-t-purple-400 rounded-full animate-spin mx-auto mb-4" />
@@ -87,17 +87,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <GameLayout backgroundImage="/images/background/command-center.jpg" showScanlines>
-      <HalfCircleMenu />
-      
-      {/* Character Display */}
-      <Character
-        character="veera"
-        expression="determined"
-        position="left"
-        active={true}
-      />
-      
+    <GameLayout backgroundImage="/images/background/1.jpg" showScanlines>
       <div className="relative z-10 w-full h-full overflow-y-auto px-10 py-8 pb-10">
         {/* HEADER */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px' }}>
@@ -107,7 +97,7 @@ export default function DashboardPage() {
               MISSION CONTROL — ACTIVE
             </div>
             <h1 className="game-title glow-purple" style={{ fontSize: '32px', color: '#e9d5ff', marginBottom: '6px' }}>
-              Welcome back, {user?.participant1Name || user?.name || 'Operative'}
+              Welcome back, {member1 || 'Operative'}
             </h1>
             {user?.team && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -146,7 +136,7 @@ export default function DashboardPage() {
               {user?.team?.name || '—'}
             </div>
             <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '6px' }}>
-              {members.length} operative{members.length !== 1 ? 's' : ''} enlisted
+              {memberCount} operative{memberCount !== 1 ? 's' : ''} enlisted
             </div>
           </div>
 
@@ -174,6 +164,41 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* STORY NARRATIVE BANNER */}
+        {(() => {
+          const storyChapters: Record<number, { chapter: string; who: string; color: string; text: string }> = {
+            1: { chapter: 'CH.1 — THE BREACH', who: 'VEERA', color: '#a78bfa', text: '1,200+ hostages trapped inside CODISSIA Tech Mall. Saif\'s sleeper cells have taken control. Veera has infiltrated the basement. He needs YOUR cipher skills to locate the enemy command center. Decode. Act. Save them.' },
+            2: { chapter: 'CH.2 — THE BETRAYAL', who: 'VIKRAM', color: '#67e8f9', text: 'BREAKING: Evidence on the hard drive exposes the Home Minister as a traitor. Farooq\'s release halted. But Operation BLACKOUT\'s malware is already deployed. T-minus 8 hours to Valentine\'s Day midnight.' },
+            3: { chapter: 'CH.3 — THE FINAL STRIKE', who: 'ALTHAF', color: '#fbbf24', text: 'Saif has been neutralized. But The Phantom — Saravana — is at large. Operation BLACKOUT triggers at 23:59:59 tonight. Locate the kill switch. Expose Saravana. Save Coimbatore.' },
+          };
+          const s = storyChapters[roundNum] || storyChapters[1];
+          return (
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(5,2,18,0.97), rgba(20,8,50,0.95))',
+              border: '1px solid rgba(109,40,217,0.35)', borderLeft: `3px solid ${s.color}`,
+              borderRadius: 12, padding: '16px 24px', marginBottom: '20px',
+              display: 'flex', alignItems: 'flex-start', gap: 18,
+            }}>
+              <div style={{ flexShrink: 0 }}>
+                <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: 3, marginBottom: 4 }}>{s.chapter}</div>
+                <div style={{
+                  width: 44, height: 44, borderRadius: '50%',
+                  background: s.color + '18', border: '2px solid ' + s.color + '50',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 14, fontWeight: 900, color: s.color,
+                }}>{s.who[0]}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: s.color, fontWeight: 700, letterSpacing: 3, marginBottom: 6, textTransform: 'uppercase' as const }}>{s.who} — ACTIVE TRANSMISSION</div>
+                <p style={{ color: '#c4b5fd', fontSize: 13, lineHeight: 1.7, margin: 0 }}>{s.text}</p>
+              </div>
+              <div style={{ marginLeft: 'auto', flexShrink: 0 }}>
+                <span className={`round-badge round-${roundNum}`}>ROUND {roundNum}</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* MAIN GRID */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px' }}>
@@ -272,7 +297,10 @@ export default function DashboardPage() {
               </div>
               {user?.team ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {members.length > 0 ? members.map((m: any, i: number) => (
+                  {[
+                    { name: member1, role: 'LEAD AGENT', color: '#7c3aed,#a78bfa' },
+                    { name: member2, role: 'AGENT', color: '#064e3b,#10b981' },
+                  ].filter(m => m.name).map((m, i) => (
                     <div
                       key={i}
                       style={{
@@ -284,51 +312,24 @@ export default function DashboardPage() {
                       <div
                         style={{
                           width: '36px', height: '36px', borderRadius: '50%',
-                          background: `linear-gradient(135deg, ${i === 0 ? '#7c3aed,#a78bfa' : '#064e3b,#10b981'})`,
+                          background: `linear-gradient(135deg, ${m.color})`,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: '14px', fontWeight: 700, color: '#fff', flexShrink: 0,
                         }}
                       >
-                        {(m.name || m.participant1Name || '?')[0].toUpperCase()}
+                        {m.name[0].toUpperCase()}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {m.name || m.participant1Name || `Operative ${i + 1}`}
+                          {m.name}
                         </div>
                         <div className="game-label" style={{ color: '#6b7280', fontSize: '10px' }}>
-                          {i === 0 ? 'LEAD AGENT' : 'AGENT'}
+                          {m.role}
                         </div>
                       </div>
                       <span className="status-dot active" />
                     </div>
-                  )) : (
-                    <>
-                      {user?.participant1Name && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: 'rgba(109,40,217,0.08)', border: '1px solid rgba(109,40,217,0.2)', borderRadius: '10px' }}>
-                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg,#7c3aed,#a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: '#fff' }}>
-                            {user.participant1Name[0].toUpperCase()}
-                          </div>
-                          <div>
-                            <div style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: 600 }}>{user.participant1Name}</div>
-                            <div className="game-label" style={{ color: '#6b7280', fontSize: '10px' }}>LEAD AGENT</div>
-                          </div>
-                          <span className="status-dot active" />
-                        </div>
-                      )}
-                      {user?.participant2Name && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: 'rgba(109,40,217,0.08)', border: '1px solid rgba(109,40,217,0.2)', borderRadius: '10px' }}>
-                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg,#064e3b,#10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: '#fff' }}>
-                            {user.participant2Name[0].toUpperCase()}
-                          </div>
-                          <div>
-                            <div style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: 600 }}>{user.participant2Name}</div>
-                            <div className="game-label" style={{ color: '#6b7280', fontSize: '10px' }}>AGENT</div>
-                          </div>
-                          <span className="status-dot active" />
-                        </div>
-                      )}
-                    </>
-                  )}
+                  ))}
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', padding: '20px' }}>

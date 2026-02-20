@@ -12,17 +12,43 @@ import * as crypto from 'crypto';
 export class ChallengesService {
   constructor(private prisma: PrismaService) {}
 
+  private async getChallengeSequence() {
+    return this.prisma.challenge.findMany({
+      where: { isActive: true },
+      include: {
+        round: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            status: true,
+            order: true,
+          },
+        },
+      },
+      orderBy: [
+        { round: { order: 'asc' } },
+        { order: 'asc' },
+      ],
+    });
+  }
+
+  private async getTeamPoints(teamId: string) {
+    const score = await this.prisma.score.findUnique({ where: { teamId } });
+    return score?.totalPoints || 0;
+  }
+
   // Calculate team-specific flag for challenges 1.3 and 2.3
   private calculateTeamSpecificFlag(
     teamName: string,
-    challengeOrder: number,
+    absoluteLevel: number,
   ): string {
-    if (challengeOrder === 3) {
+    if (absoluteLevel === 3) {
       // Level 1.3: MD5(teamName|2|1|CIPHER2026)
       const input = `${teamName}|2|1|CIPHER2026`;
       const hash = crypto.createHash('md5').update(input).digest('hex');
       return `ctf{${hash.substring(0, 8)}}`;
-    } else if (challengeOrder === 6) {
+    } else if (absoluteLevel === 6) {
       // Level 2.3: SHA256(teamName+5+CIPHER2026)
       const input = `${teamName}5CIPHER2026`;
       const hash = crypto.createHash('sha256').update(input).digest('hex');
@@ -51,28 +77,26 @@ export class ChallengesService {
 
     const team = user.team;
     const currentLevel = team.currentLevel;
-
-    // Find the challenge for the current level
-    const challenge = await this.prisma.challenge.findFirst({
-      where: {
-        order: currentLevel,
-        isActive: true,
-      },
-      include: {
-        round: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            status: true,
-            order: true,
-          },
-        },
-      },
-    });
+    const sequence = await this.getChallengeSequence();
+    const totalLevels = sequence.length;
+    const challenge = sequence[currentLevel - 1];
 
     if (!challenge) {
-      throw new NotFoundException('Challenge not found');
+      return {
+        challenge: null,
+        progress: {
+          currentLevel,
+          totalLevels,
+          attemptsUsed: 0,
+          maxAttempts: null,
+          isSolved: true,
+          completedAll: true,
+        },
+        team: {
+          name: team.name,
+          currentPoints: team.scores[0]?.totalPoints || 0,
+        },
+      };
     }
 
     // Get submission count for this team and challenge
@@ -103,7 +127,7 @@ export class ChallengesService {
       },
       progress: {
         currentLevel,
-        totalLevels: 9,
+        totalLevels,
         attemptsUsed,
         maxAttempts: challenge.maxAttempts,
         isSolved,
@@ -128,6 +152,17 @@ export class ChallengesService {
 
     const team = user.team;
 
+    const sequence = await this.getChallengeSequence();
+    const activeChallenge = sequence[team.currentLevel - 1];
+
+    if (!activeChallenge) {
+      throw new BadRequestException('All challenges already completed');
+    }
+
+    if (challengeId !== activeChallenge.id) {
+      throw new ForbiddenException('You must solve the current active challenge');
+    }
+
     const challenge = await this.prisma.challenge.findUnique({
       where: { id: challengeId },
       include: { round: true },
@@ -137,10 +172,7 @@ export class ChallengesService {
       throw new NotFoundException('Challenge not found');
     }
 
-    // Check if this is the current challenge for the team
-    if (challenge.order !== team.currentLevel) {
-      throw new ForbiddenException('You must solve challenges in order');
-    }
+    const absoluteLevel = team.currentLevel;
 
     // Check if already solved
     const existingSolved = await this.prisma.submission.findFirst({
@@ -183,7 +215,7 @@ export class ChallengesService {
       // Calculate the team's specific flag
       const expectedFlag = this.calculateTeamSpecificFlag(
         team.name,
-        challenge.order,
+        absoluteLevel,
       );
       isCorrect = flag.toLowerCase() === expectedFlag.toLowerCase();
     } else {
@@ -231,7 +263,7 @@ export class ChallengesService {
       });
 
       // Update story progress
-      await this.updateStoryProgress(team.id, challenge.order);
+      await this.updateStoryProgress(team.id, absoluteLevel);
 
       // Create activity log
       await this.prisma.activity.create({
@@ -241,9 +273,9 @@ export class ChallengesService {
           challengeId: challenge.id,
           challengeTitle: challenge.title,
           roundNumber: challenge.round.order,
-          levelNumber: challenge.order,
+          levelNumber: absoluteLevel,
           actionType: 'SOLVED',
-          storyMessage: this.getStoryMessage(team.name, challenge.order),
+          storyMessage: this.getStoryMessage(team.name, absoluteLevel),
           points: challenge.points,
         },
       });
@@ -254,7 +286,7 @@ export class ChallengesService {
         message: 'Correct! Challenge solved!',
         points: challenge.points,
         nextLevel: nextLevel,
-        hasMoreChallenges: nextLevel <= 9,
+        hasMoreChallenges: nextLevel <= sequence.length,
       };
     } else {
       return {
@@ -266,6 +298,106 @@ export class ChallengesService {
           : null,
       };
     }
+  }
+
+  async useHint(userId: string, challengeId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { team: true },
+    });
+
+    if (!user || !user.team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    const team = user.team;
+    const sequence = await this.getChallengeSequence();
+    const activeChallenge = sequence[team.currentLevel - 1];
+
+    if (!activeChallenge) {
+      throw new BadRequestException('All challenges already completed');
+    }
+
+    if (challengeId !== activeChallenge.id) {
+      throw new ForbiddenException('Hint can only be used for current active challenge');
+    }
+
+    const challenge = await this.prisma.challenge.findUnique({
+      where: { id: challengeId },
+      include: { round: true },
+    });
+
+    if (!challenge) {
+      throw new NotFoundException('Challenge not found');
+    }
+
+    if (!challenge.hints) {
+      throw new BadRequestException('No hint available for this challenge');
+    }
+
+    const existingHintUse = await this.prisma.activity.findFirst({
+      where: {
+        teamId: team.id,
+        challengeId: challenge.id,
+        actionType: 'HINT_USED',
+      },
+    });
+
+    if (existingHintUse) {
+      const teamPoints = await this.getTeamPoints(team.id);
+      return {
+        success: true,
+        alreadyUsed: true,
+        hint: challenge.hints,
+        penaltyApplied: 0,
+        teamPoints,
+      };
+    }
+
+    const penalty = Math.max(challenge.hintPenalty || 0, 0);
+    const existingScore = await this.prisma.score.findUnique({ where: { teamId: team.id } });
+
+    if (!existingScore) {
+      await this.prisma.score.create({
+        data: {
+          teamId: team.id,
+          totalPoints: 0,
+        },
+      });
+    }
+
+    const currentPoints = existingScore?.totalPoints || 0;
+    const newTotalPoints = Math.max(currentPoints - penalty, 0);
+    const penaltyApplied = currentPoints - newTotalPoints;
+
+    await this.prisma.score.update({
+      where: { teamId: team.id },
+      data: {
+        totalPoints: newTotalPoints,
+      },
+    });
+
+    await this.prisma.activity.create({
+      data: {
+        teamId: team.id,
+        teamName: team.name,
+        challengeId: challenge.id,
+        challengeTitle: challenge.title,
+        roundNumber: challenge.round.order,
+        levelNumber: team.currentLevel,
+        actionType: 'HINT_USED',
+        storyMessage: `${team.name} used mission intel for ${challenge.title}`,
+        points: -penaltyApplied,
+      },
+    });
+
+    return {
+      success: true,
+      alreadyUsed: false,
+      hint: challenge.hints,
+      penaltyApplied,
+      teamPoints: newTotalPoints,
+    };
   }
 
   // Get all challenges (admin only or for overview)
@@ -285,7 +417,10 @@ export class ChallengesService {
           },
         },
       },
-      orderBy: { order: 'asc' },
+      orderBy: [
+        { round: { order: 'asc' } },
+        { order: 'asc' },
+      ],
     });
   }
 

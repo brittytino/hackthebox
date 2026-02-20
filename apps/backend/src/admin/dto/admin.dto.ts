@@ -63,9 +63,33 @@ export class UpdateChallengeDto {
   @IsOptional()
   description?: string;
 
+  @IsString()
+  @IsOptional()
+  storyContext?: string;
+
+  @IsString()
+  @IsOptional()
+  characterMessage?: string;
+
   @IsNumber()
   @IsOptional()
   points?: number;
+
+  @IsNumber()
+  @IsOptional()
+  hintPenalty?: number;
+
+  @IsString()
+  @IsOptional()
+  difficulty?: string;
+
+  @IsString()
+  @IsOptional()
+  hints?: string;
+
+  @IsNumber()
+  @IsOptional()
+  maxAttempts?: number;
 
   @IsBoolean()
   @IsOptional()

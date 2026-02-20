@@ -2,272 +2,334 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { gsap } from 'gsap';
 import GameLayout from '@/components/game/GameLayout';
-import Character from '@/components/game/Character';
-import Link from 'next/link';
 import { ChevronRight, SkipForward, X } from 'lucide-react';
 
-const SCENE_BACKGROUNDS: Record<string, string> = {
-  night_city: "/images/background/city-night.jpg",
-  ops_center: "/images/background/ops-center.jpg",
-  mall_dark: "/images/background/mall-dark.jpg",
-};
-
-type CharacterType = 'veera' | 'vikram' | 'althaf' | 'none';
-type CharacterExpression = 'neutral' | 'determined' | 'commanding' | 'serious';
-
-interface Scene {
-  id: number;
+type Scene = {
   bg: string;
   speaker: string;
   speakerColor: string;
   text: string;
-  character?: CharacterType;
-  expression?: CharacterExpression;
-}
+  image: string;
+  imagePos?: 'left' | 'right';
+};
 
 const SCENES: Scene[] = [
   {
-    id: 1, bg: 'night_city',
-    speaker: 'NARRATOR', speakerColor: '#c4b5fd',
-    text: '11 months ago. Pakistan border. 2:34 AM. Veera Raghavan corners Umar Farooq in a crumbling safe house. Mission accomplished. But at what cost..?',
-    character: 'veera',
-    expression: 'determined',
+    bg: '/images/background/3.jpg',
+    speaker: 'NARRATOR',
+    speakerColor: '#6b7280',
+    text: 'February 1st, 2026. 3:44 AM. Codissia Trade Fair Complex, Coimbatore. Tamil Nadu\'s largest event venue — transformed overnight into a warzone. A coordinated terror cell has seized 1,200 civilians across three buildings. This is Operation Cipher Strike.',
+    image: '/images/characters/veera_intense.png',
+    imagePos: 'right',
   },
   {
-    id: 2, bg: 'night_city',
-    speaker: 'NARRATOR', speakerColor: '#c4b5fd',
-    text: 'February 1, 2026. Coimbatore. Veera lives with PTSD in his dark flat, barely sleeping. Then his psychiatrist forces him to a wedding where he meets Preethi...',
-    character: 'veera',
-    expression: 'determined',
+    bg: '/images/background/1.jpg',
+    speaker: 'NARRATOR',
+    speakerColor: '#6b7280',
+    text: 'Umar Saif — a rogue Pakistani intelligence operative — leads the assault. His demand: the immediate release of Farooq Shah, a captured terror financier. But intelligence confirms this is a decoy. The real objective is something far more dangerous.',
+    image: '/images/characters/umar_threatening.png',
+    imagePos: 'right',
   },
   {
-    id: 3, bg: 'mall_dark',
-    speaker: 'SAIF', speakerColor: '#ef4444',
-    text: '"This mall is now under MY control. 1,200 souls. One demand: Release Umar Farooq. You have 6 hours before the city burns."',
-    character: 'vikram',
-    expression: 'serious',
+    bg: '/images/background/5.jpg',
+    speaker: 'UMAR SAIF',
+    speakerColor: '#ef4444',
+    text: '"You have six hours. Release Farooq Shah, or I execute one hostage every ten minutes on national television. And when I am done — Operation BLACKOUT goes live. Your entire economy will collapse before morning prayer."',
+    image: '/images/characters/umar_angry.png',
+    imagePos: 'left',
   },
   {
-    id: 4, bg: 'mall_dark',
-    speaker: 'VEERA', speakerColor: '#a78bfa',
-    text: '"I am inside the mall. All mall security has fallen. I need cyber support immediately. Who is there? Respond on encrypted channel."',
-    character: 'veera',
-    expression: 'determined',
+    bg: '/images/background/2.jpg',
+    speaker: 'PREETHI',
+    speakerColor: '#f472b6',
+    text: '"NSA is monitoring a dormant malware called BLACKOUT — planted inside twelve Tamil Nadu power grids. If it activates on February 14th, it will wipe financial systems, crash hospital networks, and cut power to 50,000 businesses. Saif has the trigger."',
+    image: '/images/characters/preethi_worried.png',
+    imagePos: 'right',
   },
   {
-    id: 5, bg: 'ops_center',
-    speaker: 'VIKRAM', speakerColor: '#67e8f9',
-    text: '"Agent Raghavan. I am Inspector Vikram, Tamil Nadu Cyber Crime Division. We have been watching you. We have 9 cyber missions prepared. Your team handles cryptography — we handle the field."',
-    character: 'vikram',
-    expression: 'serious',
+    bg: '/images/background/4.jpg',
+    speaker: 'VEERA',
+    speakerColor: '#a78bfa',
+    text: '"I\'m already inside. Found a server room in the basement — B2 level. Their network is running on a backdoor relay. If I can get into ER-42, I can intercept Saif\'s command traffic. But I need you to decode what I find. Are you ready to be my cyber unit?"',
+    image: '/images/characters/veera_determined.png',
+    imagePos: 'left',
   },
   {
-    id: 6, bg: 'ops_center',
-    speaker: 'ALTHAF', speakerColor: '#fbbf24',
-    text: '"All cyber units: This is Deputy NSA Althaf Hussain. Listen carefully. This is a two-phase attack. The mall siege is a distraction. Operation BLACKOUT will trigger February 14 at midnight. Stop BOTH threats."',
-    character: 'althaf',
-    expression: 'commanding',
+    bg: '/images/background/4.jpg',
+    speaker: 'VIKRAM',
+    speakerColor: '#38bdf8',
+    text: '"Sir Veera, I\'m patched into the NSA relay. We have a 20-minute window before Saif rotates encryption keys. Every flag you decode is intelligence that brings us one step closer to shutting down BLACKOUT. Work fast. Work smart. Lives depend on this."',
+    image: '/images/characters/vikram_urgent.png',
+    imagePos: 'right',
   },
   {
-    id: 7, bg: 'ops_center',
-    speaker: 'VEERA', speakerColor: '#a78bfa',
-    text: '"You are our last hope. Every cipher you crack saves a life. Every flag you capture gives me actionable intel. Are you ready, operative? The city is counting on you."',
-    character: 'veera',
-    expression: 'determined',
+    bg: '/images/background/6.jpg',
+    speaker: 'ALTHAF',
+    speakerColor: '#34d399',
+    text: '"I\'m Deputy NSA Director Althaf. I\'m authorising your team for Level-5 cyber operations. This is not a simulation. Nine cipher challenges stand between Coimbatore and catastrophe. Solve them in sequence. No skipping — each mission builds on the last. Begin."',
+    image: '/images/characters/althaf_commanding.png',
+    imagePos: 'left',
   },
   {
-    id: 8, bg: 'ops_center',
-    speaker: 'SYSTEM', speakerColor: '#06b6d4',
-    text: '[ 3 ROUNDS. 9 MISSIONS. REAL-TIME CYBER WARFARE. ] OPERATION CIPHER STRIKE — BEGINS NOW.',
-    character: 'none',
+    bg: '/images/background/7.jpg',
+    speaker: 'NARRATOR',
+    speakerColor: '#6b7280',
+    text: 'Three rounds. Nine missions. Each challenge is a real cipher used in the field — Base64, ROT13, SHA-256, JWT tokens, logic bombs. Each solution advances the operation and reveals more of Saif\'s network. The clock is running. Farooq\'s transfer begins at dawn.',
+    image: '/images/characters/vikram_serious.png',
+    imagePos: 'right',
+  },
+  {
+    bg: '/images/background/8.jpg',
+    speaker: 'PREETHI',
+    speakerColor: '#f472b6',
+    text: '"Every team gets the same nine missions — but the Time-Locked Vault and Pattern Lock challenges are personalised to your team. Your hash. Your flag. No copying. The terrorists designed it that way, and so did we. Your unique answer is the only answer that works."',
+    image: '/images/characters/preethi_hopeful.png',
+    imagePos: 'left',
+  },
+  {
+    bg: '/images/background/9.jpg',
+    speaker: 'VEERA',
+    speakerColor: '#a78bfa',
+    text: '"I\'ll be in the field. You\'ll be my cyber support. When I send you data, decode it. When I send you a hash, crack it. When I send you a JWT, expose it. Together we find the BLACKOUT kill switch, stop Saif, and bring every hostage home. Let\'s move."',
+    image: '/images/characters/veera_relieved.png',
+    imagePos: 'right',
   },
 ];
 
 export default function StoryPage() {
   const router = useRouter();
   const [sceneIdx, setSceneIdx] = useState(0);
-  const [textDisplayed, setTextDisplayed] = useState('');
-  const [typing, setTyping] = useState(false);
+  const [displayText, setDisplayText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
+
+  const bgRef = useRef<HTMLDivElement>(null);
+  const portraitRef = useRef<HTMLDivElement>(null);
   const dialogueRef = useRef<HTMLDivElement>(null);
+  const nameRef = useRef<HTMLDivElement>(null);
+  const typeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const scene = SCENES[sceneIdx];
-
-  const typeText = useCallback((text: string) => {
-    setTextDisplayed('');
-    setTyping(true);
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < text.length) {
-        setTextDisplayed(text.slice(0, i + 1));
-        i++;
-      } else {
-        clearInterval(interval);
-        setTyping(false);
-      }
-    }, 22);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const cleanup = typeText(scene.text);
-    
-    // GSAP: Fade in dialogue box
-    if (dialogueRef.current) {
-      gsap.fromTo(
-        dialogueRef.current,
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
-      );
-    }
-    
-    return cleanup;
-  }, [sceneIdx, scene.text, typeText]);
-
-  const advance = () => {
-    if (typing) {
-      setTextDisplayed(scene.text);
-      setTyping(false);
-      return;
-    }
-    if (sceneIdx < SCENES.length - 1) {
-      setSceneIdx(s => s + 1);
-    } else {
-      router.push('/challenges');
-    }
-  };
-
-  const bgImg = SCENE_BACKGROUNDS[scene.bg] || SCENE_BACKGROUNDS.ops_center;
   const isLast = sceneIdx === SCENES.length - 1;
 
+  const typeText = useCallback((text: string) => {
+    setDisplayText('');
+    setIsTyping(true);
+    let i = 0;
+    if (typeTimerRef.current) clearInterval(typeTimerRef.current);
+    typeTimerRef.current = setInterval(() => {
+      i++;
+      setDisplayText(text.slice(0, i));
+      if (i >= text.length) {
+        clearInterval(typeTimerRef.current!);
+        setIsTyping(false);
+      }
+    }, 16);
+  }, []);
+
+  const animateScene = useCallback((idx: number) => {
+    const s = SCENES[idx];
+    // Background fade
+    if (bgRef.current) {
+      gsap.fromTo(bgRef.current, { opacity: 0 }, { opacity: 1, duration: 0.55, ease: 'power2.inOut' });
+    }
+    // Portrait slide in
+    if (portraitRef.current) {
+      const fromX = s.imagePos === 'left' ? -40 : 40;
+      gsap.fromTo(portraitRef.current,
+        { opacity: 0, x: fromX, scale: 0.96 },
+        { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: 'power3.out', delay: 0.1 }
+      );
+    }
+    // Dialogue box rise
+    if (dialogueRef.current) {
+      gsap.fromTo(dialogueRef.current, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: 0.2 });
+    }
+    if (nameRef.current) {
+      gsap.fromTo(nameRef.current, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.3, ease: 'power2.out', delay: 0.25 });
+    }
+    typeText(s.text);
+  }, [typeText]);
+
+  useEffect(() => {
+    animateScene(sceneIdx);
+    return () => { if (typeTimerRef.current) clearInterval(typeTimerRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sceneIdx]);
+
+  const advance = () => {
+    if (isTyping) {
+      // Complete typing instantly
+      if (typeTimerRef.current) clearInterval(typeTimerRef.current);
+      setDisplayText(scene.text);
+      setIsTyping(false);
+      return;
+    }
+    if (isLast) {
+      router.push('/challenges');
+      return;
+    }
+    setSceneIdx(i => i + 1);
+  };
+
+  const handleSkip = () => {
+    if (typeTimerRef.current) clearInterval(typeTimerRef.current);
+    router.push('/challenges');
+  };
+
   return (
-    <GameLayout backgroundImage={bgImg} showScanlines>
-      <div className="cursor-pointer h-full flex flex-col" onClick={advance}>
-        {/* HUD Top Bar */}
-        <div
-          className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
-          style={{
-            background: 'linear-gradient(180deg, rgba(5,2,20,0.9), transparent)',
-          }}
-          onClick={e => e.stopPropagation()}
-        >
-          <div className="flex items-center gap-3">
-            <div className="text-base font-bold text-purple-400 glow-purple">
-              OPERATION CIPHER STRIKE
-            </div>
-            <span className="text-xs font-bold tracking-widest text-gray-600 uppercase">
-              — Origin Story
-            </span>
-          </div>
-          
-          <div className="flex gap-2.5 items-center">
-            {/* Scene Progress Dots */}
-            <div className="flex gap-1.5 items-center">
-              {SCENES.map((_, i) => (
-                <div
-                  key={i}
-                  className="h-2 rounded transition-all duration-300 ease-in-out"
-                  style={{
-                    width: i === sceneIdx ? '20px' : '8px',
-                    background: i === sceneIdx ? '#7c3aed' : i < sceneIdx ? '#10b981' : 'rgba(109,40,217,0.3)',
-                  }}
-                />
-              ))}
-            </div>
-            
-            <span className="text-gray-500 text-xs ml-2">
-              {sceneIdx + 1} / {SCENES.length}
-            </span>
-            
-            <button
-              className="btn-game-secondary text-xs px-3.5 py-1.5"
-              onClick={() => setShowSkipConfirm(true)}
-            >
-              <SkipForward size={13} /> Skip Story
-            </button>
-          </div>
-        </div>
-
-        {/* Character Display */}
-        {scene.character && scene.character !== 'none' && (
-          <Character
-            character={scene.character}
-            expression={scene.expression || 'neutral'}
-            position="left"
-            active={true}
-          />
-        )}
-
-        {/* Dialogue Box */}
-        <div
-          ref={dialogueRef}
-          className="absolute bottom-0 left-0 right-0 z-30 mx-auto mb-8 px-8"
-          style={{ maxWidth: '1100px' }}
-        >
-          <div className="bg-gradient-to-br from-slate-950/95 to-purple-950/90 border-2 border-purple-600/50 rounded-xl p-6 shadow-2xl">
-            {/* Speaker Name */}
-            <div
-              className="text-sm font-bold tracking-widest uppercase mb-3 pb-2 border-b border-purple-600/30"
-              style={{ color: scene.speakerColor }}
-            >
-              {scene.speaker}
-            </div>
-            
-            {/* Dialogue Text */}
-            <div className="text-slate-100 text-lg leading-relaxed min-h-[80px]">
-              {textDisplayed}
-              {typing && (
-                <span className="inline-block w-2 h-5 ml-1 bg-purple-400 animate-pulse" />
-              )}
-            </div>
-            
-            {/* Continue Prompt */}
-            {!typing && (
-              <div className="absolute bottom-4 right-5.5 flex items-center gap-1.5 text-purple-400 text-[13px] font-semibold">
-                {isLast ? 'BEGIN OPERATION' : 'CONTINUE'}
-                <ChevronRight size={16} />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Skip Confirmation Modal */}
-        {showSkipConfirm && (
-          <div
-            className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-md flex items-center justify-center"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="game-panel-bordered p-9 px-10 max-w-md text-center animate-fadeIn">
-              <X size={28} className="text-red-500 mx-auto mb-3.5" />
-              
-              <h3 className="text-lg font-bold text-purple-200 mb-2.5">
-                Skip Story?
-              </h3>
-              
-              <p className="text-purple-400 text-sm leading-relaxed mb-6">
-                Jump straight to the missions. You can always return to the story briefing from the menu.
-              </p>
-              
-              <div className="flex gap-3">
-                <button
-                  className="btn-game-danger flex-1"
-                  onClick={() => router.push('/challenges')}
-                >
-                  Skip to Missions
-                </button>
-                <button
-                  className="btn-game-secondary flex-1"
-                  onClick={() => setShowSkipConfirm(false)}
-                >
-                  Continue Story
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+    <div
+      onClick={advance}
+      style={{ position: 'fixed', inset: 0, cursor: 'pointer', userSelect: 'none', fontFamily: "'Inter',sans-serif", background: '#000' }}
+    >
+      {/* Background */}
+      <div ref={bgRef} style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <Image src={scene.bg} alt="background" fill style={{ objectFit: 'cover', filter: 'brightness(0.35) saturate(0.8)' }} priority />
+        {/* Vignette */}
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%)' }} />
+        {/* Scanline overlay */}
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px)', zIndex: 1, pointerEvents: 'none' }} />
       </div>
-    </GameLayout>
+
+      {/* HUD top bar */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20, padding: '14px 26px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(180deg,rgba(0,0,0,0.7) 0%,transparent 100%)' }}>
+        {/* Scene dots */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {SCENES.map((_, i) => (
+            <div key={i} style={{ width: i === sceneIdx ? 18 : 6, height: 6, borderRadius: 3, background: i < sceneIdx ? '#10b981' : i === sceneIdx ? '#a78bfa' : 'rgba(255,255,255,0.15)', transition: 'all 0.3s ease', boxShadow: i === sceneIdx ? '0 0 8px rgba(167,139,250,0.8)' : 'none' }} />
+          ))}
+        </div>
+
+        {/* Operation label */}
+        <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase' }}>
+          OPERATION CIPHER STRIKE  PROLOGUE
+        </div>
+
+        {/* Skip button */}
+        <button
+          onClick={e => { e.stopPropagation(); setShowSkipConfirm(true); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 13px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 7, cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, letterSpacing: 1, transition: 'all 0.2s' }}
+        >
+          <SkipForward size={12} />SKIP
+        </button>
+      </div>
+
+      {/* Character portrait */}
+      <div
+        ref={portraitRef}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          [scene.imagePos === 'left' ? 'left' : 'right']: '6vw',
+          zIndex: 10,
+          width: 'clamp(220px, 28vw, 400px)',
+          height: 'clamp(340px, 68vh, 680px)',
+          pointerEvents: 'none',
+        }}
+      >
+        <Image
+          src={scene.image}
+          alt="character"
+          fill
+          style={{ objectFit: 'contain', objectPosition: 'bottom', filter: 'drop-shadow(0 0 32px rgba(109,40,217,0.45)) drop-shadow(0 0 60px rgba(0,0,0,0.8))' }}
+          priority
+        />
+      </div>
+
+      {/* Dialogue box */}
+      <div
+        ref={dialogueRef}
+        style={{ position: 'absolute', bottom: '3vh', left: '5vw', right: '5vw', zIndex: 15, pointerEvents: 'none' }}
+      >
+        {/* Name tag */}
+        <div
+          ref={nameRef}
+          style={{
+            display: 'inline-block',
+            marginBottom: 8, marginLeft: 4,
+            padding: '5px 18px',
+            background: 'linear-gradient(90deg, rgba(109,40,217,0.85), rgba(109,40,217,0.4))',
+            border: '1px solid rgba(167,139,250,0.55)',
+            borderRadius: '8px 8px 0 0',
+            fontSize: 11, fontWeight: 900, letterSpacing: 3, textTransform: 'uppercase',
+            color: scene.speakerColor,
+            backdropFilter: 'blur(10px)',
+            boxShadow: `0 0 20px ${scene.speakerColor}44`,
+          }}
+        >
+          {scene.speaker}
+        </div>
+
+        {/* Dialogue panel */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(2,1,12,0.92), rgba(14,8,40,0.9))',
+          border: '1px solid rgba(109,40,217,0.45)',
+          borderRadius: '0 14px 14px 14px',
+          padding: '18px 24px 20px',
+          backdropFilter: 'blur(24px)',
+          boxShadow: '0 8px 60px rgba(0,0,0,0.7), 0 0 30px rgba(109,40,217,0.1)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* Top accent line */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(167,139,250,0.6), transparent)' }} />
+
+          <p style={{ margin: 0, fontSize: 'clamp(13px,1.6vw,17px)', color: '#e2e8f0', lineHeight: 1.75, minHeight: '3em', fontWeight: 400 }}>
+            {displayText}
+            {isTyping && <span style={{ opacity: 0.7, animation: 'blink 0.7s steps(1) infinite' }}>|</span>}
+          </p>
+
+          {/* Advance hint */}
+          {!isTyping && (
+            <div style={{ position: 'absolute', bottom: 14, right: 20, display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(167,139,250,0.6)', fontSize: 10, fontWeight: 700, letterSpacing: 2, animation: 'pulse 1.5s ease-in-out infinite' }}>
+              {isLast ? 'BEGIN MISSIONS' : 'CONTINUE'} <ChevronRight size={13} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Scene counter */}
+      <div style={{ position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 20, color: 'rgba(255,255,255,0.2)', fontSize: 10, letterSpacing: 2 }}>
+        {sceneIdx + 1} / {SCENES.length}
+      </div>
+
+      {/* Skip confirm modal */}
+      {showSkipConfirm && (
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <div style={{ background: 'linear-gradient(135deg,rgba(2,1,12,0.98),rgba(14,8,40,0.97))', border: '1px solid rgba(109,40,217,0.45)', borderRadius: 14, padding: '24px 28px', maxWidth: 380, width: '90vw', textAlign: 'center' }}>
+            <div style={{ fontSize: 26, marginBottom: 10 }}></div>
+            <h3 style={{ color: '#e9d5ff', fontSize: 16, fontWeight: 900, letterSpacing: 2, marginBottom: 8 }}>SKIP PROLOGUE?</h3>
+            <p style={{ color: '#6b7280', fontSize: 12, lineHeight: 1.6, marginBottom: 18 }}>
+              You will bypass the story introduction and proceed directly to the mission terminal.
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button
+                onClick={() => setShowSkipConfirm(false)}
+                style={{ padding: '10px 22px', background: 'rgba(109,40,217,0.12)', border: '1px solid rgba(109,40,217,0.35)', borderRadius: 8, cursor: 'pointer', color: '#c4b5fd', fontSize: 12, fontWeight: 700, letterSpacing: 1 }}
+              >
+                Continue Story
+              </button>
+              <button
+                onClick={handleSkip}
+                style={{ padding: '10px 22px', background: 'rgba(109,40,217,0.7)', border: '1px solid rgba(167,139,250,0.5)', borderRadius: 8, cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 700, letterSpacing: 1, boxShadow: '0 0 20px rgba(109,40,217,0.35)' }}
+              >
+                Skip to Missions
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes pulse { 0%,100%{opacity:0.6;transform:translateX(0)} 50%{opacity:1;transform:translateX(3px)} }
+      `}</style>
+    </div>
   );
 }

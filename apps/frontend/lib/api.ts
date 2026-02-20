@@ -77,7 +77,9 @@ export const api = {
   challenges: {
     getCurrent: () => apiRequest('/challenges/current'),
     getActivity: () => apiRequest('/challenges/activity'),
-    submitFlag: (data: { flag: string }) => apiRequest('/submissions', { method: 'POST', body: JSON.stringify(data) }),
+    useHint: (challengeId: string) => apiRequest(`/challenges/${challengeId}/hint`, { method: 'POST' }),
+    submitFlag: (data: { challengeId: string; flag: string }) =>
+      apiRequest('/challenges/submit', { method: 'POST', body: JSON.stringify(data) }),
     getLeaderboard: () => apiRequest('/scoreboard'),
   },
 

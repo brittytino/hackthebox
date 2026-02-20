@@ -132,13 +132,38 @@ export class AdminService {
   }
 
   async resetCompetition() {
+    // Delete dependent records first
     await this.prisma.submission.deleteMany({});
+    await this.prisma.activity.deleteMany({});
+    await this.prisma.storyProgress.deleteMany({});
     await this.prisma.score.deleteMany({});
-    await this.prisma.round.updateMany({
-      data: { status: 'PENDING' },
-    });
-    
-    return { message: 'Competition reset successfully' };
+
+    // Reset all rounds back to PENDING first, then activate round 1
+    await this.prisma.round.updateMany({ data: { status: 'PENDING' } });
+    const firstRound = await this.prisma.round.findFirst({ where: { order: 1 } });
+    if (firstRound) {
+      await this.prisma.round.update({
+        where: { id: firstRound.id },
+        data: { status: 'ACTIVE' },
+      });
+    }
+
+    // Re-initialize scores and story progress for all teams, reset currentLevel
+    const teams = await this.prisma.team.findMany({ select: { id: true } });
+    for (const team of teams) {
+      await this.prisma.team.update({
+        where: { id: team.id },
+        data: { currentLevel: 1 },
+      });
+      await this.prisma.score.create({
+        data: { teamId: team.id, totalPoints: 0 },
+      });
+      await this.prisma.storyProgress.create({
+        data: { teamId: team.id, currentRound: 1 },
+      });
+    }
+
+    return { message: 'Competition reset successfully. All teams reset to Level 1.' };
   }
 
   // Score Management

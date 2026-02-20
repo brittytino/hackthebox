@@ -64,6 +64,16 @@ async function main() {
   });
   console.log('✅ Round 3 created');
 
+  // Ensure challenge seed is idempotent (prevents duplicate levels on repeated startup)
+  await prisma.challenge.deleteMany({
+    where: {
+      roundId: {
+        in: [round1.id, round2.id, round3.id],
+      },
+    },
+  });
+  console.log('🧹 Existing seeded challenges cleared');
+
   // ================================================================================
   // ROUND 1 CHALLENGES - THE BREACH DISCOVERY
   // ================================================================================
@@ -75,7 +85,7 @@ async function main() {
       
 **INTERCEPTED MESSAGE:**
 \`\`\`
-ZG1OaFpXNHVVbTl2YlMxRlVqUXlMRVZoYzNRZ1YybHVadz09
+dGF2Si1nZm5SLDI0RVItemJiRS5lcmllckY=
 \`\`\`
 
 **ENCRYPTION LAYERS DETECTED:** Base64 → ROT13 → Reverse
@@ -94,7 +104,7 @@ Veera has managed to access the mall's backup server room. He's monitoring terro
       points: 100,
       order: 1,
       difficulty: 'easy',
-      hints: 'Follow the order: Base64 decode → ROT13 decode → Reverse string. Try online tools or write a script.',
+      hints: 'Use this exact order only: 1) Base64 decode the intercepted string 2) apply ROT13 to that result 3) reverse the full string. Submit exactly as shown (including punctuation) inside CTF{...}.',
     },
     {
       title: 'Level 1.2: The Fragmented Server Map',
@@ -112,7 +122,7 @@ Veera has managed to access the mall's backup server room. He's monitoring terro
 
 **FRAGMENT C (CAESAR CIPHER - Shift 7):**
 \`\`\`
-Ncqwvlk
+Nyhualk
 \`\`\`
 
 **VIKRAM'S BRIEFING:** "We've intercepted three encrypted files from their network. Each fragment uses different encryption: Hex, Binary, and Caesar cipher with shift 7. Decode all three and assemble them in order (A + B + C) to form the access code."
@@ -129,7 +139,7 @@ Veera needs the access code, but it's split across three encrypted files. Each o
       points: 150,
       order: 2,
       difficulty: 'medium',
-      hints: 'Hex to ASCII, Binary to ASCII, Caesar shift 7 back. Combine: A+B+C exactly as decoded.',
+      hints: 'Decode each fragment separately: A (hex→ASCII), B (binary bytes→ASCII), C (Caesar shift -7). Then concatenate strictly as A+B+C with no spaces. Expected pattern starts with CTF#.',
     },
     {
       title: 'Level 1.3: The Time-Locked Vault',
@@ -171,7 +181,7 @@ Veera finds the vault containing terrorist attack plans. The security log shows 
       points: 200,
       order: 3,
       difficulty: 'hard',
-      hints: 'Use MD5 hash calculator. Format: YourTeamName|2|1|CIPHER2026 → MD5 → take first 8 chars → CTF{...}',
+      hints: 'Build the input exactly as TeamName|2|1|CIPHER2026 (pipes included, no extra spaces). Compute MD5, take first 8 lowercase hex characters, then submit as CTF{xxxxxxxx}.',
     },
   ];
 
@@ -245,7 +255,7 @@ The hard drive contains three separate databases protected by password hashes (M
       points: 250,
       order: 1,
       difficulty: 'medium',
-      hints: 'All three hashes are for the same common password. Use hash crackers or rainbow tables.',
+      hints: 'All 3 hashes resolve to the same plaintext password. Extract first 3 letters from each cracked password and keep lowercase. Final format must be CTF{xxx+xxx+xxx+42}.',
     },
     {
       title: 'Level 2.2: The JWT Inception',
@@ -253,7 +263,7 @@ The hard drive contains three separate databases protected by password hashes (M
 
 **INTERCEPTED TOKEN (HEX-ENCODED):**
 \`\`\`
-65794a68624763694f694a49557a49314e694973496e523563434936496b705856434a392e65794a7a64574969 4f694a7a5958567961574679646d46754969776961574630496a6f784e6a41334f5463794f446b304c434a6c 654841694f6a45324d4463354e7a49344f5451304c434a7a5a574e795a5851694f694a44566b51785a7a4e45 61586e41597a6746596b74764e6b4e6d626e6453496e302e5176414d69676e396f7639507a4d7a55716f4c79 44365748556550664f6c304f364e786f614b44385168444d
+65794a68624763694f694a49557a49314e694973496e523563434936496b705856434a392e65794a7a5a574e795a5851694f694a47513051785a7a4e456158703551574d3165554669533238325132356d5a46496966512e62576c7a63326c766267
 \`\`\`
 
 **YOUR MISSION:**
@@ -277,7 +287,7 @@ The admin panel requires JWT authentication. The token has been hex-encoded to e
       points: 300,
       order: 2,
       difficulty: 'hard',
-      hints: 'Hex to ASCII → Split JWT by dots → Base64 decode middle part → Find "secret" field → Reverse it',
+      hints: 'Convert hex dump to ASCII first, then split JWT as header.payload.signature. Decode only payload (middle) from Base64, copy secret field value exactly, reverse it character-by-character, then wrap in CTF{...}.',
     },
     {
       title: 'Level 2.3: The Pattern Lock',
@@ -321,7 +331,7 @@ The final database containing the cyberattack payload and February 14 activation
       points: 350,
       order: 3,
       difficulty: 'hard',
-      hints: 'SHA-256 hash of: YourTeamName + "5" + "CIPHER2026" → take first 8 chars → CTF{...}',
+      hints: 'Concatenate exactly: TeamName + 5 + CIPHER2026 (no separators). SHA-256 hash that string, take first 8 lowercase hex chars, submit as CTF{xxxxxxxx}.',
     },
   ];
 
@@ -395,7 +405,7 @@ Veera has escaped capture. The cyberattack payload is split across 4 encrypted f
       points: 400,
       order: 1,
       difficulty: 'hard',
-      hints: 'Decode each fragment separately: Binary→ASCII, Hex→ASCII, Base64→ASCII, ROT13→ASCII. Concatenate in order 1+2+3+4.',
+      hints: 'Treat each fragment independently, then join in strict order 1→2→3→4. Do not decode one fragment twice. Final combined text should already resemble a full CTF{...} flag when assembled.',
     },
     {
       title: 'Level 3.2: The Logic Bomb Defusal',
@@ -403,7 +413,7 @@ Veera has escaped capture. The cyberattack payload is split across 4 encrypted f
 
 **ENCRYPTED LOGIC BOMB CODE:**
 \`\`\`
-34434646374231363132373433343230363436353636373536333631373036433639323036423639366336433330363336423330373537343230d
+4d4445774d4441774d5445674d4445774d5441784d4441674d4445774d4441784d5441674d4445784d5445774d5445674d4445774d4441784d4441674d4445784d4441784d4445674d4445784d4441784d5441674d4445784d5441784d4445674d4445784d5441774d5445674d4445784d4441774d4445674d4445784d4445784d4441674d4441784d4445784d5441674d4445774d4445774d5445674d4445784d4445774d4445674d4445784d4445784d4441674d4445784d4445784d4441674d4445784d5441774d5445674d4445784d5441784d5445674d4445784d4445774d4445674d4445784d5441784d4441674d4445784d4441774d5445674d4445784d4445774d4441674d4441784d4445784d5441674d4445774d4445784d5445674d4445784d5441784d5441674d4445784d4441784d4445674d4445784d5441774d5441674d4445784d5441774d5441674d4445784d4445784d5445674d4445784d4441784d4441674d4445784d4441784d4445674d4445784d5445784d44453d
 \`\`\`
 
 **DEFUSAL SEQUENCE:**
@@ -411,9 +421,9 @@ Veera has escaped capture. The cyberattack payload is split across 4 encrypted f
 2. You'll get Base64 - decode it
 3. You'll get ROT13 - decode it 
 4. You'll get Binary - convert to ASCII
-5. Verify: ASCII sum must be divisible by 7
+5. Final output should be a complete flag string
 
-**VEERA'S WARNING:** "ONE MISTAKE = CITY GOES DARK. Follow the sequence precisely: Hex → Base64 → ROT13 → Binary → ASCII. Then verify with divisibility check."
+**VEERA'S WARNING:** "ONE MISTAKE = CITY GOES DARK. Follow the sequence precisely: Hex → Base64 → ROT13 → Binary → ASCII. Do not skip any step."
 
 **HOSTAGE STATUS:** 85 trapped | 1,115 rescued  
 **TIME TO LOGIC BOMB TRIGGER:** 10 minutes  
@@ -428,7 +438,7 @@ CRITICAL ALERT: A logic bomb is embedded in the attack script. If not defused co
       points: 450,
       order: 2,
       difficulty: 'hard',
-      hints: 'Multi-layer decode: Start with Hex, then each result reveals the next encoding method. Keep decoding until you get readable text.',
+      hints: 'Follow the chain without skipping: Hex → Base64 → ROT13 → Binary → ASCII. After final plaintext, compute ASCII sum check exactly as instructed before submitting CTF{...}.',
     },
     {
       title: 'Level 3.3: The Master Vault (FINAL BOSS)',
@@ -444,12 +454,12 @@ This vault combines EVERY technique you've mastered:
 **ENCRYPTED VAULT DATA:**
 \`\`\`
 {
-  "layer1_hex": "3537363133373336333836343733363633373537323635326433363437363133373337336433363636363 13336363536333637363236333337363133373337333633373336333733373336333733373336333733333 73373337373336363733333737333733363733373337333733363733373336363733333736333736363733 373337343137343635373233373336333733363633373336333733363333373336",
-  "layer2_instruction": "Decode layer1 from hex to get Base64. Decode Base64 to get JSON with JWT.",
-  "layer3_instruction": "Extract JWT payload, find 'vault_key' field. It's ROT13 encoded.",
-  "layer4_instruction": "Decode ROT13 to get coordinates. Format: X-Y-Z where X,Y,Z are numbers.",
-  "layer5_instruction": "Calculate MD5 of 'MASTER'+X+Y+Z+'KILLSWITCH'. First 6 chars = code.",
-  "final_format": "CTF{MASTER_first6chars_VAULT}"
+  "layer1_hex": "65794a306232746c62694936496d5635536d686952324e7054326c4b535656365354646f61556c7a535735534e574e4453545a4a61334259566b4e4b4f53356c65556f7957566857633252474f584a615747747054326c4b645531584f486c6a524531705a6c4575596c6447656d5248566e6b6966513d3d",
+  "layer2_instruction": "Decode layer1 hex to text. The result is Base64.",
+  "layer3_instruction": "Decode Base64 to JSON. Extract the token field (JWT).",
+  "layer4_instruction": "Decode JWT payload and read vault_key (ROT13 encoded).",
+  "layer5_instruction": "ROT13 vault_key to get final 6-char code.",
+  "final_format": "CTF{MASTER_<code>_VAULT}"
 }
 \`\`\`
 
@@ -457,9 +467,9 @@ This vault combines EVERY technique you've mastered:
 1. Hex decode layer1 → Get Base64
 2. Base64 decode → Get JSON with JWT
 3. Decode JWT → Extract payload → Find vault_key (ROT13 encoded)
-4. ROT13 decode vault_key → Get coordinates X-Y-Z
-5. MD5("MASTER" + X + Y + Z + "KILLSWITCH") → First 6 chars
-6. Format: CTF{MASTER_xxxxxx_VAULT}
+4. ROT13 decode vault_key → Get final 6-character code
+5. ROT13 decode vault_key → final 6-character code
+6. Format: CTF{MASTER_code_VAULT}
 
 ⏰ **FIRST TEAM TO SOLVE: 2000 POINTS (DOUBLE)**  
 ⏰ **OTHER TEAMS (within 30 min): 1000 POINTS**  
@@ -479,7 +489,7 @@ Joint RAW-Police raid recovered Saravana's encrypted server containing the MASTE
       points: 1000,
       order: 3,
       difficulty: 'hard',
-      hints: 'Follow each layer step by step. Each decoded result tells you what to decode next. Write a script or use multiple tools carefully.',
+      hints: 'Automate this challenge: decode layer1 hex → Base64 JSON → extract token JWT → decode payload → read vault_key → ROT13 it to get the 6-character code, then submit CTF{MASTER_code_VAULT}.',
     },
   ];
 

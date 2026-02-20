@@ -13,7 +13,7 @@ export class ChallengesService {
   constructor(private prisma: PrismaService) {}
 
   private async getChallengeSequence() {
-    return this.prisma.challenge.findMany({
+    const challenges = await this.prisma.challenge.findMany({
       where: { isActive: true },
       include: {
         round: {
@@ -29,7 +29,24 @@ export class ChallengesService {
       orderBy: [
         { round: { order: 'asc' } },
         { order: 'asc' },
+        { createdAt: 'desc' },
       ],
+    });
+
+    const uniqueByStage = new Map<string, (typeof challenges)[number]>();
+
+    for (const challenge of challenges) {
+      const stageKey = `${challenge.round.order}-${challenge.order}`;
+      if (!uniqueByStage.has(stageKey)) {
+        uniqueByStage.set(stageKey, challenge);
+      }
+    }
+
+    return Array.from(uniqueByStage.values()).sort((a, b) => {
+      if (a.round.order !== b.round.order) {
+        return a.round.order - b.round.order;
+      }
+      return a.order - b.order;
     });
   }
 
@@ -55,6 +72,44 @@ export class ChallengesService {
       return `ctf{${hash.substring(0, 8)}}`;
     }
     return '';
+  }
+
+  private getAbsoluteLevel(challenge: { round: { order: number }; order: number }) {
+    return (challenge.round.order - 1) * 3 + challenge.order;
+  }
+
+  private getAcceptedFlagsForLevel(teamName: string, absoluteLevel: number): string[] {
+    const staticFlags: Record<number, string[]> = {
+      1: ['ctf{server.room-er42,east-wing}'],
+      2: ['ctf#accessgranted'],
+      4: ['ctf{pas+pas+pas+42}'],
+      5: ['ctf{rdfnc6okbay5cayzid3g1dcf}'],
+      7: ['ctf{blackout.feb14.payload}'],
+      8: ['ctf{defusal.killswitch.overrode}'],
+      9: ['ctf{master_a1b2c3_vault}'],
+    };
+
+    if (absoluteLevel === 3 || absoluteLevel === 6) {
+      return [this.calculateTeamSpecificFlag(teamName, absoluteLevel).toLowerCase()];
+    }
+
+    return staticFlags[absoluteLevel] || [];
+  }
+
+  private getDefaultHintForLevel(absoluteLevel: number): string {
+    const hints: Record<number, string> = {
+      1: 'Decode strictly in this order: Base64 → ROT13 → Reverse. If your output looks readable too early, you likely skipped a step.',
+      2: 'Decode A, B, and C independently, then concatenate exactly as A+B+C. For Fragment C, use Caesar shift -7.',
+      3: 'Use MD5(teamName|2|1|CIPHER2026), then take the first 8 lowercase hex characters and wrap as CTF{xxxxxxxx}.',
+      4: 'All three hashes map to the same common password. Take first 3 letters from each result and submit as CTF{xxx+xxx+xxx+42}.',
+      5: 'Hex decode first, split JWT by dots, Base64 decode payload only, extract secret, reverse it exactly, then submit.',
+      6: 'Compute SHA256(teamName + "5" + "CIPHER2026"), take first 8 lowercase hex chars, then submit as CTF{xxxxxxxx}.',
+      7: 'Decode each fragment independently (Binary/Hex/Base64/ROT13) and concatenate in strict order 1→2→3→4.',
+      8: 'Keep the decode chain exact: Hex → Base64 → ROT13 → Binary → ASCII. The final output is directly the flag text.',
+      9: 'Decode layer1 hex → Base64 → JSON token → JWT payload, then ROT13 the vault_key to get the 6-character code.',
+    };
+
+    return hints[absoluteLevel] || '';
   }
 
   // Get current challenge for a team (based on linear progression)
@@ -120,7 +175,9 @@ export class ChallengesService {
         points: challenge.points,
         difficulty: challenge.difficulty,
         order: challenge.order,
-        hints: challenge.hints,
+        hints:
+          this.getDefaultHintForLevel(this.getAbsoluteLevel(challenge)) ||
+          challenge.hints,
         hintPenalty: challenge.hintPenalty,
         maxAttempts: challenge.maxAttempts,
         round: challenge.round,
@@ -172,7 +229,7 @@ export class ChallengesService {
       throw new NotFoundException('Challenge not found');
     }
 
-    const absoluteLevel = team.currentLevel;
+    const absoluteLevel = this.getAbsoluteLevel(challenge);
 
     // Check if already solved
     const existingSolved = await this.prisma.submission.findFirst({
@@ -203,24 +260,14 @@ export class ChallengesService {
     }
 
     // Verify flag
+    const normalizedFlag = flag.trim().toLowerCase();
+    const acceptedFlags = this.getAcceptedFlagsForLevel(team.name, absoluteLevel);
+
     let isCorrect = false;
-
-    // Check if this is a team-specific challenge
-    const isTeamSpecific = await bcrypt.compare(
-      '__TEAM_SPECIFIC__',
-      challenge.flagHash,
-    );
-
-    if (isTeamSpecific) {
-      // Calculate the team's specific flag
-      const expectedFlag = this.calculateTeamSpecificFlag(
-        team.name,
-        absoluteLevel,
-      );
-      isCorrect = flag.toLowerCase() === expectedFlag.toLowerCase();
+    if (acceptedFlags.length > 0) {
+      isCorrect = acceptedFlags.includes(normalizedFlag);
     } else {
-      // Normal flag verification
-      isCorrect = await bcrypt.compare(flag.toLowerCase(), challenge.flagHash);
+      isCorrect = await bcrypt.compare(normalizedFlag, challenge.flagHash);
     }
 
     // Create submission
@@ -331,7 +378,11 @@ export class ChallengesService {
       throw new NotFoundException('Challenge not found');
     }
 
-    if (!challenge.hints) {
+    const absoluteLevel = this.getAbsoluteLevel(challenge);
+    const hintText =
+      this.getDefaultHintForLevel(absoluteLevel) || challenge.hints || '';
+
+    if (!hintText) {
       throw new BadRequestException('No hint available for this challenge');
     }
 
@@ -348,7 +399,7 @@ export class ChallengesService {
       return {
         success: true,
         alreadyUsed: true,
-        hint: challenge.hints,
+        hint: hintText,
         penaltyApplied: 0,
         teamPoints,
       };
@@ -394,7 +445,7 @@ export class ChallengesService {
     return {
       success: true,
       alreadyUsed: false,
-      hint: challenge.hints,
+      hint: hintText,
       penaltyApplied,
       teamPoints: newTotalPoints,
     };

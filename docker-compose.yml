@@ -80,6 +80,7 @@ services:
       PORT: ${NEXTJS_PORT}
     ports:
       - "0.0.0.0:${NEXTJS_PORT}:${NEXTJS_PORT}"
+    command: sh -c "npm ci ; npm run dev"
     volumes:
       - ./apps/frontend:/app
       - /app/node_modules

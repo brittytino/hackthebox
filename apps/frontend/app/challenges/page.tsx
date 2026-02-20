@@ -35,7 +35,7 @@ const MISSIONS: MissionMeta[] = [
     storyStatus: ' 1,200 HOSTAGES  NEXT EXECUTION IN 28 MIN',
     situation: 'Veera has gone dark inside the mall and found a backup server room in the basement. He taps the terrorist network and intercepts an encrypted transmission — but it has triple-layer encoding. He needs your team to break it before Saif moves his command center.',
     intel: '"Triple-layer encoding — Base64, then ROT13, then reversed. Overconfident idiots. Decode it and tell me where their command center is. Every second counts."',
-    objective: 'Decode Base64  ROT13  Reverse. Submit the location in the flag.',
+    objective: 'Decode Base64 → apply ROT13 → reverse the output. Submit the final location as the flag.',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_determined.png',
     roundLabel: 'ROUND 1  BREACH',
@@ -49,7 +49,7 @@ const MISSIONS: MissionMeta[] = [
     storyStatus: ' PATROLS ACTIVE  NEXT EXECUTION IN 15 MIN',
     situation: 'Vikram\'s cyber unit intercepts three encrypted files from the terrorist relay — each fragment of the server room access code is encoded differently. Veera is 50 meters away with armed patrols closing in. He needs the complete code now.',
     intel: '"Three fragments. Hex, Binary, Caesar cipher shift-7. Decode every piece and assemble them in order — A then B then C. No mistakes. Veera is exposed if you get this wrong."',
-    objective: 'Decode Fragment A (Hex) + Fragment B (Binary) + Fragment C (Caesar-7). Combine in exact order.',
+    objective: 'Decode Fragment A (Hex) + Fragment B (Binary) + Fragment C (Caesar -7), then combine strictly as A+B+C.',
     character: 'Vikram Singaravelan',
     characterImage: '/images/characters/vikram_serious.png',
     roundLabel: 'ROUND 1  BREACH',
@@ -77,7 +77,7 @@ const MISSIONS: MissionMeta[] = [
     storyStatus: ' GOVT CAVING  FAROOQ RELEASE PREP STARTED',
     situation: 'The hard drive from the vault holds three password-protected databases — sleeper cell identities, financial backers, and the BLACKOUT payload. If Veera can crack these before Farooq is released, the government will have no choice but to hold the transfer.',
     intel: '"MD5, SHA-1, SHA-256. Crack all three. Take first 3 letters of each cracked password, combine them, and add \'42\' at the end. That\'s the master decryption key. Move."',
-    objective: 'Crack hashes. Combine first-3-letters of each password + "42". Submit as CTF{...}.',
+    objective: 'Crack all three hashes, take first 3 letters from each plaintext password, append "42", then submit as CTF{...}.',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_intense.png',
     roundLabel: 'ROUND 2  INFILTRATION',
@@ -91,7 +91,7 @@ const MISSIONS: MissionMeta[] = [
     storyStatus: ' BREAKING: HOME MINISTER\'S EXECUTION STAGED',
     situation: 'Veera is inside the admin panel — but the authentication token is hex-encoded to evade scanners. Vikram has just spotted that the Home Minister\'s "wife execution" was theater, staged to force government compliance. Decode the JWT to pull admin logs proving the treachery.',
     intel: '"The JWT is inside a hex-encoded wrapper. Decode hex to get the JWT. Base64 decode the payload. Find the \'secret\' field. Reverse it. That\'s your admin key."',
-    objective: 'Hex  JWT  Base64 decode payload  extract secret  reverse. Submit CTF{reversed_secret}.',
+    objective: 'Hex decode → parse JWT → Base64 decode payload → extract secret → reverse it. Submit CTF{reversed_secret}.',
     character: 'Vikram Singaravelan',
     characterImage: '/images/characters/vikram_urgent.png',
     roundLabel: 'ROUND 2  INFILTRATION',
@@ -132,8 +132,8 @@ const MISSIONS: MissionMeta[] = [
     storyTime: '07:35 AM  Script Defusal Window',
     storyStatus: ' LOGIC BOMB TRIGGER IN 10 MINUTES',
     situation: 'A logic bomb is embedded in Saif\'s attack script. If it triggers, Operation BLACKOUT goes live immediately — 13 days early. The defusal sequence is 5 encoding layers deep and ends with a mathematical validity check. One wrong step and 50,000 jobs vanish tonight.',
-    intel: '"Five layers: Hex  Base64  ROT13  Binary  ASCII. Then count ASCII values of final text. If divisible by 7, add _PRIME suffix. If not, add _COMPOSITE. DO NOT get this wrong."',
-    objective: 'HexBase64ROT13BinaryASCII. Sum ASCII values. Divisible by 7  _PRIME else _COMPOSITE.',
+    intel: '"Five layers. Follow in order: Hex → Base64 → ROT13 → Binary → ASCII. The final decoded output is the submit-ready flag text. One wrong step triggers the bomb."',
+    objective: 'Decode in order: Hex → Base64 → ROT13 → Binary → ASCII and submit the final CTF{...} output.',
     character: 'Vikram Singaravelan',
     characterImage: '/images/characters/vikram_serious.png',
     roundLabel: 'ROUND 3  FINAL STRIKE',
@@ -146,8 +146,8 @@ const MISSIONS: MissionMeta[] = [
     storyTime: '08:00 AM  Saravana\'s Encrypted Server',
     storyStatus: ' HOSTAGES FREED  ONE TARGET REMAINS',
     situation: 'Veera recaptured Farooq in Pakistan and extracted the name of the cyber-mastermind: Saravana "The Phantom". A joint RAW-Police raid seized his server. The MASTER KILL SWITCH for Operation BLACKOUT is inside — but the vault uses every technique you have learned.',
-    intel: '"Everything you have learned leads to this. Hex  Base64  JWT decode  ROT13  reverse  SHA-256 verify. First team to crack this terminates BLACKOUT permanently. The city is counting on you."',
-    objective: 'Follow multi-layer decode chain. Verify SHA-256. First solve gets 2 points. Timer: 15 min.',
+    intel: '"Everything leads here: decode layer1 hex, decode Base64 JSON, extract JWT token, decode payload, and ROT13 the vault_key. That 6-character code is the master key."',
+    objective: 'Decode all layers in order and submit exactly as: CTF{MASTER_code_VAULT}.',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_relieved.png',
     roundLabel: 'ROUND 3  FINAL STRIKE',
@@ -200,6 +200,13 @@ export default function ChallengesPage() {
 
   const currentLevel = apiResponse?.progress?.currentLevel ?? 1;
   const totalLevels = apiResponse?.progress?.totalLevels ?? 9;
+
+  const formatPayloadText = (rawText: string) =>
+    rawText
+      .replace(/\r\n/g, '\n')
+      .replace(/```/g, '')
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .trim();
 
   const getState = (order: number): 'solved' | 'active' | 'locked' => {
     if (order < currentLevel) return 'solved';
@@ -471,7 +478,9 @@ export default function ChallengesPage() {
                 </p>
                 {state === 'active' && (
                   <div className="game-scroll" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(109,40,217,0.18)', borderRadius: 7, padding: '12px 14px', fontFamily: "'Courier New',monospace", fontSize: 11, color: '#9ca3af', lineHeight: 1.8, whiteSpace: 'pre-wrap', maxHeight: 220, overflowY: 'auto' }}>
-                    {apiResponse?.challenge?.description || 'Loading payload data...'}
+                    {apiResponse?.challenge?.description
+                      ? formatPayloadText(apiResponse.challenge.description)
+                      : 'Loading payload data...'}
                   </div>
                 )}
                 {state === 'solved' && (

@@ -6,6 +6,7 @@ import { gsap } from 'gsap';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import GameLayout from '@/components/game/GameLayout';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Trophy, Flag, Target, Zap, Clock, Award, Shield, ChevronRight } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -21,9 +22,11 @@ export default function DashboardPage() {
 
     const loadData = async () => {
       try {
+        // Reduced artificial delay for better UX, but kept small buffer for animations
         const [profileData, roundData] = await Promise.all([
           api.getProfile(),
           api.getCurrentRound(),
+          new Promise(r => setTimeout(r, 800)) 
         ]);
         setUser(profileData);
         setCurrentRound(roundData);
@@ -50,16 +53,17 @@ export default function DashboardPage() {
 
   // Animate stat cards on mount
   useEffect(() => {
-    if (statsRef.current.length > 0 && !loading) {
+    if (!loading) {
+      // Staggered animation for main content
       gsap.fromTo(
-        statsRef.current,
-        { opacity: 0, y: 30 },
+        ".dashboard-animate",
+        { opacity: 0, y: 20 },
         {
           opacity: 1,
           y: 0,
           stagger: 0.1,
-          duration: 0.5,
-          ease: 'power2.out',
+          duration: 0.6,
+          ease: 'power3.out',
         }
       );
     }
@@ -74,14 +78,44 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <GameLayout backgroundImage="/images/background/1.jpg" showScanlines>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="w-15 h-15 border-3 border-purple-600/30 border-t-purple-400 rounded-full animate-spin mx-auto mb-4" />
-            <div className="text-sm font-bold tracking-widest text-purple-400 uppercase">
-              Loading Mission Control...
+         <div className="relative z-10 w-full h-full overflow-y-auto px-10 py-8 pb-10">
+          {/* SKELETON HEADER */}
+          <div className="flex items-start justify-between mb-8">
+            <div className="space-y-4">
+               <Skeleton className="h-4 w-48 bg-purple-900/20" />
+               <Skeleton className="h-10 w-96 bg-purple-900/30" />
+               <Skeleton className="h-6 w-64 bg-purple-900/20" />
+            </div>
+            <div className="flex gap-3">
+              <Skeleton className="h-10 w-32 bg-cyan-900/20" />
+              <Skeleton className="h-10 w-24 bg-red-900/20" />
             </div>
           </div>
-        </div>
+
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-purple-500/30 to-transparent mb-8" />
+
+          {/* SKELETON STAT CARDS */}
+          <div className="grid grid-cols-3 gap-5 mb-7">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-32 w-full rounded-xl bg-purple-900/10 border border-purple-500/20" />
+            ))}
+          </div>
+          
+          {/* SKELETON BANNER */}
+           <Skeleton className="h-24 w-full rounded-xl bg-purple-900/10 mb-6" />
+
+          {/* SKELETON GRID */}
+          <div className="grid grid-cols-[1fr_340px] gap-5">
+             <div className="space-y-5">
+                <Skeleton className="h-64 w-full rounded-xl bg-purple-900/10" />
+                <Skeleton className="h-64 w-full rounded-xl bg-purple-900/10" />
+             </div>
+             <div className="space-y-5">
+                <Skeleton className="h-48 w-full rounded-xl bg-purple-900/10" />
+                <Skeleton className="h-40 w-full rounded-xl bg-purple-900/10" />
+             </div>
+          </div>
+         </div>
       </GameLayout>
     );
   }
@@ -90,7 +124,7 @@ export default function DashboardPage() {
     <GameLayout backgroundImage="/images/background/1.jpg" showScanlines>
       <div className="relative z-10 w-full h-full overflow-y-auto px-10 py-8 pb-10">
         {/* HEADER */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px' }}>
+        <div className="dashboard-animate" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px' }}>
           <div>
             <div className="game-label" style={{ color: '#06b6d4', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span className="status-dot active" />
@@ -126,7 +160,7 @@ export default function DashboardPage() {
         <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(109,40,217,0.6), rgba(6,182,212,0.4), transparent)', marginBottom: '32px' }} />
 
         {/* STAT CARDS */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px', marginBottom: '28px' }}>
+        <div className="dashboard-animate" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px', marginBottom: '28px' }}>
           <div className="stat-card">
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, #7c3aed, #a78bfa)' }} />
             <div className="game-label" style={{ color: '#6b7280', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -174,7 +208,7 @@ export default function DashboardPage() {
           };
           const s = storyChapters[roundNum] || storyChapters[1];
           return (
-            <div style={{
+            <div className="dashboard-animate" style={{
               background: 'linear-gradient(135deg, rgba(5,2,18,0.97), rgba(20,8,50,0.95))',
               border: '1px solid rgba(109,40,217,0.35)', borderLeft: `3px solid ${s.color}`,
               borderRadius: 12, padding: '16px 24px', marginBottom: '20px',
@@ -201,7 +235,7 @@ export default function DashboardPage() {
         })()}
 
         {/* MAIN GRID */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px' }}>
+        <div className="dashboard-animate" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px' }}>
           {/* LEFT — Round progress + current round details */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             {/* Round Progress */}

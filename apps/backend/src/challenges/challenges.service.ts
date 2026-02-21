@@ -98,15 +98,15 @@ export class ChallengesService {
 
   private getDefaultHintForLevel(absoluteLevel: number): string {
     const hints: Record<number, string> = {
-      1: 'Decode strictly in this order: Base64 → ROT13 → Reverse. If your output looks readable too early, you likely skipped a step.',
-      2: 'Decode A, B, and C independently, then concatenate exactly as A+B+C. For Fragment C, use Caesar shift -7.',
-      3: 'Use MD5(teamName|2|1|CIPHER2026), then take the first 8 lowercase hex characters and wrap as CTF{xxxxxxxx}.',
-      4: 'All three hashes map to the same common password. Take first 3 letters from each result and submit as CTF{xxx+xxx+xxx+42}.',
-      5: 'Hex decode first, split JWT by dots, Base64 decode payload only, extract secret, reverse it exactly, then submit.',
-      6: 'Compute SHA256(teamName + "5" + "CIPHER2026"), take first 8 lowercase hex chars, then submit as CTF{xxxxxxxx}.',
-      7: 'Decode each fragment independently (Binary/Hex/Base64/ROT13) and concatenate in strict order 1→2→3→4.',
-      8: 'Keep the decode chain exact: Hex → Base64 → ROT13 → Binary → ASCII. The final output is directly the flag text.',
-      9: 'Decode layer1 hex → Base64 → JSON token → JWT payload, then ROT13 the vault_key to get the 6-character code.',
+      1: 'The trailing "=" is a signature of a common encoding. The data has been transformed through three layers — work from the outermost encoding inward.',
+      2: 'Each fragment uses a different common encoding. Look at character patterns: numeric pairs, 8-digit binary groups, and shifted alphabetic text. Concatenate decoded results as A+B+C.',
+      3: 'Build the input string with pipe separators exactly as shown. Use an online MD5 hash calculator. Take the first 8 lowercase hex characters.',
+      4: 'Identify each hash type by its character length (32, 40, 64 hex characters). Use hash lookup databases or cracking tools. The passwords may be simpler than you expect.',
+      5: 'The outer encoding is hexadecimal — convert pairs of hex digits to ASCII characters. The result is a well-known web authentication format with three dot-separated sections. Decode the middle section.',
+      6: 'Concatenate directly without separators: YourTeamName5CIPHER2026. SHA-256 hash the full string, take first 8 lowercase hex characters.',
+      7: 'Four different encodings. Look at character patterns to identify each: binary digits, hex pairs, Base64 padding characters, and alphabetic-only substitution. Assemble decoded results in order 1-2-3-4.',
+      8: 'Start by converting the outermost hex to ASCII. The result is still encoded — keep going layer by layer. The final fully-decoded output is a complete flag string including CTF{...}.',
+      9: 'The outer layer is hex. Inside is a nested structure — each decoded layer reveals the next. Look for common data formats (JSON, web tokens). A final alphabetic transformation reveals the 6-character vault code.',
     };
 
     return hints[absoluteLevel] || '';

@@ -147,6 +147,12 @@ export default function DashboardPage() {
           </div>
 
           <div style={{ display: 'flex', gap: '10px' }}>
+            <Link href="/story" className="btn-game-secondary" style={{ fontSize: '12px', padding: '10px 16px' }}>
+              <Clock size={14} /> Replay Story
+            </Link>
+            <Link href="/leaderboard" className="btn-game-secondary" style={{ fontSize: '12px', padding: '10px 16px' }}>
+              <Trophy size={14} /> Leaderboard
+            </Link>
             <Link href="/challenges" className="btn-game-primary" style={{ fontSize: '12px', padding: '10px 20px' }}>
               <Target size={14} /> Start Mission
             </Link>

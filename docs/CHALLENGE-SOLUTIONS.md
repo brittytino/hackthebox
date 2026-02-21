@@ -3,439 +3,310 @@
 ## 📋 Overview
 This document contains solutions for all 9 challenges. **KEEP THIS CONFIDENTIAL - FOR ORGANIZERS ONLY**
 
+All cipher data below matches EXACTLY what is seeded in `prisma/seed.ts`.
+
 ---
 
 ## 🔴 ROUND 1: THE BREACH DISCOVERY
 
 ### Level 1.1: The Intercepted Transmission
-**Difficulty:** Easy  
-**Points:** 100  
-**Type:** Triple-layer decryption (Base64 → ROT13 → Reverse)
+**Difficulty:** Easy | **Points:** 100 | **Type:** Triple-layer decryption
 
-**Encrypted Message:**
+**Cipher:**
 ```
-ZG1OaFpXNHVVbTl2YlMxRlVqUXlMRVZoYzNRZ1YybHVadz09
+dGF2Si1nZm5SLDI0RVItemJiRS5lcmllckY=
 ```
 
 **Solution Process:**
-1. **Base64 Decode:** `ZG1OaFpXNHVVbTl2YlMxRlVqUXlMRVZoYzNRZ1YybHVadz09`
-   → `dmNaZW4uUm9vbS1FUjQyLEVhc3QgV2luZw==`
+1. **Base64 Decode:** → `tavJ-gfnR,24ER-zbbE.erierF`
+2. **ROT13 Decode:** → `gniW-tsaE,24RE-mooR.revreS`
+3. **Reverse String:** → `Server.Room-ER42,East-Wing`
 
-2. **Base64 Decode Again:** (it's double-encoded)
-   → `vcZen.Room-ER42,East Wing`
-
-3. **ROT13 Decode:** `vcZen.Room-ER42,East Wing`
-   → `ipMra.Ebbz-RE42,Rnfg Jvat`
-
-4. **Reverse String:** `ipMra.Ebbz-RE42,Rnfg Jvat`
-   → `gniW ,tsaE24RE-mooR.nrevaS` → `Server.Room-ER42,East Wing`
-
-**Correct Flag:**
-```
-CTF{Server.Room-ER42,East-Wing}
-```
+**Flag:** `CTF{Server.Room-ER42,East-Wing}`
 
 ---
 
 ### Level 1.2: The Fragmented Server Map
-**Difficulty:** Medium  
-**Points:** 150  
-**Type:** Multi-encoding (Hex + Binary + Caesar)
+**Difficulty:** Medium | **Points:** 150 | **Type:** Multi-encoding fragments
 
-**Fragment A (HEX):**
+**Fragment A** — Hexadecimal:
 ```
 43544623
 ```
-Decoded: `CTF#`
+→ `43`=C, `54`=T, `46`=F, `23`=# → **`CTF#`**
 
-**Fragment B (BINARY):**
+**Fragment B** — Binary (8-bit ASCII):
 ```
 01000001 01100011 01100011 01100101 01110011 01110011
 ```
-Decoded: `Access`
+→ 0x41=A, 0x63=c, 0x63=c, 0x65=e, 0x73=s, 0x73=s → **`Access`**
 
-**Fragment C (CAESAR SHIFT 7):**
+**Fragment C** — Caesar Cipher (shift 7):
 ```
-Ncqwvlk
+Nyhualk
 ```
-Decoded (shift back 7): `Granted`
+→ N-7=G, y-7=r, h-7=a, u-7=n, a-7=t, l-7=e, k-7=d → **`Granted`**
 
-**Combined:**
-```
-CTF# + Access + Granted = CTF#AccessGranted
-```
+**Combined:** `CTF#` + `Access` + `Granted`
 
-**Correct Flag:**
-```
-CTF#AccessGranted
-```
+**Flag:** `CTF#AccessGranted`
 
 ---
 
 ### Level 1.3: The Time-Locked Vault
-**Difficulty:** Hard  
-**Points:** 200  
-**Type:** Team-specific MD5 calculation
+**Difficulty:** Hard | **Points:** 200 | **Type:** Team-specific MD5
 
 **Formula:**
 ```
-Input: {teamName}|2|1|CIPHER2026
-Output: MD5 hash of input
-Code: First 8 characters of MD5 (lowercase)
+Input:  {teamName}|2|1|CIPHER2026
+Hash:   MD5(input)
+Code:   first 8 lowercase hex characters
 ```
 
-**Example (Team "TestTeam"):**
+**Example (Team "AlphaSquad"):**
 ```
-Input: TestTeam|2|1|CIPHER2026
-MD5: 8a7f3b2c1d9e8f6a4b3c2d1e9f8a7b6c
-Code: 8a7f3b2c
-Flag: CTF{8a7f3b2c}
+Input:  AlphaSquad|2|1|CIPHER2026
+MD5:    (compute with any MD5 tool)
+First 8 chars → submit as CTF{xxxxxxxx}
 ```
 
-**Backend Validation:**
-- Challenge service will calculate MD5(teamName|2|1|CIPHER2026)
-- Take first 8 chars
-- Compare with submitted flag (case-insensitive)
+**Backend Validation:** `challenges.service.ts → calculateTeamSpecificFlag()` computes `MD5(teamName|2|1|CIPHER2026)` and compares first 8 chars.
 
-**Why This is Hard:**
-- Teams cannot share answers
-- Requires understanding of hashing
-- Must follow exact format specification
-- Need to use their own team name
+**Flag:** `CTF{<team-specific-8-hex-chars>}` (unique per team)
 
 ---
 
 ## 🟡 ROUND 2: INFILTRATION
 
 ### Level 2.1: The Corrupted Hash Trail
-**Difficulty:** Medium  
-**Points:** 250  
-**Type:** Multi-hash cracking (MD5 + SHA-1 + SHA-256)
+**Difficulty:** Medium | **Points:** 250 | **Type:** Hash cracking
 
-**Database 1 (MD5):**
+**Hash Alpha** (32 chars = MD5):
 ```
 5f4dcc3b5aa765d61d8327deb882cf99
 ```
-Password: `password`
+→ Cracks to: **`password`**
 
-**Database 2 (SHA-1):**
+**Hash Beta** (40 chars = SHA-1):
 ```
 5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8
 ```
-Password: `password`
+→ Cracks to: **`password`**
 
-**Database 3 (SHA-256):**
+**Hash Gamma** (64 chars = SHA-256):
 ```
 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
 ```
-Password: `password`
+→ Cracks to: **`password`**
 
-**Solution:**
-All three hashes crack to "password" (intentionally same password)
+All three resolve to the same well-known password. First 3 letters of each: `pas` + `pas` + `pas` + `42`
 
-First 3 letters of each: `pas` + `pas` + `pas` + `42`
+**Flag:** `CTF{pas+pas+pas+42}`
 
-**Correct Flag:**
-```
-CTF{pas+pas+pas+42}
-```
-
-**Tools:**
-- Online hash crackers (MD5Decrypt, CrackStation)
-- John the Ripper
-- Hashcat
+**Tools:** CrackStation, Hashcat, John the Ripper, or any online hash lookup.
 
 ---
 
 ### Level 2.2: The JWT Inception
-**Difficulty:** Hard  
-**Points:** 300  
-**Type:** Hex → JWT → Base64 → Reverse
+**Difficulty:** Hard | **Points:** 300 | **Type:** Hex → JWT → Reverse
 
-**Encrypted Token (HEX):**
+**Hex Token:**
 ```
-65794a68624763694f694a49557a49314e694973496e523563434936496b705856434a392e65794a7a64574969
-4f694a7a5958567961574679646d46754969776961574630496a6f784e6a41334f5463794f446b304c434a6c
-654841694f6a45324d4463354e7a49344f5451304c434a7a5a574e795a5851694f694a44566b51785a7a4e45
-61586e41597a6746596b74764e6b4e6d626e6453496e302e5176414d69676e396f7639507a4d7a55716f4c79
-44365748556550664f6c304f364e786f614b44385168444d
+65794a68624763694f694a49557a49314e694973496e523563434936496b705856434a392e
+65794a7a5a574e795a5851694f694a47513051785a7a4e456158703551574d316555466953
+3238325132356d5a46496966512e62576c7a63326c766267
 ```
+(No line breaks in actual data — shown wrapped for readability)
 
 **Solution Process:**
+1. **Hex → ASCII:**
+   ```
+   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZWNyZXQiOiJGQ0QxZzNEaXp5QWM1eUFiS282Q25mZFIifQ.bWlzc2lvbg
+   ```
+   This is a JWT (three dot-separated Base64 sections).
 
-1. **Hex Decode:**
-```
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYXVyaXFhcnZhbiIsImlhdCI6MTYwNzk3Mjg5NCwiZXhwIjoxNjA3OTcyODk0NCwic2VjcmV0IjoiQ1ZEMWczRGl6cAYzgFYktvNkNmbnZRIn0.QvAMign9ov9PzMzUqoLyD6WHUePfOl0O6NxoaKD8QhDM
-```
+2. **JWT Payload (middle section) Base64 decode:**
+   ```
+   eyJzZWNyZXQiOiJGQ0QxZzNEaXp5QWM1eUFiS282Q25mZFIifQ
+   ```
+   → `{"secret":"FCD1g3DizyAc5yAbKo6CnfdR"}`
 
-2. **Identify JWT Structure:**
-```
-Header: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
-Payload: eyJzdWIiOiJzYXVyaXFhcnZhbiIsImlhdCI6MTYwNzk3Mjg5NCwiZXhwIjoxNjA3OTcyODk0NCwic2VjcmV0IjoiQ1ZEMWczRGl6cAYzgFYktvNkNmbnZRIn0
-Signature: QvAMign9ov9PzMzUqoLyD6WHUePfOl0O6NxoaKD8QhDM
-```
+3. **Extract secret:** `FCD1g3DizyAc5yAbKo6CnfdR`
 
-3. **Base64 Decode Payload:**
-```json
-{
-  "sub": "sauriqarvan",
-  "iat": 1607972894,
-  "exp": 1607972894,
-  "secret": "FCD1g3DizpAc6fBKo6CfnvQ"
-}
-```
+4. **Reverse:** `RdfnC6oKbAy5cAyziD3g1DCF`
 
-4. **Extract Secret:** `FCD1g3DizpAc6fBKo6CfnvQ`
-
-5. **Reverse String:** `QvnfC6oKBfy6cApziD3g1DCF`
-
-**Correct Flag:**
-```
-CTF{RdfnC6oKbAy5cAyziD3g1DCF}
-```
+**Flag:** `CTF{RdfnC6oKbAy5cAyziD3g1DCF}`
 
 ---
 
 ### Level 2.3: The Pattern Lock
-**Difficulty:** Hard  
-**Points:** 350  
-**Type:** Team-specific SHA-256 calculation
+**Difficulty:** Hard | **Points:** 350 | **Type:** Team-specific SHA-256
 
 **Formula:**
 ```
-Input: {teamName}5CIPHER2026
-Output: SHA-256 hash
-Code: First 8 characters (lowercase)
+Input:  {teamName}5CIPHER2026      (no separators)
+Hash:   SHA-256(input)
+Code:   first 8 lowercase hex characters
 ```
 
-**Example (Team "TestTeam"):**
+**Example (Team "AlphaSquad"):**
 ```
-Input: TestTeam5CIPHER2026
-SHA-256: a1b2c3d4e5f67890...
-Code: a1b2c3d4
-Flag: CTF{a1b2c3d4}
+Input:  AlphaSquad5CIPHER2026
+SHA256: (compute with any SHA-256 tool)
+First 8 chars → submit as CTF{xxxxxxxx}
 ```
 
-**Why This is Hard:**
-- Teams cannot share answers
-- Progress counter (5) prevents cheating
-- SHA-256 is more complex than MD5
-- Exact string concatenation required
+**Backend Validation:** `challenges.service.ts → calculateTeamSpecificFlag()` computes `SHA256(teamName + "5" + "CIPHER2026")` first 8 chars.
+
+**Flag:** `CTF{<team-specific-8-hex-chars>}` (unique per team)
 
 ---
 
 ## 🔴 ROUND 3: THE FINAL STRIKE
 
 ### Level 3.1: The Payload Hunt
-**Difficulty:** Hard  
-**Points:** 400  
-**Type:** Multi-fragment decoding (Binary + Hex + Base64 + ROT13)
+**Difficulty:** Hard | **Points:** 400 | **Type:** Multi-fragment decoding
 
-**Fragment 1 (BINARY):**
+**Fragment 1** — Binary (8-bit ASCII):
 ```
 01000011 01010100 01000110 01111011
 ```
-Decoded: `CTF{`
+→ 0x43=C, 0x54=T, 0x46=F, 0x7B={ → **`CTF{`**
 
-**Fragment 2 (HEX):**
+**Fragment 2** — Hexadecimal:
 ```
 426c61636b6f75742e
 ```
-Decoded: `Blackout.`
+→ B,l,a,c,k,o,u,t,. → **`Blackout.`**
 
-**Fragment 3 (BASE64):**
+**Fragment 3** — Base64:
 ```
 RmViMTQu
 ```
-Decoded: `Feb14.`
+→ **`Feb14.`**
 
-**Fragment 4 (ROT13):**
+**Fragment 4** — ROT13:
 ```
-Cynlybat}
+Cnlybnq}
 ```
-Decoded: `Payload}`
+→ C→P, n→a, l→y, y→l, b→o, n→a, q→d, }→} → **`Payload}`**
 
-**Combined:**
-```
-CTF{Blackout.Feb14.Payload}
-```
+**Combined:** `CTF{` + `Blackout.` + `Feb14.` + `Payload}`
 
-**Correct Flag:**
-```
-CTF{Blackout.Feb14.Payload}
-```
+**Flag:** `CTF{Blackout.Feb14.Payload}`
 
 ---
 
 ### Level 3.2: The Logic Bomb Defusal
-**Difficulty:** Hard  
-**Points:** 450  
-**Type:** Multi-layer nested decryption
+**Difficulty:** Hard | **Points:** 450 | **Type:** Multi-layer nested decryption
 
-**Encrypted Code:**
-```
-34434646374231363132373433343230363436353636373536333631373036433639323036423639366336433330363336423330373537343230
-```
+**Cipher:** Long hex blob (see seed.ts for full data)
 
 **Solution Process:**
+1. **Hex → ASCII:** Produces a Base64 string
+2. **Base64 → Text:** Produces 8-digit binary groups (space-separated)
+3. **Binary → ASCII:** Each 8-bit group converts to an ASCII character
 
-1. **Hex Decode:**
-```
-4CFB7B161274342064656675736170696C2069696C306C30754
-```
+The final decoded output is the complete flag string.
 
-2. **Continue Hex Decode (it's nested):**
-```
-Actually, let me recalculate...
-```
+**Flag:** `CTF{Defusal.Killswitch.Overrode}`
 
-**Simplified Solution:**
-The correct approach is layer-by-layer decoding following the pattern:
-Hex → Base64 → ROT13 → Binary → ASCII
-
-**Correct Flag:**
-```
-CTF{Defusal.Killswitch.Overrode}
-```
+**Note:** The ROT13 step in the original chain is a no-op/red herring since binary strings contain only digits (0, 1) and spaces, which ROT13 does not affect.
 
 ---
 
 ### Level 3.3: The Master Vault (FINAL BOSS)
-**Difficulty:** Hard  
-**Points:** 1000 (2000 for first team)  
-**Type:** Multi-layer comprehensive challenge
+**Difficulty:** Hard | **Points:** 1000 (2x for first team) | **Type:** Multi-layer vault
 
-**Interactive Page:** `http://localhost:3001/public/challenges/master-vault.html`
+**Hex Data:**
+```
+65794a306232746c62694936496d5635536d686952324e7054326c4b535656365354646f
+61556c7a535735534e574e4453545a4a61334259566b4e4b4f53356c65556f7957566857
+633252474f584a615747747054326c4b645531584f486c6a524531705a6c4575596c6447
+656d5248566e6b6966513d3d
+```
+(No line breaks in actual data — shown wrapped for readability)
 
-**Solution Walkthrough:**
+**Solution Process:**
+1. **Hex → ASCII:**
+   ```
+   eyJ0b2tlbiI6ImV5SmhiR2NpT2lKSVV6STFOaUlzSW5SNWNESTZJa3BYVkNKOS5leUoyWVhWc2RGOXJaWGtpT2lKdU1XOHljRE1pZlEuYldGemRHVnkifQ==
+   ```
 
-**Layer 1 (HEX → BASE64):**
-```
-Input: 57357361414e5a424d434a685a476c7a62694936633352796157356e66512e38396431726f4735486d6f634f62615176434f3972766e4635667155444139536176775a6b304d536b57745f
+2. **Base64 → JSON:**
+   ```json
+   {"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2YXVsdF9rZXkiOiJuMW8ycDMifQ.bWFzdGVyeQ=="}
+   ```
 
-Hex Decode: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2YXVsdF9rZXkiOiI0Mi0xNy04OSIsImRhdGEiOiJrbGxzd2l0Y2gifQ.89d1roG5HmocObazV9vRyQtqHnBFjqFUO7DP8NkKMSav0Zk0MJkRt_
-```
+3. **Extract JWT** from `token` field:
+   - Header: `{"alg":"HS256","typ":"JWT"}`
+   - **Payload:** `{"vault_key":"n1o2p3"}`
+   - Signature: `mastery`
 
-**Layer 2 (BASE64 → JWT):**
-```
-JWT Token Found
-Payload: eyJ2YXVsdF9rZXkiOiI0Mi0xNy04OSIsImRhdGEiOiJrbGxzd2l0Y2gifQ
-```
+4. **ROT13 decode** `vault_key`:
+   ```
+   n→a, 1→1, o→b, 2→2, p→c, 3→3
+   ```
+   → **`a1b2c3`**
 
-**Layer 3 (JWT Payload Decode):**
-```json
-{
-  "vault_key": "42-17-89",
-  "data": "kllswitch"
-}
-```
+5. **Format:** `CTF{MASTER_a1b2c3_VAULT}`
 
-**Layer 4 (Extract Coordinates):**
-```
-Coordinates: 42-17-89
-```
-
-**Layer 5 (MD5 Calculation):**
-```
-Input: MASTER421789KILLSWITCH
-MD5: 3d4f2a1b8c9e7f6d5a4b3c2d1e9f8a7b
-First 6 chars: 3d4f2a
-```
-
-**Final Flag Format:**
-```
-CTF{MASTER_3d4f2a_VAULT}
-```
-
-**Correct Flag:**
-```
-CTF{MASTER_3d4f2a_VAULT}
-```
+**Flag:** `CTF{MASTER_a1b2c3_VAULT}`
 
 ---
 
-## 🛠️ Tools Participants Can Use
+## 🛠️ Recommended Tools
 
-**Encoding/Decoding:**
-- CyberChef (https://gchq.github.io/CyberChef/)
-- Base64Decode.org
-- RapidTables.com/convert
-
-**Hashing:**
-- MD5 Online
-- SHA256 Calculator
-- CrackStation.net
-- HashCat
-
-**JWT:**
-- JWT.io
-- JWT Decoder
-
-**ROT13:**
-- ROT13.com
-- CyberChef
-
-**Binary/Hex:**
-- RapidTables Binary Converter
-- HexEd.it
+| Category | Tools |
+|----------|-------|
+| Multi-tool | CyberChef (gchq.github.io/CyberChef/) |
+| Hash Cracking | CrackStation, Hashcat, John the Ripper |
+| JWT Decode | jwt.io |
+| Encoding | Base64Decode.org, RapidTables |
+| ROT13 | rot13.com |
 
 ---
 
 ## 📊 Scoring Summary
 
-| Level | Challenge | Points | Difficulty |
-|-------|-----------|--------|------------|
-| 1.1   | Intercepted Transmission | 100 | Easy |
-| 1.2   | Fragmented Server Map | 150 | Medium |
-| 1.3   | Time-Locked Vault | 200 | Hard |
-| 2.1   | Corrupted Hash Trail | 250 | Medium |
-| 2.2   | JWT Inception | 300 | Hard |
-| 2.3   | Pattern Lock | 350 | Hard |
-| 3.1   | Payload Hunt | 400 | Hard |
-| 3.2   | Logic Bomb Defusal | 450 | Hard |
-| 3.3   | Master Vault | 1000* | Hard |
+| Level | Challenge | Points | Difficulty | Flag Type |
+|-------|-----------|--------|------------|-----------|
+| 1.1 | Intercepted Transmission | 100 | Easy | Static |
+| 1.2 | Fragmented Server Map | 150 | Medium | Static |
+| 1.3 | Time-Locked Vault | 200 | Hard | Team-specific |
+| 2.1 | Corrupted Hash Trail | 250 | Medium | Static |
+| 2.2 | JWT Inception | 300 | Hard | Static |
+| 2.3 | Pattern Lock | 350 | Hard | Team-specific |
+| 3.1 | Payload Hunt | 400 | Hard | Static |
+| 3.2 | Logic Bomb Defusal | 450 | Hard | Static |
+| 3.3 | Master Vault | 1000* | Hard | Static |
 
-*First team: 2000 points, Others within 30min: 1000 points
+*First team to solve gets 2x points.
 
-**Total Possible Points:** 3,200 (or 4,200 for first team on 3.3)
-
----
-
-## 🎮 Testing Checklist
-
-- [ ] All Base64 encodings verified
-- [ ] All MD5 hashes tested
-- [ ] All SHA-256 hashes tested
-- [ ] JWT structure validated
-- [ ] ROT13 conversions checked
-- [ ] Team-specific challenges tested with sample team names
-- [ ] HTML challenge page loads correctly
-- [ ] Backend serves static files
-- [ ] Flag submission works for all challenges
+**Maximum Total:** 3,200 pts (or 4,200 for first-solve bonus on 3.3)
 
 ---
 
 ## 🚨 Important Notes
 
-1. **Team-Specific Challenges (1.3, 2.3):**
-   - Backend automatically calculates correct flag per team
+1. **Team-Specific Challenges (1.3 & 2.3):**
+   - Backend computes correct flag per team via `calculateTeamSpecificFlag()`
    - Cannot be shared between teams
    - Validates against team name from database
 
 2. **Challenge Order:**
-   - Must be solved sequentially
-   - No skipping ahead
-   - Backend enforces linear progression
+   - Must be solved sequentially (1.1 → 1.2 → ... → 3.3)
+   - Backend enforces linear progression via `team.currentLevel`
 
-3. **Time Limits:**
-   - Challenge 3.3 has 30-minute countdown
-   - First team gets double points
-   - After 30 min, challenge locks
+3. **Hints:**
+   - Cost points (configurable penalty)
+   - Provide moderate guidance, not walkthroughs
+   - Once unlocked, can be toggled without additional cost
 
-4. **Hints:**
-   - Each hint costs points (50 point penalty)
-   - Controlled by backend
-   - Use sparingly
+4. **Flag Validation:**
+   - Case-insensitive comparison
+   - Static flags checked against `getAcceptedFlagsForLevel()`
+   - Team-specific flags computed at validation time
 
 ---
 

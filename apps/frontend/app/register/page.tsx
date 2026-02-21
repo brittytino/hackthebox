@@ -98,7 +98,7 @@ export default function RegisterPage() {
         localStorage.setItem('token', token);
         if (result.user) localStorage.setItem('user', JSON.stringify(result.user));
       }
-      router.push('/story');
+      router.push('/dashboard');
     } catch (err: any) {
       setShowMath(false);
       setError(err.message || 'Registration failed. Please try again.');

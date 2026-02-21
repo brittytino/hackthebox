@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { gsap } from 'gsap';
 import GameLayout from '@/components/game/GameLayout';
-import { ChevronRight, SkipForward, X } from 'lucide-react';
+import { ChevronRight, SkipForward, X, ArrowLeft } from 'lucide-react';
 
 type Scene = {
   bg: string;
@@ -196,6 +197,15 @@ export default function StoryPage() {
 
       {/* HUD top bar */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20, padding: '14px 26px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(180deg,rgba(0,0,0,0.7) 0%,transparent 100%)' }}>
+        {/* Back button */}
+        <Link 
+          href="/dashboard" 
+          onClick={e => e.stopPropagation()}
+          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 13px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.14)', borderRadius: 7, cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, letterSpacing: 1, transition: 'all 0.2s', textDecoration: 'none' }}
+        >
+          <ArrowLeft size={12} />HQ
+        </Link>
+
         {/* Scene dots */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {SCENES.map((_, i) => (
@@ -205,7 +215,7 @@ export default function StoryPage() {
 
         {/* Operation label */}
         <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase' }}>
-          OPERATION CIPHER STRIKE  PROLOGUE
+          OPERATION CIPHER STRIKE
         </div>
 
         {/* Skip button */}

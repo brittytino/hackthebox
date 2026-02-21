@@ -22,7 +22,12 @@ export default function LoginPage() {
       const result = await api.login({ email: formData.email, password: formData.password });
       localStorage.setItem('token', result.access_token);
       localStorage.setItem('user', JSON.stringify(result.user));
-      router.push('/dashboard');
+      // Redirect admin to admin panel, regular users to dashboard
+      if (result.user?.role === 'ADMIN') {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       setError(err.message || 'ACCESS DENIED: Invalid credentials');
     } finally {

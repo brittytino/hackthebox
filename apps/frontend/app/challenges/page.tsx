@@ -1,14 +1,14 @@
 ﻿'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { gsap } from 'gsap';
 import { api } from '@/lib/api';
 import {
   Flag, Lock, CheckCircle, Zap, AlertTriangle, Eye, EyeOff,
-  Terminal, Activity, Shield, Clock, X, Map,
+  Terminal, Activity, Shield, Clock, X, Map, Users,
   RadioTower, ChevronDown, ChevronUp, Trophy,
   ChevronsLeft, ChevronsRight, ChevronRight, SkipForward,
 } from 'lucide-react';
@@ -185,7 +185,7 @@ interface ApiResponse {
   team: { name: string; currentPoints: number };
 }
 
-export default function ChallengesPage() {
+function ChallengesInner() {
   const router = useRouter();
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -202,7 +202,10 @@ export default function ChallengesPage() {
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   // Hint cache: maps challengeId → { text, shown }
-  const [hintCache, setHintCache] = useState<Record<string, { text: string; shown: boolean }>>({});
+  const [hintCache, setHintCache] = useState<Record<string, { text: string; shown: boolean }>>({})
+
+  const searchParams = useSearchParams();
+  const levelParam = searchParams.get('level');;
 
   // VN story state
   const [vnDisplayText, setVnDisplayText] = useState('');
@@ -238,11 +241,18 @@ export default function ChallengesPage() {
       setApiResponse(ch);
       setActivity(Array.isArray(act) ? act.slice(0, 20) : []);
       if (!selectedLevel) {
-        const lvl = ch?.progress?.currentLevel ?? 1;
-        setSelectedLevel(MISSIONS[Math.min(lvl, 9) - 1]?.level ?? '1.1');
+        // If URL has ?level=N, use that; otherwise use current level
+        if (levelParam) {
+          const order = parseInt(levelParam, 10);
+          const found = MISSIONS[Math.min(Math.max(order, 1), 9) - 1];
+          setSelectedLevel(found?.level ?? '1.1');
+        } else {
+          const lvl = ch?.progress?.currentLevel ?? 1;
+          setSelectedLevel(MISSIONS[Math.min(lvl, 9) - 1]?.level ?? '1.1');
+        }
       }
     } catch {
-      if (!selectedLevel) setSelectedLevel('1.1');
+      if (!selectedLevel) setSelectedLevel(levelParam ? MISSIONS[parseInt(levelParam, 10) - 1]?.level ?? '1.1' : '1.1');
     } finally {
       setLoading(false);
     }
@@ -300,10 +310,9 @@ export default function ChallengesPage() {
       const res = await api.challenges.submitFlag({ challengeId, flag: flag.trim() });
       if (res.correct || res.success || res.isCorrect) {
         const solvedOrder = meta?.order ?? 0;
-        setMessage('✓ Flag accepted. Mission progressed.');
-        setIsError(false); setFlag('');
-        setStoryModal({ level: solvedOrder });
-        await loadData();
+        setFlag('');
+        // Redirect to story page with challenge context
+        router.push(`/story?challenge=${solvedOrder}`);
       } else {
         setMessage(res.message || 'Incorrect flag. Analyse and retry.');
         setIsError(true);
@@ -420,7 +429,7 @@ export default function ChallengesPage() {
   const teamName = apiResponse?.team?.name ?? '—';
 
   return (
-    <div ref={containerRef} style={{ minHeight: '100vh', background: '#080614', display: 'flex', flexDirection: 'column', fontFamily: "'Share Tech Mono', 'Courier New', monospace", position: 'relative', overflow: 'hidden' }}>
+    <div ref={containerRef} style={{ height: '100vh', background: '#080614', display: 'flex', flexDirection: 'column', fontFamily: "'Share Tech Mono', 'Courier New', monospace", position: 'relative', overflow: 'hidden' }}>
       {/* Scanlines */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, backgroundImage: 'repeating-linear-gradient(0deg,rgba(0,0,0,0.22),rgba(0,0,0,0.22) 1px,transparent 1px,transparent 3px)', opacity: 0.3 }} />
       {/* Grid bg */}
@@ -439,14 +448,14 @@ export default function ChallengesPage() {
         </Link>
         <div style={{ flex: 1 }} />
         {/* Navigation links */}
-        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7, transition: 'all 0.15s' }}>
-          <Activity size={12} />HQ
+        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 13px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7, transition: 'all 0.15s' }}>
+          <Activity size={13} />HQ
         </Link>
-        <Link href="/leaderboard" style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7, transition: 'all 0.15s' }}>
-          <Trophy size={12} />RANKS
+        <Link href="/leaderboard" style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 13px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7, transition: 'all 0.15s' }}>
+          <Trophy size={13} />RANKS
         </Link>
-        <Link href="/story" style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7, transition: 'all 0.15s' }}>
-          <Map size={12} />STORY
+        <Link href="/story" style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 13px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7, transition: 'all 0.15s' }}>
+          <Map size={13} />STORY
         </Link>
         <div style={{ color: '#6b7280', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
           <span style={{ color: '#a78bfa', fontWeight: 700 }}>{scored}</span>/<span>{totalLevels}</span>
@@ -466,7 +475,7 @@ export default function ChallengesPage() {
       </div>
 
       {/* ── 3-COL LAYOUT ── */}
-      <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', minHeight: 0, height: 'calc(100vh - 54px)', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', minHeight: 0, height: 'calc(100vh - 54px)' }}>
 
         {/* LEFT: ZIG-ZAG TIMELINE (collapsible) */}
         <div data-g="left" style={{ width: leftOpen ? 288 : 48, minWidth: leftOpen ? 288 : 48, borderRight: '1px solid rgba(109,40,217,0.2)', background: 'rgba(3,1,14,0.88)', backdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', transition: 'width 0.3s ease, min-width 0.3s ease', overflow: 'hidden', position: 'relative', height: 'calc(100vh - 54px)', flexShrink: 0 }}>
@@ -499,12 +508,12 @@ export default function ChallengesPage() {
           {leftOpen && (
             <div className="game-scroll" style={{ overflowY: 'auto', flex: 1, padding: '14px 0' }}>
               <div style={{ padding: '0 14px 8px' }}>
-                <div style={{ color: '#06b6d4', fontSize: 11, fontWeight: 700, letterSpacing: 3, display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
-                  <RadioTower size={11} />MISSION TIMELINE
+                <div style={{ color: '#06b6d4', fontSize: 12, fontWeight: 700, letterSpacing: 3, display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
+                  <RadioTower size={12} />MISSION TIMELINE
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#a78bfa', boxShadow: '0 0 6px #a78bfa' }} />
-                  <span style={{ color: '#a78bfa', fontSize: 11, letterSpacing: 1, fontWeight: 600 }}>{scored} / {totalLevels} COMPLETE</span>
+                  <span style={{ color: '#a78bfa', fontSize: 12, letterSpacing: 1, fontWeight: 600 }}>{scored} / {totalLevels} COMPLETE</span>
                 </div>
                 <div style={{ height: 3, background: 'rgba(109,40,217,0.1)', borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${Math.round((scored / 9) * 100)}%`, background: 'linear-gradient(90deg,#7c3aed,#06b6d4)', transition: 'width 0.5s ease', boxShadow: '0 0 6px rgba(6,182,212,0.5)' }} />
@@ -520,7 +529,7 @@ export default function ChallengesPage() {
                 <div key={group.act} style={{ marginTop: 6 }}>
                   <div style={{ padding: '5px 14px 3px', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ flex: 1, height: 1, background: `rgba(${group.rgb},0.22)` }} />
-                    <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: 2, color: group.color, whiteSpace: 'nowrap' }}>{group.act}</span>
+                    <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, color: group.color, whiteSpace: 'nowrap' }}>{group.act}</span>
                     <div style={{ flex: 1, height: 1, background: `rgba(${group.rgb},0.22)` }} />
                   </div>
                   {group.orders.map((order, idx) => {
@@ -536,7 +545,7 @@ export default function ChallengesPage() {
                           onClick={() => can && setSelectedLevel(m.level)}
                           style={{
                             marginLeft: isAlt ? 6 : 28, marginRight: isAlt ? 28 : 6,
-                            padding: '9px 11px 9px 13px', borderRadius: 10,
+                            padding: '10px 12px 10px 14px', borderRadius: 10,
                             cursor: can ? 'pointer' : 'default',
                             border: `1px solid ${sel ? 'rgba(6,182,212,0.65)' : s === 'solved' ? 'rgba(16,185,129,0.32)' : s === 'active' ? 'rgba(124,58,237,0.45)' : 'rgba(55,65,81,0.22)'}`,
                             background: sel ? 'rgba(6,182,212,0.09)' : s === 'solved' ? 'rgba(16,185,129,0.05)' : s === 'active' ? 'rgba(109,40,217,0.12)' : 'rgba(6,3,18,0.72)',
@@ -557,13 +566,13 @@ export default function ChallengesPage() {
                             boxShadow: s === 'active' ? '0 0 10px rgba(124,58,237,0.9)' : s === 'solved' ? '0 0 6px rgba(16,185,129,0.6)' : 'none',
                             zIndex: 2,
                           }} />
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3 }}>
-                            {s === 'solved' ? <CheckCircle size={11} color="#10b981" /> : s === 'active' ? <Zap size={11} color="#a78bfa" /> : <Lock size={11} color="#4b5563" />}
-                            <span style={{ fontWeight: 800, fontSize: 11, color: '#cbd5e1' }}>{m.level}</span>
-                            <span className={`diff-badge diff-${m.difficulty}`} style={{ fontSize: 8, padding: '1px 5px' }}>{m.difficulty[0].toUpperCase()}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+                            {s === 'solved' ? <CheckCircle size={12} color="#10b981" /> : s === 'active' ? <Zap size={12} color="#a78bfa" /> : <Lock size={12} color="#4b5563" />}
+                            <span style={{ fontWeight: 800, fontSize: 12, color: '#cbd5e1' }}>{m.level}</span>
+                            <span className={`diff-badge diff-${m.difficulty}`} style={{ fontSize: 9, padding: '1px 5px' }}>{m.difficulty[0].toUpperCase()}</span>
                           </div>
-                          <div style={{ fontSize: 11, color: sel ? '#e2e8f0' : '#9ca3af', lineHeight: 1.35, fontWeight: 600 }}>{m.name}</div>
-                          <div style={{ marginTop: 3, color: '#f59e0b', fontSize: 10, fontWeight: 700 }}>{m.points} pts · {m.type}</div>
+                          <div style={{ fontSize: 13, color: sel ? '#e2e8f0' : '#9ca3af', lineHeight: 1.35, fontWeight: 600 }}>{m.name}</div>
+                          <div style={{ marginTop: 4, color: '#f59e0b', fontSize: 11, fontWeight: 700 }}>{m.points} pts · {m.type}</div>
                         </div>
                       </div>
                     );
@@ -575,7 +584,7 @@ export default function ChallengesPage() {
         </div>
 
         {/* CENTER: CHALLENGE CONTENT */}
-        <div data-g="center" className="game-scroll" ref={centerRef} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '24px 28px 80px', display: 'flex', flexDirection: 'column', gap: 18, minWidth: 0, maxHeight: '100%' }}>
+        <div data-g="center" className="game-scroll" ref={centerRef} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '24px 28px 80px', display: 'flex', flexDirection: 'column', gap: 18, minWidth: 0, height: 'calc(100vh - 54px)' }}>
 
           {apiResponse?.progress?.completedAll && (
             <div style={{ background: 'linear-gradient(135deg,rgba(6,78,59,0.28),rgba(16,185,129,0.1))', border: '2px solid rgba(16,185,129,0.55)', borderRadius: 14, padding: '24px 28px', textAlign: 'center', boxShadow: '0 0 60px rgba(16,185,129,0.2)' }}>
@@ -606,34 +615,45 @@ export default function ChallengesPage() {
                 <h1 style={{ fontSize: 26, fontWeight: 900, color: '#e9d5ff', letterSpacing: 2, textTransform: 'uppercase', lineHeight: 1.2, margin: 0, textShadow: '0 0 30px rgba(124,58,237,0.35)' }}>{meta.level} — {meta.name}</h1>
               </div>
 
-              {/* Character card */}
-              <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: 18, background: 'linear-gradient(135deg,rgba(2,1,12,0.97),rgba(12,7,36,0.96))', border: `1px solid ${rc.border}`, borderRadius: 14, padding: '18px 20px', boxShadow: `0 0 40px ${rc.glow}`, position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${rc.primary},transparent)` }} />
-                <div style={{ position: 'relative', height: 200, borderRadius: 10, overflow: 'hidden', border: `1px solid ${rc.border}`, background: 'rgba(0,0,0,0.35)' }}>
-                  <Image src={meta.characterImage} alt={meta.character} fill style={{ objectFit: 'cover', objectPosition: 'top center' }} priority />
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(0deg,rgba(2,1,12,0.96) 55%,transparent)', padding: '20px 10px 8px' }}>
-                    <div style={{ color: rc.primary, fontSize: 9, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase' }}>OPERATIVE</div>
-                    <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800, letterSpacing: 1 }}>{meta.character}</div>
+              {/* Character Intel Banner */}
+              <div style={{ background: 'linear-gradient(135deg,rgba(2,1,12,0.98),rgba(12,7,36,0.97))', border: `1px solid ${rc.border}`, borderRadius: 14, overflow: 'hidden', boxShadow: `0 0 50px ${rc.glow}, 0 8px 40px rgba(0,0,0,0.6)`, position: 'relative' }}>
+                {/* Top accent */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${rc.primary},transparent)`, zIndex: 3 }} />
+                {/* Background scene image */}
+                <div style={{ position: 'relative', height: 140, overflow: 'hidden', background: `linear-gradient(135deg, rgba(${meta.round===1?'239,68,68':meta.round===2?'245,158,11':'16,185,129'},0.06) 0%, rgba(2,1,12,0.98) 100%)` }}>
+                  <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(45deg,rgba(109,40,217,0.04) 0px,rgba(109,40,217,0.04) 1px,transparent 1px,transparent 14px)' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(2,1,12,0.1) 0%, rgba(2,1,12,0.05) 40%, rgba(2,1,12,0.6) 100%)' }} />
+                  {/* Character portrait */}
+                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 110, overflow: 'hidden' }}>
+                    <Image src={meta.characterImage} alt={meta.character} fill style={{ objectFit: 'cover', objectPosition: 'top center', filter: 'drop-shadow(8px 0 16px rgba(0,0,0,0.8))' }} priority />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(2,1,12,0.1), transparent 50%, rgba(2,1,12,0.4) 100%)' }} />
+                  </div>
+                  {/* Status info overlay */}
+                  <div style={{ position: 'absolute', bottom: 0, left: 118, right: 0, padding: '12px 16px 10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                      <div style={{ padding: '2px 8px', background: `rgba(${meta.round === 1 ? '239,68,68' : meta.round === 2 ? '245,158,11' : '16,185,129'},0.12)`, border: `1px solid ${rc.border}`, borderRadius: 5, fontSize: 8, fontWeight: 800, color: rc.primary, letterSpacing: 2 }}>OPERATIVE</div>
+                      <span style={{ color: '#e2e8f0', fontSize: 14, fontWeight: 800, letterSpacing: 1 }}>{meta.character}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
+                      <Clock size={10} color="#6b7280" />
+                      <span style={{ color: '#94a3b8', fontSize: 11 }}>{meta.storyTime}</span>
+                    </div>
+                    <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 6, padding: '5px 10px', display: 'inline-block' }}>
+                      <span style={{ color: '#fca5a5', fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>{meta.storyStatus}</span>
+                    </div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, justifyContent: 'space-between' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
-                      <Clock size={12} color="#6b7280" />
-                      <span style={{ color: '#94a3b8', fontSize: 12 }}>{meta.storyTime}</span>
+                {/* Hostage rescue bar */}
+                <div style={{ padding: '10px 16px 12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <Users size={10} color="#6b7280" />
+                      <span style={{ color: '#6b7280', fontSize: 9, letterSpacing: 2, fontWeight: 700 }}>HOSTAGES RESCUED</span>
                     </div>
-                    <div style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.22)', borderRadius: 7, padding: '7px 11px', marginBottom: 8 }}>
-                      <div style={{ color: '#fca5a5', fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>{meta.storyStatus}</div>
-                    </div>
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                        <span style={{ color: '#6b7280', fontSize: 10, letterSpacing: 2, fontWeight: 700 }}>HOSTAGE RESCUE</span>
-                        <span style={{ color: rescuePct === 100 ? '#10b981' : '#f59e0b', fontSize: 10, fontWeight: 700 }}>{rescued} / 1,200</span>
-                      </div>
-                      <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${rescuePct}%`, background: 'linear-gradient(90deg,#7c3aed,#10b981)', transition: 'width 0.6s ease', borderRadius: 2 }} />
-                      </div>
-                    </div>
+                    <span style={{ color: rescuePct >= 100 ? '#10b981' : rescuePct >= 60 ? '#f59e0b' : '#ef4444', fontSize: 11, fontWeight: 900 }}>{rescued.toLocaleString()} / 1,200</span>
+                  </div>
+                  <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
+                    <div style={{ height: '100%', width: `${rescuePct}%`, background: rescuePct >= 100 ? 'linear-gradient(90deg,#10b981,#34d399)' : 'linear-gradient(90deg,#ef4444,#f59e0b,#7c3aed)', transition: 'width 0.8s ease', borderRadius: 3 }} />
                   </div>
                 </div>
               </div>
@@ -692,37 +712,55 @@ export default function ChallengesPage() {
 
               {/* Flag submit */}
               {state === 'active' && (
-                <div className="game-panel-bordered" style={{ padding: '22px 24px', boxShadow: '0 0 40px rgba(167,139,250,0.1), 0 4px 40px rgba(0,0,0,0.5)' }}>
-                  <div className="game-label" style={{ color: '#a78bfa', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-                    <Flag size={13} />SUBMIT INTELLIGENCE
+                <div style={{ background: 'linear-gradient(135deg,rgba(109,40,217,0.14),rgba(2,1,12,0.98))', border: '1.5px solid rgba(109,40,217,0.45)', borderRadius: 14, padding: '20px 22px', boxShadow: '0 0 50px rgba(109,40,217,0.15), 0 4px 40px rgba(0,0,0,0.5)', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent,rgba(167,139,250,0.8),rgba(6,182,212,0.6),transparent)' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#5b21b6,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Flag size={13} color="#fff" />
+                    </div>
+                    <span style={{ color: '#c4b5fd', fontSize: 12, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase' as const }}>Submit Intelligence</span>
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 6, padding: '3px 10px' }}>
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#a78bfa', boxShadow: '0 0 6px #a78bfa', animation: 'dopulse 1.5s infinite' }} />
+                      <span style={{ color: '#7c6fa0', fontSize: 9, letterSpacing: 2 }}>AWAITING FLAG</span>
+                    </div>
                   </div>
-                  <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 10 }}>
                     <input
                       className="game-input"
                       type="text"
-                      placeholder="CTF{your_decoded_flag_here}"
+                      placeholder="CTF{your_decoded_flag}"
                       value={flag}
                       onChange={e => setFlag(e.target.value)}
                       disabled={submitting}
                       autoComplete="off"
                       spellCheck={false}
-                      style={{ flex: 1, minWidth: 200, fontSize: 15, letterSpacing: 2 }}
+                      style={{ flex: 1, fontSize: 14, letterSpacing: 2, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(109,40,217,0.35)', borderRadius: 9, padding: '13px 16px', color: '#c4b5fd', fontFamily: 'inherit', outline: 'none' }}
                     />
                     <button
                       type="submit"
-                      className="btn-game-primary"
                       disabled={submitting || !flag.trim() || !challengeId}
-                      style={{ opacity: submitting || !flag.trim() || !challengeId ? 0.5 : 1, whiteSpace: 'nowrap', padding: '14px 24px', fontSize: 14 }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 7,
+                        padding: '13px 22px',
+                        background: submitting || !flag.trim() ? 'rgba(109,40,217,0.25)' : 'linear-gradient(135deg,#5b21b6,#7c3aed)',
+                        border: '1px solid rgba(167,139,250,0.4)',
+                        borderRadius: 9, cursor: submitting || !flag.trim() ? 'not-allowed' : 'pointer',
+                        color: '#fff', fontSize: 13, fontWeight: 800, letterSpacing: 2,
+                        fontFamily: 'inherit', whiteSpace: 'nowrap',
+                        boxShadow: !submitting && flag.trim() ? '0 0 28px rgba(109,40,217,0.4)' : 'none',
+                        transition: 'all 0.2s',
+                        animation: !submitting && flag.trim() ? 'submitPulse 2s ease-in-out infinite' : 'none',
+                      }}
                     >
-                      {submitting ? 'Transmitting...' : <><Flag size={14} style={{ marginRight: 6 }} />SUBMIT FLAG</>}
+                      <Flag size={14} />{submitting ? 'SENDING...' : 'TRANSMIT'}
                     </button>
                   </form>
                   {apiResponse?.progress?.maxAttempts && (
-                    <div style={{ marginTop: 8, color: '#6b7280', fontSize: 11, letterSpacing: 1 }}>ATTEMPTS: {apiResponse.progress.attemptsUsed} / {apiResponse.progress.maxAttempts}</div>
+                    <div style={{ marginTop: 8, color: '#4b5563', fontSize: 10, letterSpacing: 1 }}>ATTEMPTS: {apiResponse.progress.attemptsUsed} / {apiResponse.progress.maxAttempts}</div>
                   )}
                   {message && (
-                    <div className={isError ? 'game-alert-error' : 'game-alert-success'} style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 9, fontSize: 14 }}>
-                      {isError ? <AlertTriangle size={15} /> : <CheckCircle size={15} />}{message}
+                    <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: isError ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)', border: `1px solid ${isError ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`, borderRadius: 9, fontSize: 13, color: isError ? '#fca5a5' : '#6ee7b7' }}>
+                      {isError ? <AlertTriangle size={14} /> : <CheckCircle size={14} />}{message}
                     </div>
                   )}
                 </div>
@@ -767,10 +805,10 @@ export default function ChallengesPage() {
               {/* Team stats */}
               <div style={{ background: 'linear-gradient(135deg,rgba(109,40,217,0.14),rgba(109,40,217,0.04))', border: '1px solid rgba(109,40,217,0.32)', borderRadius: 12, padding: '16px 18px', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,#7c3aed,#06b6d4)' }} />
-                <div style={{ color: '#6b7280', fontSize: 10, fontWeight: 700, letterSpacing: 3, marginBottom: 7 }}>TEAM STATUS</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: 1 }}>{teamName}</div>
-                <div style={{ fontSize: 30, fontWeight: 900, color: '#e2e8f0', lineHeight: 1, marginBottom: 3 }}>{scored}<span style={{ color: '#4b5563', fontSize: 18 }}> / {totalLevels}</span></div>
-                <div style={{ color: '#6b7280', fontSize: 11, marginBottom: 10 }}>missions solved</div>
+                <div style={{ color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 3, marginBottom: 7 }}>TEAM STATUS</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0', marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: 1 }}>{teamName}</div>
+                <div style={{ fontSize: 32, fontWeight: 900, color: '#e2e8f0', lineHeight: 1, marginBottom: 3 }}>{scored}<span style={{ color: '#4b5563', fontSize: 20 }}> / {totalLevels}</span></div>
+                <div style={{ color: '#6b7280', fontSize: 13, marginBottom: 10 }}>missions solved</div>
                 <div style={{ height: 5, background: 'rgba(109,40,217,0.1)', borderRadius: 3, overflow: 'hidden', marginBottom: 12 }}>
                   <div className="progress-fill" style={{ width: `${Math.round((scored / totalLevels) * 100)}%` }} />
                 </div>
@@ -785,16 +823,16 @@ export default function ChallengesPage() {
 
               {/* Op status */}
               <div style={{ background: 'rgba(5,2,18,0.82)', border: '1px solid rgba(55,65,81,0.28)', borderRadius: 11, padding: '14px 16px' }}>
-                <div style={{ color: '#6b7280', fontSize: 10, fontWeight: 700, letterSpacing: 2, marginBottom: 10 }}>OPERATION STATUS</div>
+                <div style={{ color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, marginBottom: 10 }}>OPERATION STATUS</div>
                 {[
                   { label: 'CODISSIA MALL', val: currentLevel >= 9 ? 'SECURED' : 'ACTIVE SIEGE', c: currentLevel >= 9 ? '#10b981' : '#ef4444' },
                   { label: 'OP BLACKOUT', val: currentLevel >= 9 ? 'TERMINATED' : 'ARMED FEB 14', c: currentLevel >= 9 ? '#10b981' : '#f59e0b' },
                   { label: 'UMAR SAIF', val: currentLevel >= 8 ? 'NEUTRALIZED' : 'HOSTILE', c: currentLevel >= 8 ? '#10b981' : '#ef4444' },
                   { label: 'FAROOQ', val: currentLevel >= 7 ? 'RECAPTURED' : 'AT LARGE', c: currentLevel >= 7 ? '#10b981' : '#ef4444' },
                 ].map(x => (
-                  <div key={x.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
-                    <span style={{ color: '#94a3b8', fontSize: 11, letterSpacing: 1 }}>{x.label}</span>
-                    <span style={{ color: x.c, fontSize: 11, fontWeight: 700 }}>{x.val}</span>
+                  <div key={x.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ color: '#94a3b8', fontSize: 13, letterSpacing: 1 }}>{x.label}</span>
+                    <span style={{ color: x.c, fontSize: 13, fontWeight: 700 }}>{x.val}</span>
                   </div>
                 ))}
               </div>
@@ -806,7 +844,7 @@ export default function ChallengesPage() {
                   style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0 10px', width: '100%', fontFamily: 'inherit' }}
                 >
                   <Activity size={11} color="#a78bfa" />
-                  <span style={{ color: '#a78bfa', fontSize: 10, fontWeight: 700, letterSpacing: 2, flex: 1, textAlign: 'left' }}>LIVE OPS FEED</span>
+                  <span style={{ color: '#a78bfa', fontSize: 12, fontWeight: 700, letterSpacing: 2, flex: 1, textAlign: 'left' }}>LIVE OPS FEED</span>
                   {feedOpen ? <ChevronUp size={13} color="#6b7280" /> : <ChevronDown size={13} color="#6b7280" />}
                 </button>
                 {feedOpen && (
@@ -817,13 +855,13 @@ export default function ChallengesPage() {
                         No transmissions yet.
                       </div>
                     ) : activity.map((item: any, i: number) => (
-                      <div key={i} style={{ padding: '9px 11px', background: 'rgba(8,5,22,0.75)', border: '1px solid rgba(55,65,81,0.28)', borderRadius: 8, borderLeft: `2px solid ${item.actionType === 'SOLVED' ? '#10b981' : item.actionType === 'HINT_USED' ? '#f59e0b' : '#7c3aed'}`, flexShrink: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-                          <span style={{ color: '#e2e8f0', fontSize: 12, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>{item.teamName || 'Team'}</span>
-                          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: item.actionType === 'SOLVED' ? '#10b981' : item.actionType === 'HINT_USED' ? '#f59e0b' : '#a78bfa' }}>{item.actionType}</span>
+                      <div key={i} style={{ padding: '10px 13px', background: 'rgba(8,5,22,0.75)', border: '1px solid rgba(55,65,81,0.28)', borderRadius: 8, borderLeft: `2px solid ${item.actionType === 'SOLVED' ? '#10b981' : item.actionType === 'HINT_USED' ? '#f59e0b' : '#7c3aed'}`, flexShrink: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                          <span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>{item.teamName || 'Team'}</span>
+                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: item.actionType === 'SOLVED' ? '#10b981' : item.actionType === 'HINT_USED' ? '#f59e0b' : '#a78bfa' }}>{item.actionType}</span>
                         </div>
-                        <div style={{ color: '#6b7280', fontSize: 11, lineHeight: 1.4, marginBottom: 3 }}>{item.storyMessage || item.challengeTitle || 'Operation update'}</div>
-                        <div style={{ color: (item.points ?? 0) >= 0 ? '#6ee7b7' : '#fca5a5', fontSize: 11, fontWeight: 700 }}>{(item.points ?? 0) >= 0 ? '+' : ''}{item.points ?? 0} pts</div>
+                        <div style={{ color: '#6b7280', fontSize: 12, lineHeight: 1.4, marginBottom: 4 }}>{item.storyMessage || item.challengeTitle || 'Operation update'}</div>
+                        <div style={{ color: (item.points ?? 0) >= 0 ? '#6ee7b7' : '#fca5a5', fontSize: 12, fontWeight: 700 }}>{(item.points ?? 0) >= 0 ? '+' : ''}{item.points ?? 0} pts</div>
                       </div>
                     ))}
                   </div>
@@ -995,7 +1033,20 @@ export default function ChallengesPage() {
         @keyframes dopulse { 0%,100% { opacity: 1 } 50% { opacity: 0.35 } }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
         @keyframes pulse { 0%,100%{opacity:0.6;transform:translateX(0)} 50%{opacity:1;transform:translateX(3px)} }
+        @keyframes submitPulse { 0%,100%{box-shadow:0 0 20px rgba(109,40,217,0.35)} 50%{box-shadow:0 0 40px rgba(109,40,217,0.65),0 0 60px rgba(109,40,217,0.2)} }
       `}</style>
     </div>
+  );
+}
+
+export default function ChallengesPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', background: '#080614', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontFamily: "'Share Tech Mono','Courier New',monospace" }}>
+        Loading mission data...
+      </div>
+    }>
+      <ChallengesInner />
+    </Suspense>
   );
 }

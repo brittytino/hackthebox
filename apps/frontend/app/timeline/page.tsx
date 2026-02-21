@@ -225,22 +225,28 @@ export default function TimelinePage() {
       </svg>
 
       {/* Top nav */}
-      <div data-tl="header" style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '12px 32px', borderBottom: '1px solid rgba(109,40,217,0.25)', background: 'rgba(5,2,18,0.97)', backdropFilter: 'blur(24px)', gap: 14 }}>
-        <Link href="/challenges" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7, transition: 'all 0.15s' }}>
-          <ArrowLeft size={13} />MISSION OPS
+      <div data-tl="header" style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '10px 28px', borderBottom: '1px solid rgba(109,40,217,0.25)', background: 'rgba(5,2,18,0.97)', backdropFilter: 'blur(24px)', gap: 14 }}>
+        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 14px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7 }}>
+          <ArrowLeft size={13} />HQ
+        </Link>
+        <Link href="/leaderboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 14px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7 }}>
+          <Trophy size={13} />RANKS
+        </Link>
+        <Link href="/story" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 14px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7 }}>
+          <Flag size={13} />STORY
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Shield size={13} color="#fff" />
           </div>
-          <span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800, letterSpacing: 3 }}>CIPHER OPS</span>
-          <span style={{ color: '#4b5563', fontSize: 11, letterSpacing: 2 }}>/ MISSION TIMELINE</span>
+          <span style={{ color: '#e2e8f0', fontSize: 14, fontWeight: 800, letterSpacing: 3 }}>CIPHER OPS</span>
+          <span style={{ color: '#4b5563', fontSize: 12, letterSpacing: 2 }}>/ MISSION TIMELINE</span>
         </div>
         <div style={{ flex: 1 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.32)', borderRadius: 8, padding: '5px 14px' }}>
           <Trophy size={13} color="#fbbf24" />
-          <span style={{ color: '#fbbf24', fontWeight: 900, fontSize: 16 }}>{teamPoints.toLocaleString()}</span>
-          <span style={{ color: '#92400e', fontSize: 9, fontWeight: 700, letterSpacing: 2 }}>PTS</span>
+          <span style={{ color: '#fbbf24', fontWeight: 900, fontSize: 18 }}>{teamPoints.toLocaleString()}</span>
+          <span style={{ color: '#92400e', fontSize: 11, fontWeight: 700, letterSpacing: 2 }}>PTS</span>
         </div>
         {teamName && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -252,12 +258,12 @@ export default function TimelinePage() {
 
       {/* Page header */}
       <div data-tl="header" style={{ textAlign: 'center', padding: '60px 24px 30px', position: 'relative', zIndex: 5 }}>
-        <div style={{ color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 6, marginBottom: 14, textTransform: 'uppercase' }}>Operation Blackout</div>
+        <div style={{ color: '#6b7280', fontSize: 13, fontWeight: 700, letterSpacing: 6, marginBottom: 14, textTransform: 'uppercase' }}>Operation Blackout</div>
         <h1 style={{ margin: 0, fontSize: 48, fontWeight: 900, color: 'transparent', backgroundImage: 'linear-gradient(135deg, #a78bfa 0%, #06b6d4 50%, #10b981 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', letterSpacing: 8, textTransform: 'uppercase', textShadow: 'none', filter: 'drop-shadow(0 0 60px rgba(124,58,237,0.6))' }}>
           Mission Timeline
         </h1>
         <div style={{ height: 3, width: 120, background: 'linear-gradient(90deg,transparent,#7c3aed 20%,#06b6d4 50%,#10b981 80%,transparent)', margin: '20px auto 0', borderRadius: 3, boxShadow: '0 0 30px rgba(124,58,237,0.5)' }} />
-        <p style={{ color: '#94a3b8', fontSize: 14, marginTop: 20, letterSpacing: 3, fontWeight: 600 }}>9 MISSIONS · 3 ACTS · COIMBATORE 2026</p>
+        <p style={{ color: '#94a3b8', fontSize: 15, marginTop: 20, letterSpacing: 3, fontWeight: 600 }}>9 MISSIONS · 3 ACTS · COIMBATORE 2026</p>
       </div>
 
       {/* Timeline */}
@@ -322,7 +328,7 @@ export default function TimelinePage() {
 
               {/* Card */}
               <div
-                onClick={() => state !== 'locked' && router.push('/challenges')}
+                onClick={() => state !== 'locked' && router.push(`/challenges?level=${m.order}`)}
                 style={{
                   width: '42%',
                   background: state === 'active'
@@ -400,7 +406,7 @@ export default function TimelinePage() {
 
                     {state !== 'locked' && (
                       <div
-                        onClick={e => { e.stopPropagation(); router.push('/challenges'); }}
+                        onClick={e => { e.stopPropagation(); router.push(`/challenges?level=${m.order}`); }}
                         style={{
                           marginTop: 16,
                           padding: state === 'active' ? '14px 20px' : '10px 14px',

@@ -554,15 +554,8 @@ function StoryInner() {
           <ArrowLeft size={12} />{isIntro ? 'BACK' : 'TIMELINE'}
         </Link>
 
-        {/* Scene dots */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {scenes.map((_, i) => (
-            <div key={i} style={{ width: i === sceneIdx ? 18 : 6, height: 6, borderRadius: 3, background: i < sceneIdx ? '#10b981' : i === sceneIdx ? speakerColor : 'rgba(255,255,255,0.15)', transition: 'all 0.3s ease', boxShadow: i === sceneIdx ? `0 0 8px ${speakerColor}99` : 'none' }} />
-          ))}
-        </div>
-
-        {/* Operation label */}
-        <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase' }}>
+        {/* Operation label — centered absolutely so it doesn't affect flex spacing */}
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
           {challengeNum ? `LEVEL ${challengeNum} — DEBRIEF` : 'OPERATION CIPHER STRIKE'}
         </div>
 
@@ -664,9 +657,11 @@ function StoryInner() {
         </div>
       </div>
 
-      {/* Scene counter */}
-      <div style={{ position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 20, color: 'rgba(255,255,255,0.18)', fontSize: 10, letterSpacing: 2 }}>
-        {sceneIdx + 1} / {scenes.length}
+      {/* Scene dots — bottom center */}
+      <div style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 25, display: 'flex', alignItems: 'center', gap: 6, pointerEvents: 'none' }}>
+        {scenes.map((_, i) => (
+          <div key={i} style={{ width: i === sceneIdx ? 18 : 6, height: 6, borderRadius: 3, background: i < sceneIdx ? '#10b981' : i === sceneIdx ? speakerColor : 'rgba(255,255,255,0.18)', transition: 'all 0.3s ease', boxShadow: i === sceneIdx ? `0 0 8px ${speakerColor}` : 'none' }} />
+        ))}
       </div>
 
       {/* Skip confirm */}

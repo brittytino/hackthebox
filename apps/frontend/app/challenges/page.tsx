@@ -584,7 +584,9 @@ function ChallengesInner() {
         </div>
 
         {/* CENTER: CHALLENGE CONTENT */}
-        <div data-g="center" className="game-scroll" ref={centerRef} style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '24px 28px 80px', display: 'flex', flexDirection: 'column', gap: 18, minWidth: 0, height: 'calc(100vh - 54px)' }}>
+        <div data-g="center" ref={centerRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: 'calc(100vh - 54px)', overflow: 'hidden' }}>
+          {/* Scrollable content */}
+          <div className="game-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '24px 28px 20px', display: 'flex', flexDirection: 'column', gap: 18 }}>
 
           {apiResponse?.progress?.completedAll && (
             <div style={{ background: 'linear-gradient(135deg,rgba(6,78,59,0.28),rgba(16,185,129,0.1))', border: '2px solid rgba(16,185,129,0.55)', borderRadius: 14, padding: '24px 28px', textAlign: 'center', boxShadow: '0 0 60px rgba(16,185,129,0.2)' }}>
@@ -710,15 +712,27 @@ function ChallengesInner() {
                 )}
               </div>
 
-              {/* Flag submit */}
+            </>
+          ) : (
+            <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center', color: '#4b5563' }}>
+                <RadioTower size={40} style={{ margin: '0 auto 12px', opacity: 0.3 }} />
+                <div style={{ fontSize: 13 }}>Select a mission from the timeline.</div>
+              </div>
+            </div>
+          )}
+          </div>{/* end scrollable content */}
+
+          {/* Sticky flag submit bar — always visible at bottom of center column */}
+          {meta && (
+            <div style={{ borderTop: '1px solid rgba(109,40,217,0.22)', background: 'rgba(3,1,14,0.97)', padding: '14px 20px', flexShrink: 0, backdropFilter: 'blur(20px)' }}>
               {state === 'active' && (
-                <div style={{ background: 'linear-gradient(135deg,rgba(109,40,217,0.14),rgba(2,1,12,0.98))', border: '1.5px solid rgba(109,40,217,0.45)', borderRadius: 14, padding: '20px 22px', boxShadow: '0 0 50px rgba(109,40,217,0.15), 0 4px 40px rgba(0,0,0,0.5)', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent,rgba(167,139,250,0.8),rgba(6,182,212,0.6),transparent)' }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#5b21b6,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Flag size={13} color="#fff" />
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 6, background: 'linear-gradient(135deg,#5b21b6,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Flag size={12} color="#fff" />
                     </div>
-                    <span style={{ color: '#c4b5fd', fontSize: 12, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase' as const }}>Submit Intelligence</span>
+                    <span style={{ color: '#c4b5fd', fontSize: 11, fontWeight: 700, letterSpacing: 3 }}>SUBMIT FLAG</span>
                     <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 6, padding: '3px 10px' }}>
                       <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#a78bfa', boxShadow: '0 0 6px #a78bfa', animation: 'dopulse 1.5s infinite' }} />
                       <span style={{ color: '#7c6fa0', fontSize: 9, letterSpacing: 2 }}>AWAITING FLAG</span>
@@ -734,19 +748,19 @@ function ChallengesInner() {
                       disabled={submitting}
                       autoComplete="off"
                       spellCheck={false}
-                      style={{ flex: 1, fontSize: 14, letterSpacing: 2, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(109,40,217,0.35)', borderRadius: 9, padding: '13px 16px', color: '#c4b5fd', fontFamily: 'inherit', outline: 'none' }}
+                      style={{ flex: 1, fontSize: 14, letterSpacing: 2, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(109,40,217,0.35)', borderRadius: 9, padding: '12px 16px', color: '#c4b5fd', fontFamily: 'inherit', outline: 'none' }}
                     />
                     <button
                       type="submit"
                       disabled={submitting || !flag.trim() || !challengeId}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 7,
-                        padding: '13px 22px',
+                        padding: '12px 22px',
                         background: submitting || !flag.trim() ? 'rgba(109,40,217,0.25)' : 'linear-gradient(135deg,#5b21b6,#7c3aed)',
                         border: '1px solid rgba(167,139,250,0.4)',
                         borderRadius: 9, cursor: submitting || !flag.trim() ? 'not-allowed' : 'pointer',
                         color: '#fff', fontSize: 13, fontWeight: 800, letterSpacing: 2,
-                        fontFamily: 'inherit', whiteSpace: 'nowrap',
+                        fontFamily: 'inherit', whiteSpace: 'nowrap' as const,
                         boxShadow: !submitting && flag.trim() ? '0 0 28px rgba(109,40,217,0.4)' : 'none',
                         transition: 'all 0.2s',
                         animation: !submitting && flag.trim() ? 'submitPulse 2s ease-in-out infinite' : 'none',
@@ -756,10 +770,10 @@ function ChallengesInner() {
                     </button>
                   </form>
                   {apiResponse?.progress?.maxAttempts && (
-                    <div style={{ marginTop: 8, color: '#4b5563', fontSize: 10, letterSpacing: 1 }}>ATTEMPTS: {apiResponse.progress.attemptsUsed} / {apiResponse.progress.maxAttempts}</div>
+                    <div style={{ marginTop: 6, color: '#4b5563', fontSize: 10, letterSpacing: 1 }}>ATTEMPTS: {apiResponse.progress.attemptsUsed} / {apiResponse.progress.maxAttempts}</div>
                   )}
                   {message && (
-                    <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: isError ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)', border: `1px solid ${isError ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`, borderRadius: 9, fontSize: 13, color: isError ? '#fca5a5' : '#6ee7b7' }}>
+                    <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: isError ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)', border: `1px solid ${isError ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`, borderRadius: 8, fontSize: 13, color: isError ? '#fca5a5' : '#6ee7b7' }}>
                       {isError ? <AlertTriangle size={14} /> : <CheckCircle size={14} />}{message}
                     </div>
                   )}
@@ -767,13 +781,6 @@ function ChallengesInner() {
               )}
               {state === 'solved' && <div className="game-alert-success" style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14 }}><CheckCircle size={16} />Mission complete. Select the next level from the timeline.</div>}
               {state === 'locked' && <div className="game-alert-info" style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14 }}><Lock size={16} />This mission is locked. Solve the active level first.</div>}
-            </>
-          ) : (
-            <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ textAlign: 'center', color: '#4b5563' }}>
-                <RadioTower size={40} style={{ margin: '0 auto 12px', opacity: 0.3 }} />
-                <div style={{ fontSize: 13 }}>Select a mission from the timeline.</div>
-              </div>
             </div>
           )}
         </div>

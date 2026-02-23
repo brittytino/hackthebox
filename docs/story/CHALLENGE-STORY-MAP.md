@@ -41,7 +41,7 @@ TIME TO NEXT EXECUTION: 28 minutes
 **Narrative Context:**
 ```
 Saif has fragmented the server room access code across three separate files,
-each encrypted differently (Hex, Binary, Caesar cipher). Decode all three
+each encoded differently. Decode all three
 and combine them to unlock the door before Veera is discovered by patrols.
 
 HOSTAGE STATUS: 1,200 trapped | 0 rescued
@@ -65,8 +65,8 @@ TIME TO NEXT EXECUTION: 15 minutes
 **Narrative Context:**
 ```
 Server Room ER-42 contains a biometric time-locked vault. The security
-log shows a mathematical unlock formula based on event timestamps and
-team parameters. Calculate your unique code to open the vault.
+log shows a deterministic unlock formula based on team identity and
+mission constants. Calculate your unique code to open the vault.
 
 HOSTAGE STATUS: 1,180 trapped | 20 rescued (Veera cleared a sector)
 TERRORISTS: 12 active (3 eliminated by Veera)
@@ -75,7 +75,7 @@ BREAKING: First hostage executed on live TV
 ```
 
 **Veera's Message:**
-*"The vault is time-locked. Formula requires your team's exact registration timestamp, member count, and current round. This is personalized security—every team calculates their own code. I need this NOW."*
+*"The vault is time-locked. Formula requires your team identity with mission constants. This is personalized security—every team calculates their own code. I need this NOW."*
 
 **After solving:**
 *"Vault open. Extracting hard drive. What I'm seeing here... this is bigger than we thought. Much bigger. Stand by."*
@@ -107,7 +107,7 @@ ALERT: Government preparing to release Farooq from prison
 *"Veera, they're saying on the news that the government is caving—they're going to release Farooq! Can you stop this?"*
 
 **Veera's Response:**
-*"Not if I decrypt these files first. Team, crack those hashes. I need the first 3 letters of each password, combined with '42'. Make it happen."*
+*"Not if I decrypt these files first. Team, crack those hashes and reconstruct the combined master key format. Make it happen."*
 
 **After solving:**
 *"Master key worked. Accessing databases now. Wait... what is this? Financial transfers to... the HOME MINISTER? He's IN ON THIS!"*
@@ -209,8 +209,8 @@ BREAKING: Farooq has crossed Pakistan border - recapture mission underway
 ```
 CRITICAL ALERT: A logic bomb is embedded in the attack script. If not
 defused correctly, Operation BLACKOUT will trigger IMMEDIATELY instead
-of waiting until February 14. Defusal sequence: Hex → Base64 → ROT13 →
-Binary → ASCII, then apply mathematical validation. ONE MISTAKE = CITY GOES DARK.
+of waiting until February 14. The defusal data is layered and must be
+peeled back in the correct order. ONE MISTAKE = CITY GOES DARK.
 
 HOSTAGE STATUS: 85 trapped | 1,115 rescued
 TERRORISTS: 1 active (Saif, surrounded)
@@ -219,7 +219,7 @@ VEERA STATUS: Escaping through service ducts
 ```
 
 **Veera's Message (urgent, breathing heavily):**
-*"I'm clear of Saif's forces. Hostages are evacuating. But there's a LOGIC BOMB in the code. If you don't defuse it perfectly—correct sequence, correct math validation—the worm triggers RIGHT NOW. Five encoding layers plus ASCII sum divisibility check. Do NOT get this wrong."*
+*"I'm clear of Saif's forces. Hostages are evacuating. But there's a LOGIC BOMB in the code. If you don't defuse it perfectly with the right decode pipeline, the worm triggers RIGHT NOW. Do NOT get this wrong."*
 
 **After solving:**
 *"Logic bomb defused. Mall is clear. Saif is down. But Farooq crossed the border 2 hours ago. I'm going after him. Unofficial operation. Tell Althaf I'll bring Farooq back—and make him reveal The Phantom's location."*

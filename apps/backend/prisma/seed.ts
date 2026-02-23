@@ -82,87 +82,80 @@ async function main() {
     {
       title: 'Level 1.1: The Intercepted Transmission',
       description: `SIGNAL INTERCEPT #0147-A
-SOURCE: Encrypted relay node | PRIORITY: ALPHA
+    SOURCE: Encrypted relay node | PRIORITY: ALPHA
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-dGF2Si1nZm5SLDI0RVItemJiRS5lcmllckY=
+    dGF2Si1nZm5SLDI0RVItemJiRS5lcmllckY=
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-The intercepted transmission is believed to contain the location of Saif's command center inside the mall. Intelligence analysts confirm multiple encoding layers were applied to the original plaintext before transmission.
+    The relay packet above was captured minutes before a coordinated movement inside the mall perimeter.
+    Analysts confirm the payload contains an operational location string required for field access.
 
-Decode the transmission and submit the location.
-
-Flag format: CTF{decoded_location}`,
+    Recover the exact flag from the intercepted transmission and submit it unchanged.`,
       storyContext: `TIME: 3:47 AM | LOCATION: Hidden server room, basement level
 
 Veera has managed to access the mall's backup server room and intercepted an encrypted transmission from the terrorist comms relay. The message contains the command center coordinates.`,
-      characterMessage: "I've tapped into their relay. This transmission has the command center location — but it's been through multiple encoding passes. Figure out what they used and reverse it. Move fast.",
+      characterMessage: "I've tapped into their relay. This transmission has the command center location — but someone worked hard to hide it. Figure out what they did and undo it. Move fast.",
       flag: 'CTF{Server.Room-ER42,East-Wing}',
       points: 100,
       order: 1,
       difficulty: 'easy',
       hintPenalty: 30,
-      hints: 'The trailing "=" character is a signature of a common encoding. The data has been transformed three times. Work from the outermost layer inward.',
+      hints: 'Start by identifying the encoding family from character set and padding. After decoding once, validate whether the output is readable or transformed again.',
+
     },
     {
       title: 'Level 1.2: The Fragmented Server Map',
       description: `FRAGMENTED ACCESS CODE — SERVER ROOM ER-42
 
-Three encrypted fragments recovered from separate terrorist relay nodes. Each fragment uses a different encoding scheme. Decode all three and assemble in exact order.
+    Three seized packets from independent relay paths appear to be parts of one authorization phrase.
+    Integrity checks show no packet is redundant.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-FRAGMENT A:
-43544623
+    FRAGMENT A:
+    67 84 70 35
 
-FRAGMENT B:
-01000001 01100011 01100011 01100101 01110011 01110011
+    FRAGMENT B:
+    101 143 143 145 163 163
 
-FRAGMENT C:
-Nyhualk
+    FRAGMENT C:
+    Tizmgvw
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Identify the encoding used for each fragment. Decode all three and concatenate in order: A + B + C
+    Reconstruct the original access phrase and submit the final flag exactly as recovered.`,
 
-Submit the complete assembled access code exactly as decoded.`,
       storyContext: `TIME: 4:15 AM | LOCATION: Approaching Server Room ER-42
 
 The server room access code has been split across three encrypted files on the terrorist network. Veera is 50 meters away with patrols closing in. He needs the complete code now.`,
-      characterMessage: "Three fragments, three different encodings. Figure out what each one is, decode them, and assemble in order — A then B then C. No room for error.",
+      characterMessage: "Three fragments, three different languages. Read each one correctly and assemble in order — A then B then C. No room for error.",
       flag: 'CTF#AccessGranted',
       points: 150,
       order: 2,
       difficulty: 'medium',
       hintPenalty: 50,
-      hints: 'Fragment A is numeric pairs representing character codes. Fragment B has 8-digit groups of two possible values. Fragment C is alphabetic — the letters have been shifted by a fixed amount.',
+      hints: 'Treat each fragment independently and classify its notation before decoding. Convert all parts to plain text first, then merge in the presented sequence.',
+
     },
     {
       title: 'Level 1.3: The Time-Locked Vault',
       description: `BIOMETRIC VAULT — PERSONALISED SECURITY LOCK
 
-The vault protecting the terrorist attack plans uses a team-specific access code derived from your registration data.
+The archive vault authenticates against a team-bound signature generated at registration time.
+Captured telemetry confirms the lock material is deterministic but unique per team.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-VAULT SECURITY PROTOCOL:
-
-  Input:   <team_name>|<member_count>|<round>|<salt>
-  Hash:    MD5
-  Code:    First 8 hex characters (lowercase)
-
-  Parameters:
-    member_count = 2
-    round        = 1
-    salt         = CIPHER2026
+VAULT STATUS: ARMED
+ANTI-REPLAY: ENABLED
+EXTERNAL OVERRIDE: DENIED
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Each team's code is unique. No answer sharing is possible.
-
-Submit: CTF{your_8_char_hex_code}`,
+Derive your team-specific vault response and submit the exact resulting flag.`,
       storyContext: `TIME: 4:45 AM | LOCATION: Inside Server Room ER-42
 
 The vault contains Saif's full attack blueprint. The biometric lock requires a team-specific mathematical computation — every team gets a different answer.`,
@@ -171,8 +164,9 @@ The vault contains Saif's full attack blueprint. The biometric lock requires a t
       points: 200,
       order: 3,
       difficulty: 'hard',
-      hintPenalty: 75,
-      hints: 'Build the input string with pipe separators exactly as shown: TeamName|2|1|CIPHER2026. Use an online MD5 calculator. First 8 lowercase hex chars.',
+      hintPenalty: 70,
+      hints: 'This is deterministic input processing. Reconstruct the exact input string with correct separators and ordering before generating the final team-specific value.',
+
     },
   ];
 
@@ -213,86 +207,80 @@ The vault contains Saif's full attack blueprint. The biometric lock requires a t
       title: 'Level 2.1: The Corrupted Hash Trail',
       description: `ENCRYPTED CREDENTIALS — RECOVERED HARD DRIVE
 
-Three password-protected databases recovered from the vault. Each database is secured with a hashed password.
+    Forensic extraction recovered three credential artifacts tied to distinct protected stores.
+    Correlation logs indicate the final access token is derived from all three stores, not any single one.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-DATABASE ALPHA:
-5f4dcc3b5aa765d61d8327deb882cf99
+    DATABASE ALPHA:
+    5f4dcc3b5aa765d61d8327deb882cf99
 
-DATABASE BETA:
-5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8
+    DATABASE BETA:
+    af8978b1797b72acfff9595a5a2a373ec3d9106d
 
-DATABASE GAMMA:
-5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
+    DATABASE GAMMA:
+    000c285457fc971f862a79b786476c78812c8897063c6fa9c045f579a3b2d63f
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-MASTER KEY ASSEMBLY:
-Crack all three hashes. Take the first 3 characters of each cracked password (lowercase). Combine using the format below.
+    Recover the master flag linked to this hash trail and submit it exactly.`,
 
-Flag format: CTF{first3+second3+third3+42}`,
       storyContext: `TIME: 5:12 AM | LOCATION: Inside the vault, analyzing recovered hard drive
 
 The hard drive holds three separate databases — sleeper cell identities, financial backers, and the BLACKOUT payload. Each is secured by a different password hash.`,
       characterMessage: "Three locked databases. Crack every hash, extract the master key. The government is about to release Farooq — this evidence is the only thing that can stop it.",
-      flag: 'CTF{pas+pas+pas+42}',
+      flag: 'CTF{pas+dra+mon+42}',
       points: 250,
       order: 1,
       difficulty: 'medium',
       hintPenalty: 80,
-      hints: 'Identify each hash type by its character length (32, 40, 64 hex chars). Use online hash lookup databases or cracking tools. The passwords may be simpler than you expect.',
+      hints: 'Use hash length to identify likely algorithms, then test common password patterns with a cracking tool. Build the final answer only after all three values are recovered.',
+
     },
     {
       title: 'Level 2.2: The JWT Inception',
       description: `ADMIN PANEL — OBFUSCATED AUTHENTICATION TOKEN
 
-An authentication token intercepted from the terrorist admin panel. The token has been encoded to evade automated network scanners.
+    An administrative session artifact was captured from hostile infrastructure during a short trust-window.
+    Signal intelligence marks this blob as authenticity-relevant and likely sufficient to expose privileged identity material.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-TOKEN DATA:
-65794a68624763694f694a49557a49314e694973496e523563434936496b705856434a392e65794a7a5a574e795a5851694f694a47513051785a7a4e456158703551574d3165554669533238325132356d5a46496966512e62576c7a63326c766267
+    TOKEN DATA:
+    65794a68624763694f694a49557a49314e694973496e523563434936496b705856434a392e65794a7a5a574e795a5851694f694a47513051785a7a4e456158703551574d3165554669533238325132356d5a46496966512e62576c7a63326c766267
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Extract the hidden credential from the decoded token structure. The credential has been reversed as an additional security measure.
-
-Flag format: CTF{reversed_credential}`,
+    Extract the valid credential flag from the token artifact and submit it unchanged.`
+    ,
       storyContext: `TIME: 5:50 AM | LOCATION: Terrorist admin panel
 
 The admin panel uses an obfuscated authentication token. Vikram has spotted evidence the Home Minister's "execution" was staged theater. Decode the token to pull admin logs proving the conspiracy.`,
-      characterMessage: "That token holds proof the Home Minister is working with Saif. Strip away the encoding, find the credential hidden inside, and reverse it. This changes everything.",
+      characterMessage: "That token holds proof the Home Minister is working with Saif. Strip away every layer of obfuscation and extract what they buried inside. This changes everything.",
       flag: 'CTF{RdfnC6oKbAy5cAyziD3g1DCF}',
       points: 300,
       order: 2,
-      difficulty: 'hard',
+      difficulty: 'medium',
       hintPenalty: 100,
-      hints: 'The outer encoding is hexadecimal (pairs of hex digits = one ASCII character). The inner structure is a well-known web authentication format with three dot-separated Base64 sections.',
+      hints: 'Decode the outer blob first, then inspect token structure by sections. If extracted fields still look invalid, check for one additional transformation on the credential value.',
+
     },
     {
       title: 'Level 2.3: The Pattern Lock',
       description: `PATTERN LOCK — TEAM-SPECIFIC SECURITY
 
-The final database uses a personalised lock that prevents answer sharing between teams.
+The final datastore is protected by a personalized lock profile bound to team identity and mission progress.
+Incident replay confirms that borrowed answers fail validation across teams.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-UNLOCK FORMULA:
-
-  Input:   <team_name><challenges_solved><salt>
-  Hash:    SHA-256
-  Code:    First 8 hex characters (lowercase)
-
-  Parameters:
-    challenges_solved = 5
-    salt              = CIPHER2026
+LOCK PROFILE: DYNAMIC
+TRUST SOURCE: TEAM TELEMETRY
+VALIDATION MODE: STRICT
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Each team's code is unique. No answer sharing is possible.
-
-Submit: CTF{your_8_char_hex_code}`,
+Derive your team-valid unlock result and submit the exact flag.`,
       storyContext: `TIME: 6:15 AM | LOCATION: Final encrypted database
 
 The last database containing the BLACKOUT worm payload uses a team-specific pattern lock. Althaf demands it cracked before Farooq crosses the border.`,
@@ -302,7 +290,8 @@ The last database containing the BLACKOUT worm payload uses a team-specific patt
       order: 3,
       difficulty: 'hard',
       hintPenalty: 120,
-      hints: 'Concatenate directly without separators: YourTeamName5CIPHER2026 — no pipes, no spaces. SHA-256 hash that full string, take first 8 lowercase hex characters.',
+      hints: 'Build the team-derived input exactly as specified by challenge context, hash it with the intended modern algorithm, then submit only the required leading segment.',
+
     },
   ];
 
@@ -342,84 +331,84 @@ The last database containing the BLACKOUT worm payload uses a team-specific patt
       title: 'Level 3.1: The Payload Hunt',
       description: `OPERATION BLACKOUT — PAYLOAD FRAGMENTS
 
-The cyberattack payload has been split into four encrypted fragments. Decode each fragment independently and combine in exact order.
+    Four independently captured payload shards were recovered from separate command channels.
+    Threat intelligence assesses they belong to a single activation artifact.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-FRAGMENT 1:
-01000011 01010100 01000110 01111011
+    FRAGMENT 1:
+    01000011 01010100 01000110 01111011
 
-FRAGMENT 2:
-426c61636b6f75742e
+    FRAGMENT 2:
+    426c61636b6f75742e
 
-FRAGMENT 3:
-RmViMTQu
+    FRAGMENT 3:
+    RmViMTQu
 
-FRAGMENT 4:
-Cnlybnq}
+    FRAGMENT 4:
+    Cnlybnq}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Each fragment uses a different encoding. Decode all four and concatenate in strict order: 1 + 2 + 3 + 4
-
-Submit the fully assembled string as your flag.`,
+    Recover the complete payload flag from these fragments and submit it exactly.`
+    ,
       storyContext: `TIME: 7:10 AM | LOCATION: Decoding the cyberattack files
 
 Veera escaped capture with Aparna's help. The BLACKOUT payload is fragmented across four encrypted pieces. Understanding the activation mechanism is critical to building the kill switch.`,
-      characterMessage: "Four fragments, four different encodings. Figure out what each one is. Decode them all and combine in order. We need the full payload to build the kill switch.",
+      characterMessage: "Four fragments, four different languages. Study each one carefully. Decode them all and combine in order. We need the full payload to build the kill switch.",
       flag: 'CTF{Blackout.Feb14.Payload}',
       points: 400,
       order: 1,
-      difficulty: 'hard',
-      hintPenalty: 150,
-      hints: 'Each fragment uses a different common encoding. Look at the character patterns: one uses only 0/1 digits, one is hex pairs, one has padding indicators, and one is alphabetic substitution. Combine decoded results in order 1-2-3-4.',
+      difficulty: 'medium',
+      hintPenalty: 140,
+      hints: 'Each payload shard uses a different representation. Decode each shard to text, confirm it contributes meaningful output, then combine in original capture order.',
+
     },
     {
       title: 'Level 3.2: The Logic Bomb Defusal',
       description: `CRITICAL ALERT — LOGIC BOMB ARMED
 
-A logic bomb is embedded in the attack script. If triggered, Operation BLACKOUT activates immediately. The defusal code is buried under multiple nested encoding layers.
+    A hostile trigger routine remains active inside the recovered attack script.
+    The artifact below was extracted from the trigger path and is believed to contain the defusal authority string.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-ENCODED PAYLOAD:
-4d4445774d4441774d5445674d4445774d5441784d4441674d4445774d4441784d5441674d4445784d5445774d5445674d4445774d4441784d4441674d4445784d4441784d4445674d4445784d4441784d5441674d4445784d5441784d4445674d4445784d5441774d5445674d4445784d4441774d4445674d4445784d4445784d4441674d4441784d4445784d5441674d4445774d4445774d5445674d4445784d4445774d4445674d4445784d4445784d4441674d4445784d4445784d4441674d4445784d5441774d5445674d4445784d5441784d5445674d4445784d4445774d4445674d4445784d5441784d4441674d4445784d4441774d5445674d4445784d4445774d4441674d4441784d4445784d5441674d4445774d4445784d5445674d4445784d5441784d5441674d4445784d4441784d4445674d4445784d5441774d5441674d4445784d5441774d5441674d4445784d4445784d5445674d4445784d4441784d4441674d4445784d4441784d4445674d4445784d5445784d44453d
+    ENCODED PAYLOAD:
+    4d4445774d4441774d5445674d4445774d5441784d4441674d4445774d4441784d5441674d4445784d5445774d5445674d4445774d4441784d4441674d4445784d4441784d4445674d4445784d4441784d5441674d4445784d5441784d4445674d4445784d5441774d5445674d4445784d4441774d4445674d4445784d4445784d4441674d4441784d4445784d5441674d4445774d4445774d5445674d4445784d4445774d4445674d4445784d4445784d4441674d4445784d4445784d4441674d4445784d5441774d5445674d4445784d5441784d5445674d4445784d4445774d4445674d4445784d5441784d4441674d4445784d4441774d5445674d4445784d4445774d4441674d4441784d4445784d5441674d4445774d4445784d5445674d4445784d5441784d5441674d4445784d4441784d4445674d4445784d5441774d5441674d4445784d5441774d5441674d4445784d4445784d5445674d4445784d4441784d4441674d4445784d4441784d4445674d4445784d5445784d44453d
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Peel back every encoding layer until you reach the plaintext. The fully decoded output is your flag.
-
-Submit the complete decoded flag string.`,
+    Recover the defusal flag from the payload and submit it exactly.`,
       storyContext: `TIME: 7:35 AM | LOCATION: Main attack script analysis
 
 CRITICAL: A logic bomb in Saif's attack script will trigger BLACKOUT immediately if not defused. The defusal code is hidden under multiple nested encoding layers.`,
-      characterMessage: "Logic bomb detected — multiple layers of encoding protecting the defusal code. Strip every layer carefully. The final decoded output is what you submit. Do NOT get this wrong.",
+      characterMessage: "Logic bomb detected — the defusal code is buried deep. Strip away every barrier carefully. The final revealed output is what you submit. Do NOT get this wrong.",
       flag: 'CTF{Defusal.Killswitch.Overrode}',
       points: 450,
       order: 2,
       difficulty: 'hard',
-      hintPenalty: 175,
-      hints: 'Start by converting the outermost hex to ASCII text. The result is still encoded — keep decoding. There are multiple nested layers. The final output is a complete flag string including CTF{...}.',
+      hintPenalty: 170,
+      hints: 'Expect layered encoding. After every decode pass, reassess the new data type and continue until stable plaintext appears; stop only when the result matches flag semantics.',
+
     },
     {
       title: 'Level 3.3: The Master Vault (FINAL BOSS)',
       description: `MASTER VAULT — OPERATION BLACKOUT KILL SWITCH
 
-Saravana "The Phantom" has been identified. His encrypted server contains the master kill switch. The vault is protected by multiple layers of encoding — use every technique you have mastered.
+    The final seized server contains the command authority for the citywide blackout chain.
+    This vault is the terminal control point: compromise it, and the operation collapses.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-VAULT DATA:
-65794a306232746c62694936496d5635536d686952324e7054326c4b535656365354646f61556c7a535735534e574e4453545a4a61334259566b4e4b4f53356c65556f7957566857633252474f584a615747747054326c4b645531584f486c6a524531705a6c4575596c6447656d5248566e6b6966513d3d
+    VAULT DATA:
+    65794a306232746c62694936496d5635536d686952324e7054326c4b535656365354646f61556c7a535735534e574e4453545a4a61334259566b4e4b4f53356c65556f7957566857633252474f584a615747747054326c4b645531584f486c6a524531705a6c4575596c6447656d5248566e6b6966513d3d
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Work through every encoding layer to extract the 6-character vault code hidden deep inside.
+    Recover the master vault flag from this artifact and submit it exactly.
 
-Flag format: CTF{MASTER_<6char_code>_VAULT}
-
-FIRST TEAM TO SOLVE: 2x POINTS
-THE CITY IS COUNTING ON YOU.`,
+    FIRST TEAM TO SOLVE: 2x POINTS
+    THE CITY IS COUNTING ON YOU.`,
       storyContext: `TIME: 8:00 AM (Operation Finale) | LOCATION: Saravana's encrypted server
 
 A joint RAW-Police raid seized the server containing the MASTER KILL SWITCH. The vault is protected by every technique encountered so far. First team to crack it stops Operation BLACKOUT permanently.`,
@@ -428,8 +417,9 @@ A joint RAW-Police raid seized the server containing the MASTER KILL SWITCH. The
       points: 1000,
       order: 3,
       difficulty: 'hard',
-      hintPenalty: 400,
-      hints: 'The outer layer is hex encoding. Inside you will find nested structures — each layer reveals the next. Look for common data formats (JSON, web tokens). A final alphabetic transformation reveals the vault code.',
+      hintPenalty: 220,
+      hints: 'Approach this as a full pipeline challenge: decode stage by stage, validate intermediate output at each step, and extract only the exact code segment needed for final flag assembly.',
+
     },
   ];
 

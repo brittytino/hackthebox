@@ -10,7 +10,7 @@ import {
   Flag, Lock, CheckCircle, Zap, AlertTriangle, Eye, EyeOff,
   Terminal, Activity, Shield, Clock, X, Map, Users,
   RadioTower, ChevronDown, ChevronUp, Trophy,
-  ChevronsLeft, ChevronsRight, ChevronRight, SkipForward,
+  ChevronsLeft, ChevronsRight, ChevronRight, SkipForward, Menu,
 } from 'lucide-react';
 
 interface MissionMeta {
@@ -203,6 +203,8 @@ function ChallengesInner() {
   const [rightOpen, setRightOpen] = useState(true);
   // Hint cache: maps challengeId → { text, shown }
   const [hintCache, setHintCache] = useState<Record<string, { text: string; shown: boolean }>>({})
+  // Mobile panel overlay: 'missions' | 'intel' | null
+  const [mobilePanel, setMobilePanel] = useState<'missions' | 'intel' | null>(null);
 
   const searchParams = useSearchParams();
   const levelParam = searchParams.get('level');;
@@ -415,10 +417,17 @@ function ChallengesInner() {
   };
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#080614', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16, fontFamily: 'monospace' }}>
-      <div style={{ width: 48, height: 48, border: '3px solid rgba(124,58,237,0.3)', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <div style={{ color: '#7c3aed', letterSpacing: 4, fontSize: 12, fontWeight: 700 }}>DECRYPTING MISSION DATA</div>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    <div className="ch-loading-screen">
+      <div className="ch-spin-ring" />
+      <div className="ch-loading-title">DECRYPTING MISSION DATA</div>
+      <div className="ch-loading-sub">Please stand by…</div>
+      <style>{`
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .ch-loading-screen{min-height:100vh;background:#070813;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;font-family:'Share Tech Mono','Courier New',monospace;}
+        .ch-spin-ring{width:52px;height:52px;border:3px solid rgba(124,58,237,0.22);border-top-color:#7c3aed;border-radius:50%;animation:spin 0.85s linear infinite;}
+        .ch-loading-title{color:#7c3aed;letter-spacing:4px;font-size:12px;font-weight:700;text-transform:uppercase;}
+        .ch-loading-sub{color:#374151;font-size:11px;letter-spacing:2px;}
+      `}</style>
     </div>
   );
 
@@ -427,110 +436,126 @@ function ChallengesInner() {
   const scored = Math.max(currentLevel - 1, 0);
   const teamPoints = apiResponse?.team?.currentPoints ?? 0;
   const teamName = apiResponse?.team?.name ?? '—';
+  const storyChallenge = Math.min(Math.max(meta?.order ?? currentLevel, 1), 9);
+  const storyHref = `/story?challenge=${storyChallenge}`;
 
   return (
-    <div ref={containerRef} style={{ height: '100vh', background: '#080614', display: 'flex', flexDirection: 'column', fontFamily: "'Share Tech Mono', 'Courier New', monospace", position: 'relative', overflow: 'hidden' }}>
-      {/* Scanlines */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, backgroundImage: 'repeating-linear-gradient(0deg,rgba(0,0,0,0.22),rgba(0,0,0,0.22) 1px,transparent 1px,transparent 3px)', opacity: 0.3 }} />
-      {/* Grid bg */}
-      <svg style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', opacity: 0.018, zIndex: 0, pointerEvents: 'none' }}>
-        <defs><pattern id="cg" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M60 0 L0 0 0 60" fill="none" stroke="#7c3aed" strokeWidth="0.5" /></pattern></defs>
-        <rect width="100%" height="100%" fill="url(#cg)" />
-      </svg>
+    <div ref={containerRef} className="ch-root">
+      {/* Background grid */}
+      <div className="ch-bg-grid" aria-hidden />
 
       {/* ── TOP BAR ── */}
-      <div data-g="topbar" style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '10px 20px', borderBottom: '1px solid rgba(109,40,217,0.25)', background: 'rgba(5,2,18,0.97)', backdropFilter: 'blur(24px)', gap: 14, flexShrink: 0 }}>
-        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', cursor: 'pointer' }}>
-          <div style={{ width: 30, height: 30, borderRadius: 7, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Shield size={15} color="#fff" />
-          </div>
-          <span style={{ color: '#e2e8f0', fontSize: 14, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase' }}>CIPHER OPS</span>
+      <header data-g="topbar" className="ch-topbar">
+        {/* Brand */}
+        <Link href="/dashboard" className="ch-brand">
+          <span className="ch-brand-name">Hack The Box</span>
         </Link>
-        <div style={{ flex: 1 }} />
-        {/* Navigation links */}
-        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 13px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7, transition: 'all 0.15s' }}>
-          <Activity size={13} />HQ
-        </Link>
-        <Link href="/leaderboard" style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 13px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7, transition: 'all 0.15s' }}>
-          <Trophy size={13} />RANKS
-        </Link>
-        <Link href="/story" style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 13px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7, transition: 'all 0.15s' }}>
-          <Map size={13} />STORY
-        </Link>
-        <div style={{ color: '#6b7280', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span style={{ color: '#a78bfa', fontWeight: 700 }}>{scored}</span>/<span>{totalLevels}</span>
-          <span style={{ letterSpacing: 2, marginLeft: 2 }}>MISSIONS</span>
+
+        {/* Nav */}
+        <nav className="ch-topbar-nav">
+          <Link href="/dashboard" className="ch-nav-link"><Activity size={13} /><span>HQ</span></Link>
+          <Link href="/leaderboard" className="ch-nav-link"><Trophy size={13} /><span>RANKS</span></Link>
+          <Link href={storyHref} className="ch-nav-link"><Map size={13} /><span>STORY</span></Link>
+        </nav>
+
+        <div className="ch-topbar-divider" />
+
+        {/* Mission counter */}
+        <div className="ch-topbar-missions">
+          <span className="ch-tb-done">{scored}</span>
+          <span className="ch-tb-sep"> / {totalLevels}</span>
+          <span className="ch-tb-label">MISSIONS</span>
         </div>
-        <div style={{ width: 1, height: 22, background: 'rgba(109,40,217,0.35)' }} />
-        {/* Score badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.38)', borderRadius: 8, padding: '6px 16px' }}>
+
+        {/* Score */}
+        <div className="ch-score-badge">
           <Trophy size={14} color="#fbbf24" />
-          <span style={{ color: '#fbbf24', fontWeight: 900, fontSize: 18, letterSpacing: 1 }}>{teamPoints.toLocaleString()}</span>
-          <span style={{ color: '#92400e', fontSize: 10, fontWeight: 700, letterSpacing: 2 }}>PTS</span>
+          <span className="ch-score-num">{teamPoints.toLocaleString()}</span>
+          <span className="ch-score-unit">PTS</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981', animation: 'dopulse 2s infinite' }} />
-          <span style={{ color: '#94a3b8', fontSize: 11, letterSpacing: 1, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{teamName}</span>
+
+        {/* Team */}
+        <div className="ch-team-tag">
+          <span className="ch-team-dot" />
+          <span className="ch-team-name">{teamName}</span>
         </div>
-      </div>
+
+        {/* Mobile toggles */}
+        <button className="ch-mob-btn" onClick={() => setMobilePanel(p => p === 'missions' ? null : 'missions')} aria-label="Missions">
+          <RadioTower size={15} />
+        </button>
+        <button className="ch-mob-btn" onClick={() => setMobilePanel(p => p === 'intel' ? null : 'intel')} aria-label="Intel">
+          <Menu size={15} />
+        </button>
+      </header>
 
       {/* ── 3-COL LAYOUT ── */}
-      <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', minHeight: 0, height: 'calc(100vh - 54px)' }}>
+      <div className="ch-body">
 
         {/* LEFT: ZIG-ZAG TIMELINE (collapsible) */}
-        <div data-g="left" style={{ width: leftOpen ? 288 : 48, minWidth: leftOpen ? 288 : 48, borderRight: '1px solid rgba(109,40,217,0.2)', background: 'rgba(3,1,14,0.88)', backdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', transition: 'width 0.3s ease, min-width 0.3s ease', overflow: 'hidden', position: 'relative', height: 'calc(100vh - 54px)', flexShrink: 0 }}>
-          {/* Toggle button — sits at right edge */}
+        <aside
+          data-g="left"
+          className={`ch-left-panel ${leftOpen ? 'ch-panel-open' : 'ch-panel-collapsed'}${mobilePanel === 'missions' ? ' ch-mobile-slide' : ''}`}
+        >
+          {/* Toggle button */}
           <button
             onClick={() => setLeftOpen(o => !o)}
+            className="ch-panel-toggle ch-panel-toggle-r"
             title={leftOpen ? 'Collapse timeline' : 'Expand timeline'}
-            style={{ position: 'absolute', top: '50%', right: -1, transform: 'translateY(-50%)', zIndex: 30, width: 18, height: 64, background: 'linear-gradient(180deg,rgba(109,40,217,0.7),rgba(6,182,212,0.5))', border: 'none', borderRadius: '0 8px 8px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '2px 0 12px rgba(124,58,237,0.5)' }}
           >
-            {leftOpen ? <ChevronsLeft size={11} color="#e9d5ff" /> : <ChevronsRight size={11} color="#e9d5ff" />}
+            {leftOpen ? <ChevronsLeft size={10} color="#c4b5fd" /> : <ChevronsRight size={10} color="#c4b5fd" />}
           </button>
 
           {/* Collapsed icon strip */}
           {!leftOpen && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 14, gap: 14 }}>
-              <RadioTower size={16} color="#06b6d4" />
+            <div className="ch-collapsed-strip">
+              <RadioTower size={15} color="#06b6d4" />
               {MISSIONS.map(m => {
                 const s = getState(m.order);
                 return (
-                  <div key={m.level} onClick={() => { setSelectedLevel(m.level); setLeftOpen(true); }}
+                  <div key={m.level}
+                    className="ch-dot-pip"
+                    onClick={() => { setSelectedLevel(m.level); setLeftOpen(true); }}
                     title={m.name}
-                    style={{ width: 10, height: 10, borderRadius: '50%', cursor: 'pointer', background: s === 'solved' ? '#10b981' : s === 'active' ? '#7c3aed' : '#374151', boxShadow: s === 'active' ? '0 0 8px #7c3aed' : 'none' }}
+                    style={{
+                      background: s === 'solved' ? '#10b981' : s === 'active' ? '#7c3aed' : '#374151',
+                      boxShadow: s === 'active' ? '0 0 8px #7c3aed' : 'none',
+                    }}
                   />
                 );
               })}
             </div>
           )}
 
-          {/* Expanded content */}
+          {/* Expanded timeline */}
           {leftOpen && (
-            <div className="game-scroll" style={{ overflowY: 'auto', flex: 1, padding: '14px 0' }}>
-              <div style={{ padding: '0 14px 8px' }}>
-                <div style={{ color: '#06b6d4', fontSize: 12, fontWeight: 700, letterSpacing: 3, display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
-                  <RadioTower size={12} />MISSION TIMELINE
+            <div className="game-scroll ch-tl-scroll">
+              <div className="ch-tl-head">
+                <RadioTower size={12} color="#06b6d4" />
+                <span className="ch-tl-title">MISSION TIMELINE</span>
+              </div>
+
+              <div className="ch-tl-prog-wrap">
+                <div className="ch-tl-prog-info">
+                  <span className="ch-tl-done">{scored}</span>
+                  <span className="ch-tl-total"> / {totalLevels} complete</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#a78bfa', boxShadow: '0 0 6px #a78bfa' }} />
-                  <span style={{ color: '#a78bfa', fontSize: 12, letterSpacing: 1, fontWeight: 600 }}>{scored} / {totalLevels} COMPLETE</span>
-                </div>
-                <div style={{ height: 3, background: 'rgba(109,40,217,0.1)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.round((scored / 9) * 100)}%`, background: 'linear-gradient(90deg,#7c3aed,#06b6d4)', transition: 'width 0.5s ease', boxShadow: '0 0 6px rgba(6,182,212,0.5)' }} />
+                <div className="progress-track">
+                  <div className="progress-fill" style={{ width: `${Math.round((scored / 9) * 100)}%` }} />
                 </div>
               </div>
 
-              {/* Zig-zag groups */}
+              {/* Round groups */}
               {[
-                { act: 'ROUND 1 — THE BREACH', color: '#fca5a5', rgb: '239,68,68', orders: [1,2,3] },
+                { act: 'ROUND 1 — THE BREACH',   color: '#fca5a5', rgb: '239,68,68',  orders: [1,2,3] },
                 { act: 'ROUND 2 — INFILTRATION', color: '#fde68a', rgb: '245,158,11', orders: [4,5,6] },
                 { act: 'ROUND 3 — FINAL STRIKE', color: '#6ee7b7', rgb: '16,185,129', orders: [7,8,9] },
               ].map(group => (
-                <div key={group.act} style={{ marginTop: 6 }}>
-                  <div style={{ padding: '5px 14px 3px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ flex: 1, height: 1, background: `rgba(${group.rgb},0.22)` }} />
-                    <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, color: group.color, whiteSpace: 'nowrap' }}>{group.act}</span>
-                    <div style={{ flex: 1, height: 1, background: `rgba(${group.rgb},0.22)` }} />
+                <div key={group.act} className="ch-round-group">
+                  <div className="ch-round-label" style={{ color: group.color }}>
+                    <span className="ch-round-line" style={{ background: `rgba(${group.rgb},0.25)` }} />
+                    {group.act}
+                    <span className="ch-round-line" style={{ background: `rgba(${group.rgb},0.25)` }} />
                   </div>
                   {group.orders.map((order, idx) => {
                     const m = MISSIONS[order - 1];
@@ -540,39 +565,39 @@ function ChallengesInner() {
                     const rc2 = ROUND_CONFIG[m.round];
                     const isAlt = idx % 2 === 1;
                     return (
-                      <div key={m.level} style={{ padding: '3px 8px', position: 'relative' }}>
+                      <div key={m.level} className="ch-mc-row">
+                        {/* Zigzag dot */}
+                        <div className="ch-zz-dot" style={{
+                          [isAlt ? 'right' : 'left']: 6,
+                          background: s === 'solved' ? '#10b981' : s === 'active' ? '#7c3aed' : '#374151',
+                          borderColor: s === 'solved' ? '#6ee7b7' : s === 'active' ? '#a78bfa' : '#4b5563',
+                          boxShadow: s === 'active' ? '0 0 12px rgba(124,58,237,0.9)' : s === 'solved' ? '0 0 6px rgba(16,185,129,0.5)' : 'none',
+                        }} />
                         <div
                           onClick={() => can && setSelectedLevel(m.level)}
+                          className={`ch-mc-card ${sel ? 'ch-mc-sel' : ''} ${s === 'locked' ? 'ch-mc-locked' : ''}`}
                           style={{
-                            marginLeft: isAlt ? 6 : 28, marginRight: isAlt ? 28 : 6,
-                            padding: '10px 12px 10px 14px', borderRadius: 10,
-                            cursor: can ? 'pointer' : 'default',
-                            border: `1px solid ${sel ? 'rgba(6,182,212,0.65)' : s === 'solved' ? 'rgba(16,185,129,0.32)' : s === 'active' ? 'rgba(124,58,237,0.45)' : 'rgba(55,65,81,0.22)'}`,
-                            background: sel ? 'rgba(6,182,212,0.09)' : s === 'solved' ? 'rgba(16,185,129,0.05)' : s === 'active' ? 'rgba(109,40,217,0.12)' : 'rgba(6,3,18,0.72)',
+                            marginLeft: isAlt ? 22 : 26, marginRight: isAlt ? 26 : 22,
+                            borderColor: sel ? 'rgba(6,182,212,0.7)' : s === 'solved' ? 'rgba(16,185,129,0.35)' : s === 'active' ? 'rgba(124,58,237,0.5)' : 'rgba(55,65,81,0.22)',
+                            background: sel ? 'rgba(6,182,212,0.08)' : s === 'solved' ? 'rgba(16,185,129,0.05)' : s === 'active' ? 'rgba(109,40,217,0.1)' : 'rgba(4,2,14,0.65)',
                             opacity: s === 'locked' ? 0.37 : 1,
-                            transition: 'all 0.18s ease',
-                            boxShadow: sel ? `0 0 16px ${rc2.glow}` : 'none',
+                            boxShadow: sel ? `0 0 18px ${rc2.glow}` : s === 'active' ? `0 2px 14px ${rc2.glow}` : 'none',
                             borderLeft: `3px solid ${sel ? '#06b6d4' : s === 'solved' ? '#10b981' : s === 'active' ? '#7c3aed' : '#374151'}`,
-                            position: 'relative',
+                            cursor: can ? 'pointer' : 'default',
                           }}
                         >
-                          {/* Zigzag dot */}
-                          <div style={{
-                            position: 'absolute', [isAlt ? 'right' : 'left']: -20,
-                            top: '50%', transform: 'translateY(-50%)',
-                            width: 9, height: 9, borderRadius: '50%',
-                            background: s === 'solved' ? '#10b981' : s === 'active' ? '#7c3aed' : '#374151',
-                            border: `2px solid ${s === 'solved' ? '#6ee7b7' : s === 'active' ? '#a78bfa' : '#4b5563'}`,
-                            boxShadow: s === 'active' ? '0 0 10px rgba(124,58,237,0.9)' : s === 'solved' ? '0 0 6px rgba(16,185,129,0.6)' : 'none',
-                            zIndex: 2,
-                          }} />
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-                            {s === 'solved' ? <CheckCircle size={12} color="#10b981" /> : s === 'active' ? <Zap size={12} color="#a78bfa" /> : <Lock size={12} color="#4b5563" />}
-                            <span style={{ fontWeight: 800, fontSize: 12, color: '#cbd5e1' }}>{m.level}</span>
+                          <div className="ch-mci-row">
+                            <span className="ch-mc-icon">
+                              {s === 'solved' ? <CheckCircle size={12} color="#10b981" /> : s === 'active' ? <Zap size={12} color="#a78bfa" /> : <Lock size={12} color="#4b5563" />}
+                            </span>
+                            <span className="ch-mc-lvl">{m.level}</span>
                             <span className={`diff-badge diff-${m.difficulty}`} style={{ fontSize: 9, padding: '1px 5px' }}>{m.difficulty[0].toUpperCase()}</span>
                           </div>
-                          <div style={{ fontSize: 13, color: sel ? '#e2e8f0' : '#9ca3af', lineHeight: 1.35, fontWeight: 600 }}>{m.name}</div>
-                          <div style={{ marginTop: 4, color: '#f59e0b', fontSize: 11, fontWeight: 700 }}>{m.points} pts · {m.type}</div>
+                          <div className={`ch-mc-name ${sel ? 'ch-mc-name-sel' : ''}`}>{m.name}</div>
+                          <div className="ch-mc-pts">
+                            <span style={{ color: '#f59e0b' }}>{m.points} pts</span>
+                            <span className="ch-mc-type">{m.type}</span>
+                          </div>
                         </div>
                       </div>
                     );
@@ -581,131 +606,128 @@ function ChallengesInner() {
               ))}
             </div>
           )}
-        </div>
+        </aside>
 
         {/* CENTER: CHALLENGE CONTENT */}
-        <div data-g="center" ref={centerRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: 'calc(100vh - 54px)', overflow: 'hidden' }}>
-          {/* Scrollable content */}
-          <div className="game-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '24px 28px 20px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <main data-g="center" ref={centerRef} className="ch-center">
+          <div className="game-scroll ch-center-scroll">
 
           {apiResponse?.progress?.completedAll && (
-            <div style={{ background: 'linear-gradient(135deg,rgba(6,78,59,0.28),rgba(16,185,129,0.1))', border: '2px solid rgba(16,185,129,0.55)', borderRadius: 14, padding: '24px 28px', textAlign: 'center', boxShadow: '0 0 60px rgba(16,185,129,0.2)' }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>🎉</div>
-              <div className="game-title" style={{ color: '#6ee7b7', fontSize: 20, marginBottom: 8, textShadow: '0 0 28px rgba(16,185,129,0.8)' }}>OPERATION BLACKOUT — TERMINATED</div>
-              <p style={{ color: '#a7f3d0', fontSize: 14, lineHeight: 1.7 }}>All 9 missions complete. Saravana arrested. The malware is destroyed. 50,000 jobs saved. Coimbatore is safe.</p>
-              <div style={{ marginTop: 14, color: '#34d399', fontWeight: 900, fontSize: 16 }}>FINAL SCORE: {teamPoints.toLocaleString()} pts</div>
+            <div className="ch-complete-banner">
+              <div className="ch-complete-icon">🎉</div>
+              <div className="game-title ch-complete-title">OPERATION BLACKOUT — TERMINATED</div>
+              <p className="ch-complete-body">All 9 missions complete. Saravana arrested. The malware is destroyed. 50,000 jobs saved. Coimbatore is safe.</p>
+              <div className="ch-complete-score">FINAL SCORE: {teamPoints.toLocaleString()} pts</div>
             </div>
           )}
 
           {meta ? (
             <>
-              {/* Badges */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              {/* ─ Badges ─ */}
+              <div className="ch-badges-row">
                 <span className={`round-badge ${rc.badge}`}>{meta.roundLabel}</span>
                 <span className={`diff-badge diff-${meta.difficulty}`}>{meta.difficulty}</span>
-                <span style={{ color: '#94a3b8', fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>{meta.type}</span>
-                <span style={{ color: '#fbbf24', fontSize: 16, fontWeight: 900 }}>{meta.points} pts</span>
-                <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: state === 'solved' ? '#10b981' : state === 'active' ? '#a78bfa' : '#4b5563', letterSpacing: 1 }}>
-                  {state === 'solved' ? <CheckCircle size={14} /> : state === 'active' ? <Zap size={14} /> : <Lock size={14} />}
+                <span className="ch-type-badge">{meta.type}</span>
+                <span className="ch-pts-badge">{meta.points} pts</span>
+                <span className={`ch-state-chip ch-state-${state}`}>
+                  {state === 'solved' ? <CheckCircle size={12} /> : state === 'active' ? <Zap size={12} /> : <Lock size={12} />}
                   {state.toUpperCase()}
                 </span>
               </div>
 
-              {/* Title */}
-              <div>
-                <div style={{ color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>{meta.storyAct}</div>
-                <h1 style={{ fontSize: 26, fontWeight: 900, color: '#e9d5ff', letterSpacing: 2, textTransform: 'uppercase', lineHeight: 1.2, margin: 0, textShadow: '0 0 30px rgba(124,58,237,0.35)' }}>{meta.level} — {meta.name}</h1>
+              {/* ─ Title ─ */}
+              <div className="ch-title-block">
+                <div className="ch-act-label">{meta.storyAct}</div>
+                <h1 className="ch-mission-title">{meta.level} — {meta.name}</h1>
               </div>
 
-              {/* Character Intel Banner */}
-              <div style={{ background: 'linear-gradient(135deg,rgba(2,1,12,0.98),rgba(12,7,36,0.97))', border: `1px solid ${rc.border}`, borderRadius: 14, overflow: 'hidden', boxShadow: `0 0 50px ${rc.glow}, 0 8px 40px rgba(0,0,0,0.6)`, position: 'relative' }}>
-                {/* Top accent */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${rc.primary},transparent)`, zIndex: 3 }} />
-                {/* Background scene image */}
-                <div style={{ position: 'relative', height: 140, overflow: 'hidden', background: `linear-gradient(135deg, rgba(${meta.round===1?'239,68,68':meta.round===2?'245,158,11':'16,185,129'},0.06) 0%, rgba(2,1,12,0.98) 100%)` }}>
-                  <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(45deg,rgba(109,40,217,0.04) 0px,rgba(109,40,217,0.04) 1px,transparent 1px,transparent 14px)' }} />
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(2,1,12,0.1) 0%, rgba(2,1,12,0.05) 40%, rgba(2,1,12,0.6) 100%)' }} />
-                  {/* Character portrait */}
-                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 110, overflow: 'hidden' }}>
+              {/* ─ Character Intel Banner ─ */}
+              <div className="ch-intel-banner" style={{
+                border: `1px solid ${rc.border}`,
+                boxShadow: `0 0 50px ${rc.glow}, 0 8px 40px rgba(0,0,0,0.6)`,
+              }}>
+                {/* Top accent line */}
+                <div className="ch-intel-accent-line" style={{ background: `linear-gradient(90deg,transparent,${rc.primary},transparent)` }} />
+                {/* Scene */}
+                <div className="ch-intel-scene" style={{ background: `linear-gradient(135deg,rgba(${meta.round===1?'239,68,68':meta.round===2?'245,158,11':'16,185,129'},0.06),rgba(2,1,12,0.98))` }}>
+                  <div className="ch-intel-grid-bg" />
+                  {/* Portrait */}
+                  <div className="ch-portrait">
                     <Image src={meta.characterImage} alt={meta.character} fill style={{ objectFit: 'cover', objectPosition: 'top center', filter: 'drop-shadow(8px 0 16px rgba(0,0,0,0.8))' }} priority />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(2,1,12,0.1), transparent 50%, rgba(2,1,12,0.4) 100%)' }} />
                   </div>
-                  {/* Status info overlay */}
-                  <div style={{ position: 'absolute', bottom: 0, left: 118, right: 0, padding: '12px 16px 10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                      <div style={{ padding: '2px 8px', background: `rgba(${meta.round === 1 ? '239,68,68' : meta.round === 2 ? '245,158,11' : '16,185,129'},0.12)`, border: `1px solid ${rc.border}`, borderRadius: 5, fontSize: 8, fontWeight: 800, color: rc.primary, letterSpacing: 2 }}>OPERATIVE</div>
-                      <span style={{ color: '#e2e8f0', fontSize: 14, fontWeight: 800, letterSpacing: 1 }}>{meta.character}</span>
+                  {/* Info overlay */}
+                  <div className="ch-intel-info">
+                    <div className="ch-intel-row1">
+                      <div className="ch-operative-badge" style={{ background: `rgba(${meta.round===1?'239,68,68':meta.round===2?'245,158,11':'16,185,129'},0.12)`, borderColor: rc.border, color: rc.primary }}>OPERATIVE</div>
+                      <span className="ch-char-name">{meta.character}</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
+                    <div className="ch-intel-time">
                       <Clock size={10} color="#6b7280" />
-                      <span style={{ color: '#94a3b8', fontSize: 11 }}>{meta.storyTime}</span>
+                      <span>{meta.storyTime}</span>
                     </div>
-                    <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 6, padding: '5px 10px', display: 'inline-block' }}>
-                      <span style={{ color: '#fca5a5', fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>{meta.storyStatus}</span>
+                    <div className="ch-intel-status">
+                      <span className="ch-status-dot" />
+                      {meta.storyStatus}
                     </div>
                   </div>
                 </div>
-                {/* Hostage rescue bar */}
-                <div style={{ padding: '10px 16px 12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <Users size={10} color="#6b7280" />
-                      <span style={{ color: '#6b7280', fontSize: 9, letterSpacing: 2, fontWeight: 700 }}>HOSTAGES RESCUED</span>
-                    </div>
-                    <span style={{ color: rescuePct >= 100 ? '#10b981' : rescuePct >= 60 ? '#f59e0b' : '#ef4444', fontSize: 11, fontWeight: 900 }}>{rescued.toLocaleString()} / 1,200</span>
+                {/* Rescue bar */}
+                <div className="ch-rescue-bar">
+                  <div className="ch-rescue-label">
+                    <Users size={10} color="#6b7280" />
+                    <span>HOSTAGES RESCUED</span>
                   </div>
-                  <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
-                    <div style={{ height: '100%', width: `${rescuePct}%`, background: rescuePct >= 100 ? 'linear-gradient(90deg,#10b981,#34d399)' : 'linear-gradient(90deg,#ef4444,#f59e0b,#7c3aed)', transition: 'width 0.8s ease', borderRadius: 3 }} />
-                  </div>
+                  <span className="ch-rescue-count" style={{ color: rescuePct>=100?'#10b981':rescuePct>=60?'#f59e0b':'#ef4444' }}>{rescued.toLocaleString()} / 1,200</span>
+                </div>
+                <div className="ch-rescue-track">
+                  <div className="ch-rescue-fill" style={{ width:`${rescuePct}%`, background: rescuePct>=100?'linear-gradient(90deg,#10b981,#34d399)':'linear-gradient(90deg,#ef4444,#f59e0b,#7c3aed)' }} />
                 </div>
               </div>
 
-              {/* Situation */}
-              <div style={{ background: 'rgba(3,1,14,0.72)', border: '1px solid rgba(109,40,217,0.18)', borderRadius: 12, padding: '16px 20px' }}>
-                <div className="game-label" style={{ color: '#6b7280', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5, fontSize: 11 }}>
-                  <Shield size={11} />SITUATION REPORT
-                </div>
-                <p style={{ color: '#cbd5e1', fontSize: 15, lineHeight: 1.85, margin: 0 }}>{meta.situation}</p>
+              {/* ─ Situation ─ */}
+              <div className="ch-sitrep">
+                <div className="ch-section-label"><Shield size={11} color="#6b7280" />SITUATION REPORT</div>
+                <p className="ch-sitrep-text">{meta.situation}</p>
               </div>
 
-              {/* Cipher payload — raw challenge data only, no how-to hints */}
-              <div className="game-panel-bordered" style={{ padding: '18px 22px' }}>
-                <div className="game-label" style={{ color: '#06b6d4', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
-                  <Terminal size={12} />CIPHER PAYLOAD
+              {/* ─ Cipher payload ─ */}
+              <div className="ch-payload-panel game-panel-bordered">
+                <div className="ch-payload-header">
+                  <Terminal size={12} color="#06b6d4" />
+                  CIPHER PAYLOAD
+                  {state === 'active' && <span className="ch-live-dot" />}
                 </div>
                 {state === 'active' && (
-                  <div className="game-scroll" style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(109,40,217,0.28)', borderRadius: 10, padding: '16px 18px', fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 14, color: '#c4b5fd', lineHeight: 1.9, whiteSpace: 'pre-wrap', maxHeight: 320, overflowY: 'auto' }}>
+                  <div className="game-scroll ch-payload-code">
                     {apiResponse?.challenge?.description
                       ? formatPayloadText(apiResponse.challenge.description)
                       : 'Loading payload data...'}
                   </div>
                 )}
                 {state === 'solved' && (
-                  <div style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 10, padding: '16px 18px', color: '#6ee7b7', fontSize: 14, fontFamily: "'Courier New',monospace", display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div className="ch-payload-state ch-payload-solved">
                     <CheckCircle size={16} />Payload decoded and archived. Mission complete.
                   </div>
                 )}
                 {state === 'locked' && (
-                  <div style={{ background: 'rgba(55,65,81,0.12)', border: '1px solid rgba(55,65,81,0.28)', borderRadius: 10, padding: '16px 18px', color: '#6b7280', fontSize: 14, fontFamily: "'Courier New',monospace", display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div className="ch-payload-state ch-payload-locked">
                     <Lock size={16} />Payload encrypted — complete the active mission to unlock.
                   </div>
                 )}
 
-                {/* Hint — persists once unlocked. Intel is behind the reveal button (not free). */}
+                {/* Hint / Intel */}
                 {state === 'active' && apiResponse?.challenge?.hints && (
-                  <div style={{ marginTop: 14 }}>
-                    <button
-                      onClick={toggleHintDisplay}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 16px', background: currentHint ? 'rgba(245,158,11,0.1)' : 'rgba(109,40,217,0.09)', border: `1px solid ${currentHint ? 'rgba(245,158,11,0.42)' : 'rgba(109,40,217,0.3)'}`, borderRadius: 8, cursor: 'pointer', color: currentHint ? '#fbbf24' : '#c4b5fd', fontSize: 12, fontWeight: 700, letterSpacing: 1, transition: 'all 0.15s', fontFamily: 'inherit' }}
-                    >
+                  <div className="ch-hint-section">
+                    <button onClick={toggleHintDisplay} className={`ch-hint-btn ${currentHint ? 'ch-hint-unlocked' : ''}`}>
                       {currentHint?.shown ? <EyeOff size={13} /> : <Eye size={13} />}
                       {currentHint ? (currentHint.shown ? 'HIDE INTEL' : 'SHOW INTEL') : 'REVEAL INTEL'}
-                      {!currentHint && <span style={{ color: '#ef4444', fontSize: 10, marginLeft: 4 }}>−{apiResponse?.challenge?.hintPenalty ?? 50} pts</span>}
-                      {currentHint && <span style={{ color: '#10b981', fontSize: 10, marginLeft: 4 }}>ALREADY UNLOCKED</span>}
+                      {!currentHint && <span className="ch-hint-cost">−{apiResponse?.challenge?.hintPenalty ?? 50} pts</span>}
+                      {currentHint && <span className="ch-hint-unlocked-tag">UNLOCKED</span>}
                     </button>
                     {currentHint?.shown && currentHint.text && (
-                      <div className="game-alert-info" style={{ marginTop: 10, fontSize: 14, lineHeight: 1.8 }}>
-                        <strong style={{ color: '#a78bfa', display: 'block', marginBottom: 5, fontSize: 11, letterSpacing: 2 }}>MISSION INTEL:</strong>{currentHint.text}
+                      <div className="ch-hint-box">
+                        <div className="ch-hint-label">MISSION INTEL</div>
+                        <p className="ch-hint-text">{currentHint.text}</p>
                       </div>
                     )}
                   </div>
@@ -714,33 +736,29 @@ function ChallengesInner() {
 
             </>
           ) : (
-            <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ textAlign: 'center', color: '#4b5563' }}>
-                <RadioTower size={40} style={{ margin: '0 auto 12px', opacity: 0.3 }} />
-                <div style={{ fontSize: 13 }}>Select a mission from the timeline.</div>
-              </div>
+            <div className="ch-empty-state">
+              <RadioTower size={40} color="#374151" />
+              <div>Select a mission from the timeline.</div>
             </div>
           )}
           </div>{/* end scrollable content */}
 
-          {/* Sticky flag submit bar — always visible at bottom of center column */}
+          {/* Sticky flag submit bar */}
           {meta && (
-            <div style={{ borderTop: '1px solid rgba(109,40,217,0.22)', background: 'rgba(3,1,14,0.97)', padding: '14px 20px', flexShrink: 0, backdropFilter: 'blur(20px)' }}>
+            <div className="ch-flag-bar">
               {state === 'active' && (
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-                    <div style={{ width: 24, height: 24, borderRadius: 6, background: 'linear-gradient(135deg,#5b21b6,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Flag size={12} color="#fff" />
-                    </div>
-                    <span style={{ color: '#c4b5fd', fontSize: 11, fontWeight: 700, letterSpacing: 3 }}>SUBMIT FLAG</span>
-                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 6, padding: '3px 10px' }}>
-                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#a78bfa', boxShadow: '0 0 6px #a78bfa', animation: 'dopulse 1.5s infinite' }} />
-                      <span style={{ color: '#7c6fa0', fontSize: 9, letterSpacing: 2 }}>AWAITING FLAG</span>
+                <div className="ch-flag-inner">
+                  <div className="ch-flag-header">
+                    <div className="ch-flag-icon-wrap"><Flag size={12} color="#fff" /></div>
+                    <span className="ch-flag-label">SUBMIT FLAG</span>
+                    <div className="ch-awaiting-tag">
+                      <span className="ch-await-dot" />
+                      AWAITING FLAG
                     </div>
                   </div>
-                  <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 10 }}>
+                  <form onSubmit={handleSubmit} className="ch-flag-form">
                     <input
-                      className="game-input"
+                      className="game-input ch-flag-input"
                       type="text"
                       placeholder="CTF{your_decoded_flag}"
                       value={flag}
@@ -748,127 +766,112 @@ function ChallengesInner() {
                       disabled={submitting}
                       autoComplete="off"
                       spellCheck={false}
-                      style={{ flex: 1, fontSize: 14, letterSpacing: 2, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(109,40,217,0.35)', borderRadius: 9, padding: '12px 16px', color: '#c4b5fd', fontFamily: 'inherit', outline: 'none' }}
                     />
                     <button
                       type="submit"
                       disabled={submitting || !flag.trim() || !challengeId}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 7,
-                        padding: '12px 22px',
-                        background: submitting || !flag.trim() ? 'rgba(109,40,217,0.25)' : 'linear-gradient(135deg,#5b21b6,#7c3aed)',
-                        border: '1px solid rgba(167,139,250,0.4)',
-                        borderRadius: 9, cursor: submitting || !flag.trim() ? 'not-allowed' : 'pointer',
-                        color: '#fff', fontSize: 13, fontWeight: 800, letterSpacing: 2,
-                        fontFamily: 'inherit', whiteSpace: 'nowrap' as const,
-                        boxShadow: !submitting && flag.trim() ? '0 0 28px rgba(109,40,217,0.4)' : 'none',
-                        transition: 'all 0.2s',
-                        animation: !submitting && flag.trim() ? 'submitPulse 2s ease-in-out infinite' : 'none',
-                      }}
+                      className={`ch-transmit-btn${!submitting && flag.trim() ? ' ch-transmit-active' : ''}`}
                     >
                       <Flag size={14} />{submitting ? 'SENDING...' : 'TRANSMIT'}
                     </button>
                   </form>
                   {apiResponse?.progress?.maxAttempts && (
-                    <div style={{ marginTop: 6, color: '#4b5563', fontSize: 10, letterSpacing: 1 }}>ATTEMPTS: {apiResponse.progress.attemptsUsed} / {apiResponse.progress.maxAttempts}</div>
+                    <div className="ch-attempts-info">ATTEMPTS: {apiResponse.progress.attemptsUsed} / {apiResponse.progress.maxAttempts}</div>
                   )}
                   {message && (
-                    <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: isError ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)', border: `1px solid ${isError ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`, borderRadius: 8, fontSize: 13, color: isError ? '#fca5a5' : '#6ee7b7' }}>
+                    <div className={`ch-flag-msg ${isError ? 'ch-msg-error' : 'ch-msg-success'}`}>
                       {isError ? <AlertTriangle size={14} /> : <CheckCircle size={14} />}{message}
                     </div>
                   )}
                 </div>
               )}
-              {state === 'solved' && <div className="game-alert-success" style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14 }}><CheckCircle size={16} />Mission complete. Select the next level from the timeline.</div>}
-              {state === 'locked' && <div className="game-alert-info" style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14 }}><Lock size={16} />This mission is locked. Solve the active level first.</div>}
+              {state === 'solved' && <div className="game-alert-success ch-flag-status"><CheckCircle size={16} />Mission complete. Select the next level from the timeline.</div>}
+              {state === 'locked' && <div className="game-alert-info ch-flag-status"><Lock size={16} />This mission is locked. Solve the active level first.</div>}
             </div>
           )}
-        </div>
+        </main>
 
         {/* RIGHT PANEL (collapsible) */}
-        <div data-g="right" style={{ width: rightOpen ? 300 : 48, minWidth: rightOpen ? 300 : 48, borderLeft: '1px solid rgba(109,40,217,0.2)', background: 'rgba(3,1,14,0.88)', backdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', transition: 'width 0.3s ease, min-width 0.3s ease', overflow: 'hidden', position: 'relative', height: 'calc(100vh - 54px)', flexShrink: 0 }}>
-          {/* Toggle button — left edge */}
-          <button
-            onClick={() => setRightOpen(o => !o)}
-            title={rightOpen ? 'Collapse panel' : 'Expand panel'}
-            style={{ position: 'absolute', top: '50%', left: -1, transform: 'translateY(-50%)', zIndex: 30, width: 18, height: 64, background: 'linear-gradient(180deg,rgba(6,182,212,0.5),rgba(109,40,217,0.7))', border: 'none', borderRadius: '8px 0 0 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '-2px 0 12px rgba(6,182,212,0.4)' }}
-          >
-            {rightOpen ? <ChevronsRight size={11} color="#e9d5ff" /> : <ChevronsLeft size={11} color="#e9d5ff" />}
+        <aside
+          data-g="right"
+          className={`ch-right-panel ${rightOpen ? 'ch-panel-open' : 'ch-panel-collapsed'}${mobilePanel === 'intel' ? ' ch-mobile-slide ch-mobile-right' : ''}`}
+        >
+          {/* Toggle button */}
+          <button onClick={() => setRightOpen(o => !o)} className="ch-panel-toggle ch-panel-toggle-l" title={rightOpen ? 'Collapse panel' : 'Expand panel'}>
+            {rightOpen ? <ChevronsRight size={10} color="#c4b5fd" /> : <ChevronsLeft size={10} color="#c4b5fd" />}
           </button>
 
-          {/* Collapsed icon strip */}
+          {/* Collapsed strip */}
           {!rightOpen && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 16, gap: 18 }}>
-              <Shield size={16} color="#a78bfa" />
-              <Activity size={16} color="#a78bfa" />
-              <Trophy size={16} color="#fbbf24" />
+            <div className="ch-collapsed-strip">
+              <Shield size={15} color="#a78bfa" />
+              <Activity size={15} color="#a78bfa" />
+              <Trophy size={15} color="#fbbf24" />
             </div>
           )}
 
-          {/* Expanded content */}
+          {/* Expanded */}
           {rightOpen && (
-            <div className="game-scroll" style={{ overflowY: 'auto', flex: 1, padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="game-scroll ch-right-scroll">
 
-              {/* Team stats */}
-              <div style={{ background: 'linear-gradient(135deg,rgba(109,40,217,0.14),rgba(109,40,217,0.04))', border: '1px solid rgba(109,40,217,0.32)', borderRadius: 12, padding: '16px 18px', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,#7c3aed,#06b6d4)' }} />
-                <div style={{ color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 3, marginBottom: 7 }}>TEAM STATUS</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0', marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: 1 }}>{teamName}</div>
-                <div style={{ fontSize: 32, fontWeight: 900, color: '#e2e8f0', lineHeight: 1, marginBottom: 3 }}>{scored}<span style={{ color: '#4b5563', fontSize: 20 }}> / {totalLevels}</span></div>
-                <div style={{ color: '#6b7280', fontSize: 13, marginBottom: 10 }}>missions solved</div>
-                <div style={{ height: 5, background: 'rgba(109,40,217,0.1)', borderRadius: 3, overflow: 'hidden', marginBottom: 12 }}>
+              {/* Team card */}
+              <div className="ch-team-card">
+                <div className="ch-tc-accent-bar" />
+                <div className="ch-tc-label">TEAM STATUS</div>
+                <div className="ch-tc-name">{teamName}</div>
+                <div className="ch-tc-score-row">
+                  <span className="ch-tc-big">{scored}</span>
+                  <span className="ch-tc-denom"> / {totalLevels}</span>
+                </div>
+                <div className="ch-tc-sub">missions solved</div>
+                <div className="progress-track" style={{ marginBottom: 14 }}>
                   <div className="progress-fill" style={{ width: `${Math.round((scored / totalLevels) * 100)}%` }} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 9, padding: '10px 14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <Trophy size={14} color="#fbbf24" />
-                    <span style={{ color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>SCORE</span>
-                  </div>
-                  <span style={{ color: '#fbbf24', fontSize: 20, fontWeight: 900 }}>{teamPoints.toLocaleString()}</span>
+                <div className="ch-tc-pts-row">
+                  <Trophy size={14} color="#fbbf24" />
+                  <span className="ch-tc-pts-label">SCORE</span>
+                  <span className="ch-tc-pts-val">{teamPoints.toLocaleString()}</span>
                 </div>
               </div>
 
               {/* Op status */}
-              <div style={{ background: 'rgba(5,2,18,0.82)', border: '1px solid rgba(55,65,81,0.28)', borderRadius: 11, padding: '14px 16px' }}>
-                <div style={{ color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, marginBottom: 10 }}>OPERATION STATUS</div>
+              <div className="ch-ops-card">
+                <div className="ch-section-label" style={{ marginBottom: 12 }}>OPERATION STATUS</div>
                 {[
-                  { label: 'CODISSIA MALL', val: currentLevel >= 9 ? 'SECURED' : 'ACTIVE SIEGE', c: currentLevel >= 9 ? '#10b981' : '#ef4444' },
-                  { label: 'OP BLACKOUT', val: currentLevel >= 9 ? 'TERMINATED' : 'ARMED FEB 14', c: currentLevel >= 9 ? '#10b981' : '#f59e0b' },
-                  { label: 'UMAR SAIF', val: currentLevel >= 8 ? 'NEUTRALIZED' : 'HOSTILE', c: currentLevel >= 8 ? '#10b981' : '#ef4444' },
-                  { label: 'FAROOQ', val: currentLevel >= 7 ? 'RECAPTURED' : 'AT LARGE', c: currentLevel >= 7 ? '#10b981' : '#ef4444' },
+                  { label: 'CODISSIA MALL', val: currentLevel >= 9 ? 'SECURED'    : 'ACTIVE SIEGE',  ok: currentLevel >= 9 },
+                  { label: 'OP BLACKOUT',  val: currentLevel >= 9 ? 'TERMINATED' : 'ARMED FEB 14',  ok: currentLevel >= 9 },
+                  { label: 'UMAR SAIF',   val: currentLevel >= 8 ? 'NEUTRALIZED': 'HOSTILE',        ok: currentLevel >= 8 },
+                  { label: 'FAROOQ',      val: currentLevel >= 7 ? 'RECAPTURED' : 'AT LARGE',       ok: currentLevel >= 7 },
                 ].map(x => (
-                  <div key={x.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ color: '#94a3b8', fontSize: 13, letterSpacing: 1 }}>{x.label}</span>
-                    <span style={{ color: x.c, fontSize: 13, fontWeight: 700 }}>{x.val}</span>
+                  <div key={x.label} className="ch-ops-row">
+                    <span className="ch-ops-key">{x.label}</span>
+                    <span className={`ch-ops-val ${x.ok ? 'ok' : 'bad'}`}>{x.val}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Live Ops Feed — collapsible */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                <button
-                  onClick={() => setFeedOpen(o => !o)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0 10px', width: '100%', fontFamily: 'inherit' }}
-                >
+              {/* Live ops feed */}
+              <div className="ch-feed-wrap">
+                <button onClick={() => setFeedOpen(o => !o)} className="ch-feed-toggle">
                   <Activity size={11} color="#a78bfa" />
-                  <span style={{ color: '#a78bfa', fontSize: 12, fontWeight: 700, letterSpacing: 2, flex: 1, textAlign: 'left' }}>LIVE OPS FEED</span>
+                  <span>LIVE OPS FEED</span>
                   {feedOpen ? <ChevronUp size={13} color="#6b7280" /> : <ChevronDown size={13} color="#6b7280" />}
                 </button>
                 {feedOpen && (
-                  <div className="game-scroll" style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div className="game-scroll ch-feed-scroll">
                     {activity.length === 0 ? (
-                      <div style={{ color: '#374151', fontSize: 12, textAlign: 'center', padding: '16px 0', border: '1px dashed rgba(55,65,81,0.35)', borderRadius: 9 }}>
-                        <RadioTower size={20} style={{ margin: '0 auto 7px', opacity: 0.25 }} />
-                        No transmissions yet.
+                      <div className="ch-feed-empty">
+                        <RadioTower size={22} color="#374151" />
+                        <span>No transmissions yet.</span>
                       </div>
                     ) : activity.map((item: any, i: number) => (
-                      <div key={i} style={{ padding: '10px 13px', background: 'rgba(8,5,22,0.75)', border: '1px solid rgba(55,65,81,0.28)', borderRadius: 8, borderLeft: `2px solid ${item.actionType === 'SOLVED' ? '#10b981' : item.actionType === 'HINT_USED' ? '#f59e0b' : '#7c3aed'}`, flexShrink: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                          <span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>{item.teamName || 'Team'}</span>
-                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: item.actionType === 'SOLVED' ? '#10b981' : item.actionType === 'HINT_USED' ? '#f59e0b' : '#a78bfa' }}>{item.actionType}</span>
+                      <div key={i} className="ch-feed-item" style={{ borderLeftColor: item.actionType === 'SOLVED' ? '#10b981' : item.actionType === 'HINT_USED' ? '#f59e0b' : '#7c3aed' }}>
+                        <div className="ch-feed-top">
+                          <span className="ch-feed-team">{item.teamName || 'Team'}</span>
+                          <span className={`ch-feed-action ${item.actionType === 'SOLVED' ? 'solved' : item.actionType === 'HINT_USED' ? 'hint' : 'other'}`}>{item.actionType}</span>
                         </div>
-                        <div style={{ color: '#6b7280', fontSize: 12, lineHeight: 1.4, marginBottom: 4 }}>{item.storyMessage || item.challengeTitle || 'Operation update'}</div>
-                        <div style={{ color: (item.points ?? 0) >= 0 ? '#6ee7b7' : '#fca5a5', fontSize: 12, fontWeight: 700 }}>{(item.points ?? 0) >= 0 ? '+' : ''}{item.points ?? 0} pts</div>
+                        <div className="ch-feed-msg">{item.storyMessage || item.challengeTitle || 'Operation update'}</div>
+                        <div className={`ch-feed-pts ${(item.points ?? 0) >= 0 ? 'pos' : 'neg'}`}>{(item.points ?? 0) >= 0 ? '+' : ''}{item.points ?? 0} pts</div>
                       </div>
                     ))}
                   </div>
@@ -876,24 +879,27 @@ function ChallengesInner() {
               </div>
             </div>
           )}
-        </div>
+        </aside>
       </div>
+
+      {/* Mobile backdrop */}
+      {mobilePanel && <div className="ch-mobile-backdrop" onClick={() => setMobilePanel(null)} />}
 
       {/* HINT CONFIRM MODAL */}
       {showHintConfirm && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="game-panel-bordered" style={{ width: 440, maxWidth: '90vw', padding: '24px 24px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <h3 style={{ margin: 0, color: '#e9d5ff', fontSize: 17, fontWeight: 900, letterSpacing: 2 }}>REVEAL INTEL?</h3>
-              <button onClick={() => setShowHintConfirm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', padding: 4 }}><X size={15} /></button>
+        <div className="ch-modal-overlay">
+          <div className="game-panel-bordered ch-modal">
+            <div className="ch-modal-header">
+              <h3 className="ch-modal-title">REVEAL INTEL?</h3>
+              <button onClick={() => setShowHintConfirm(false)} className="ch-modal-close"><X size={15} /></button>
             </div>
-            <p style={{ color: '#94a3b8', fontSize: 13, lineHeight: 1.7, marginBottom: 14 }}>Mission intel is classified. Accessing it deducts points from your team score. Once revealed, intel stays visible for this mission at no further cost — you can hide/show it freely.</p>
-            <div className="game-alert-error" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+            <p className="ch-modal-body">Mission intel is classified. Accessing it deducts points from your team score. Once revealed, intel stays visible at no further cost — you can hide/show it freely.</p>
+            <div className="game-alert-error ch-modal-warning">
               <AlertTriangle size={13} />One-time penalty: −{apiResponse?.challenge?.hintPenalty ?? 50} points
             </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button className="btn-game-secondary" style={{ padding: '9px 16px', fontSize: 12 }} onClick={() => setShowHintConfirm(false)}>Abort</button>
-              <button className="btn-game-danger" style={{ padding: '9px 16px', fontSize: 12 }} onClick={confirmHint} disabled={revealingHint}>
+            <div className="ch-modal-actions">
+              <button className="btn-game-secondary" onClick={() => setShowHintConfirm(false)}>Abort</button>
+              <button className="btn-game-danger" onClick={confirmHint} disabled={revealingHint}>
                 {revealingHint ? 'Applying...' : <><Eye size={12} style={{ marginRight: 4 }} />Reveal Intel</>}
               </button>
             </div>
@@ -1036,11 +1042,280 @@ function ChallengesInner() {
       })()}
 
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg) } }
-        @keyframes dopulse { 0%,100% { opacity: 1 } 50% { opacity: 0.35 } }
+        /* ─── keyframes ─────────────────────────────────────────── */
+        @keyframes spin { to { transform:rotate(360deg) } }
+        @keyframes dopulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
         @keyframes pulse { 0%,100%{opacity:0.6;transform:translateX(0)} 50%{opacity:1;transform:translateX(3px)} }
         @keyframes submitPulse { 0%,100%{box-shadow:0 0 20px rgba(109,40,217,0.35)} 50%{box-shadow:0 0 40px rgba(109,40,217,0.65),0 0 60px rgba(109,40,217,0.2)} }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes scanLine { 0%{transform:translateY(-100%)} 100%{transform:translateY(100%)} }
+
+        /* ─── root / bg ─────────────────────────────────────────── */
+        .ch-root { height:100vh; background:#070813; display:flex; flex-direction:column; font-family:'Share Tech Mono','Courier New',monospace; position:relative; overflow:hidden; }
+        .ch-bg-grid { position:fixed; inset:0; pointer-events:none; z-index:0;
+          background-image:
+            repeating-linear-gradient(0deg,rgba(109,40,217,0.025) 0,rgba(109,40,217,0.025) 1px,transparent 1px,transparent 52px),
+            repeating-linear-gradient(90deg,rgba(109,40,217,0.025) 0,rgba(109,40,217,0.025) 1px,transparent 1px,transparent 52px),
+            radial-gradient(ellipse 90% 70% at 50% 0%,rgba(109,40,217,0.07),transparent 72%); }
+
+        /* ─── topbar ─────────────────────────────────────────────── */
+        .ch-topbar { position:sticky; top:0; z-index:50; display:flex; align-items:center; padding:0 20px; height:54px; border-bottom:1px solid rgba(109,40,217,0.22); background:rgba(4,2,14,0.97); backdrop-filter:blur(24px); gap:10px; flex-shrink:0; }
+        .ch-brand { display:flex; align-items:center; gap:9px; text-decoration:none; }
+        .ch-brand-icon { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#7c3aed,#06b6d4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .ch-brand-name { color:#e2e8f0; font-size:14px; font-weight:900; letter-spacing:3px; text-transform:uppercase; white-space:nowrap; }
+        .ch-topbar-nav { display:flex; align-items:center; gap:4px; margin-left:auto; }
+        .ch-nav-link { display:flex; align-items:center; gap:5px; color:#6b7280; font-size:11px; font-weight:700; letter-spacing:2px; text-decoration:none; text-transform:uppercase; padding:6px 12px; border:1px solid rgba(55,65,81,0.38); border-radius:7px; transition:all 0.15s; white-space:nowrap; }
+        .ch-nav-link:hover { color:#c4b5fd; border-color:rgba(167,139,250,0.4); background:rgba(109,40,217,0.08); }
+        .ch-topbar-divider { width:1px; height:22px; background:rgba(109,40,217,0.3); margin:0 4px; flex-shrink:0; }
+        .ch-topbar-missions { display:flex; align-items:center; gap:3px; white-space:nowrap; }
+        .ch-tb-done { color:#a78bfa; font-size:13px; font-weight:900; }
+        .ch-tb-sep { color:#374151; font-size:13px; }
+        .ch-tb-label { color:#6b7280; font-size:10px; letter-spacing:2px; margin-left:3px; }
+        .ch-score-badge { display:flex; align-items:center; gap:6px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.35); border-radius:8px; padding:6px 14px; white-space:nowrap; }
+        .ch-score-num { color:#fbbf24; font-size:17px; font-weight:900; letter-spacing:1px; }
+        .ch-score-unit { color:#92400e; font-size:9px; font-weight:700; letter-spacing:2px; }
+        .ch-team-tag { display:flex; align-items:center; gap:6px; }
+        .ch-team-dot { width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981; animation:dopulse 2.2s infinite; flex-shrink:0; }
+        .ch-team-name { color:#94a3b8; font-size:11px; letter-spacing:1px; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .ch-mob-btn { display:none; background:rgba(109,40,217,0.12); border:1px solid rgba(109,40,217,0.3); border-radius:7px; color:#a78bfa; cursor:pointer; padding:7px 9px; align-items:center; justify-content:center; flex-shrink:0; }
+
+        /* ─── 3-col body ─────────────────────────────────────────── */
+        .ch-body { position:relative; z-index:10; flex:1; display:flex; min-height:0; height:calc(100vh - 54px); }
+
+        /* ─── side panels ────────────────────────────────────────── */
+        .ch-left-panel  { border-right:1px solid rgba(109,40,217,0.18); background:rgba(3,1,14,0.9); backdrop-filter:blur(20px); display:flex; flex-direction:column; transition:width 0.28s ease,min-width 0.28s ease; overflow:hidden; position:relative; height:100%; flex-shrink:0; }
+        .ch-right-panel { border-left:1px solid rgba(109,40,217,0.18);  background:rgba(3,1,14,0.9); backdrop-filter:blur(20px); display:flex; flex-direction:column; transition:width 0.28s ease,min-width 0.28s ease; overflow:hidden; position:relative; height:100%; flex-shrink:0; }
+        .ch-left-panel.ch-panel-open   { width:288px; min-width:288px; }
+        .ch-right-panel.ch-panel-open  { width:300px; min-width:300px; }
+        .ch-left-panel.ch-panel-collapsed,
+        .ch-right-panel.ch-panel-collapsed { width:48px; min-width:48px; }
+        .ch-panel-toggle { position:absolute; top:50%; transform:translateY(-50%); z-index:30; width:16px; height:56px; background:linear-gradient(180deg,rgba(109,40,217,0.65),rgba(6,182,212,0.45)); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px rgba(109,40,217,0.4); transition:opacity 0.15s; }
+        .ch-panel-toggle:hover { opacity:0.8; }
+        .ch-panel-toggle-r { right:-1px; border-radius:0 8px 8px 0; }
+        .ch-panel-toggle-l { left:-1px; border-radius:8px 0 0 8px; }
+        .ch-collapsed-strip { display:flex; flex-direction:column; align-items:center; padding-top:14px; gap:16px; }
+        .ch-dot-pip { width:10px; height:10px; border-radius:50%; cursor:pointer; transition:transform 0.2s; flex-shrink:0; }
+        .ch-dot-pip:hover { transform:scale(1.4); }
+
+        /* ─── left timeline ──────────────────────────────────────── */
+        .ch-tl-scroll { overflow-y:auto; flex:1; padding:14px 0 20px; }
+        .ch-tl-scroll::-webkit-scrollbar { width:4px; }
+        .ch-tl-scroll::-webkit-scrollbar-track { background:transparent; }
+        .ch-tl-scroll::-webkit-scrollbar-thumb { background:rgba(109,40,217,0.35); border-radius:4px; }
+        .ch-tl-head { padding:0 14px 6px; display:flex; align-items:center; gap:6px; }
+        .ch-tl-title { color:#06b6d4; font-size:11px; font-weight:800; letter-spacing:3px; text-transform:uppercase; }
+        .ch-tl-prog-wrap { padding:0 14px 10px; }
+        .ch-tl-prog-info { display:flex; align-items:baseline; gap:3px; margin-bottom:6px; }
+        .ch-tl-done { color:#a78bfa; font-size:15px; font-weight:900; }
+        .ch-tl-total { color:#4b5563; font-size:12px; }
+        .ch-round-group { margin-top:8px; }
+        .ch-round-label { padding:5px 14px; display:flex; align-items:center; gap:6px; font-size:10px; font-weight:800; letter-spacing:2px; text-transform:uppercase; }
+        .ch-round-line { flex:1; height:1px; }
+        .ch-mc-row { padding:3px 8px; position:relative; }
+        .ch-zz-dot { position:absolute; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; border:2px solid; z-index:2; left:12px; }
+        .ch-mc-card { padding:10px 10px 10px 28px; border-radius:10px; border:1px solid; border-left:3px solid; transition:all 0.18s ease; cursor:pointer; }
+        .ch-mc-card:not(.ch-mc-locked):hover { filter:brightness(1.1); transform:translateX(2px); }
+        .ch-mc-locked { cursor:default; opacity:0.5; }
+        .ch-mci-row { display:flex; align-items:center; gap:5px; margin-bottom:4px; }
+        .ch-mc-icon { flex-shrink:0; }
+        .ch-mc-lvl { color:#cbd5e1; font-size:11px; font-weight:800; }
+        .ch-mc-name { font-size:12px; font-weight:600; color:#9ca3af; line-height:1.35; transition:color 0.15s; }
+        .ch-mc-sel .ch-mc-name { color:#e2e8f0; }
+        .ch-mc-pts { margin-top:4px; display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; }
+        .ch-mc-type { color:#6b7280; font-size:10px; letter-spacing:1px; text-transform:uppercase; }
+
+        /* ─── center ─────────────────────────────────────────────── */
+        .ch-center { flex:1; display:flex; flex-direction:column; min-width:0; height:100%; overflow:hidden; }
+        .ch-center-scroll { flex:1; overflow-y:auto; overflow-x:hidden; padding:24px 26px 20px; display:flex; flex-direction:column; gap:18px; }
+        .ch-center-scroll::-webkit-scrollbar { width:5px; }
+        .ch-center-scroll::-webkit-scrollbar-track { background:rgba(0,0,0,0.2); }
+        .ch-center-scroll::-webkit-scrollbar-thumb { background:rgba(109,40,217,0.4); border-radius:4px; }
+
+        /* complete banner */
+        .ch-complete-banner { background:linear-gradient(135deg,rgba(6,78,59,0.25),rgba(16,185,129,0.1)); border:2px solid rgba(16,185,129,0.5); border-radius:14px; padding:28px; text-align:center; box-shadow:0 0 50px rgba(16,185,129,0.18); animation:fadeIn 0.5s ease; }
+        .ch-complete-icon { font-size:36px; margin-bottom:8px; }
+        .ch-complete-title { color:#6ee7b7; font-size:20px; font-weight:900; letter-spacing:3px; text-transform:uppercase; text-shadow:0 0 24px rgba(16,185,129,0.7); margin:0 0 12px; }
+        .ch-complete-body { color:#a7f3d0; font-size:14px; line-height:1.7; margin:0 0 12px; }
+        .ch-complete-score { color:#34d399; font-weight:900; font-size:16px; }
+
+        /* badges row */
+        .ch-badges-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+        .ch-type-badge { color:#94a3b8; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
+        .ch-pts-badge { color:#fbbf24; font-size:15px; font-weight:900; margin-left:2px; }
+        .ch-state-chip { margin-left:auto; display:flex; align-items:center; gap:5px; font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase; }
+        .ch-state-active { color:#a78bfa; }
+        .ch-state-solved { color:#10b981; }
+        .ch-state-locked { color:#4b5563; }
+
+        /* title */
+        .ch-title-block { display:flex; flex-direction:column; gap:5px; }
+        .ch-act-label { color:#6b7280; font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; }
+        .ch-mission-title { margin:0; font-size:clamp(18px,2.5vw,26px); font-weight:900; color:#e9d5ff; letter-spacing:2px; text-transform:uppercase; line-height:1.2; text-shadow:0 0 28px rgba(124,58,237,0.3); }
+
+        /* intel banner */
+        .ch-intel-banner { border:1px solid; border-radius:14px; overflow:hidden; position:relative; background:linear-gradient(135deg,rgba(2,1,12,0.98),rgba(12,7,36,0.97)); }
+        .ch-intel-accent-line { position:absolute; top:0; left:0; right:0; height:2px; z-index:3; }
+        .ch-intel-scene { position:relative; height:150px; overflow:hidden; }
+        .ch-intel-grid-bg { position:absolute; inset:0; background:repeating-linear-gradient(45deg,rgba(109,40,217,0.04) 0,rgba(109,40,217,0.04) 1px,transparent 1px,transparent 14px); }
+        .ch-portrait { position:absolute; left:0; top:0; bottom:0; width:110px; overflow:hidden; }
+        .ch-intel-info { position:absolute; bottom:0; left:118px; right:0; padding:12px 16px 10px; display:flex; flex-direction:column; gap:6px; }
+        .ch-intel-row1 { display:flex; align-items:center; gap:8px; }
+        .ch-operative-badge { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; padding:2px 8px; border:1px solid; border-radius:5px; }
+        .ch-char-name { color:#e2e8f0; font-size:14px; font-weight:800; letter-spacing:1px; }
+        .ch-intel-time { display:flex; align-items:center; gap:5px; color:#94a3b8; font-size:11px; }
+        .ch-intel-status { display:inline-flex; align-items:center; gap:6px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:4px 10px; color:#fca5a5; font-size:10px; font-weight:700; letter-spacing:1px; width:fit-content; }
+        .ch-status-dot { width:5px; height:5px; border-radius:50%; background:#ef4444; animation:dopulse 1.5s infinite; flex-shrink:0; }
+        .ch-rescue-bar { display:flex; justify-content:space-between; align-items:center; padding:9px 16px 5px; }
+        .ch-rescue-label { display:flex; align-items:center; gap:5px; color:#6b7280; font-size:9px; letter-spacing:2px; font-weight:700; text-transform:uppercase; }
+        .ch-rescue-count { font-size:12px; font-weight:900; }
+        .ch-rescue-track { height:5px; margin:0 16px 12px; background:rgba(255,255,255,0.04); border-radius:3px; overflow:hidden; }
+        .ch-rescue-fill { height:100%; border-radius:3px; transition:width 0.8s ease; }
+
+        /* sitrep */
+        .ch-sitrep { background:rgba(3,1,14,0.7); border:1px solid rgba(109,40,217,0.17); border-radius:12px; padding:16px 20px; }
+        .ch-section-label { display:flex; align-items:center; gap:5px; color:#6b7280; font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; }
+        .ch-sitrep-text { color:#cbd5e1; font-size:14px; line-height:1.85; margin:0; }
+
+        /* payload */
+        .ch-payload-panel { padding:18px 20px; }
+        .ch-payload-header { display:flex; align-items:center; gap:7px; color:#06b6d4; font-size:11px; font-weight:800; letter-spacing:3px; text-transform:uppercase; margin-bottom:14px; }
+        .ch-live-dot { width:6px; height:6px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981; animation:dopulse 1.8s infinite; margin-left:auto; }
+        .ch-payload-code { background:rgba(0,0,0,0.55); border:1px solid rgba(109,40,217,0.25); border-radius:10px; padding:16px 18px; font-family:'Share Tech Mono','Courier New',monospace; font-size:13.5px; color:#c4b5fd; line-height:1.95; white-space:pre-wrap; max-height:340px; overflow-y:auto; letter-spacing:0.3px; }
+        .ch-payload-code::-webkit-scrollbar { width:4px; }
+        .ch-payload-code::-webkit-scrollbar-thumb { background:rgba(109,40,217,0.4); border-radius:3px; }
+        .ch-payload-state { display:flex; align-items:center; gap:10px; border-radius:10px; padding:14px 16px; font-size:14px; }
+        .ch-payload-solved { background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.28); color:#6ee7b7; }
+        .ch-payload-locked { background:rgba(55,65,81,0.1); border:1px solid rgba(55,65,81,0.25); color:#6b7280; }
+
+        /* hint */
+        .ch-hint-section { margin-top:14px; }
+        .ch-hint-btn { display:inline-flex; align-items:center; gap:7px; padding:9px 16px; background:rgba(109,40,217,0.09); border:1px solid rgba(109,40,217,0.3); border-radius:8px; cursor:pointer; color:#c4b5fd; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; transition:all 0.15s; font-family:inherit; }
+        .ch-hint-btn:hover { background:rgba(109,40,217,0.18); border-color:rgba(167,139,250,0.6); }
+        .ch-hint-btn.ch-hint-unlocked { background:rgba(245,158,11,0.1); border-color:rgba(245,158,11,0.4); color:#fbbf24; }
+        .ch-hint-cost { color:#ef4444; font-size:10px; margin-left:3px; }
+        .ch-hint-unlocked-tag { color:#10b981; font-size:10px; margin-left:3px; }
+        .ch-hint-box { margin-top:10px; padding:14px 16px; background:rgba(15,8,40,0.7); border:1px solid rgba(109,40,217,0.38); border-radius:9px; border-left:3px solid #7c3aed; animation:fadeIn 0.3s ease; }
+        .ch-hint-label { color:#a78bfa; font-size:10px; font-weight:800; letter-spacing:3px; text-transform:uppercase; margin-bottom:8px; }
+        .ch-hint-text { color:#c4b5fd; font-size:14px; line-height:1.8; margin:0; }
+
+        /* empty state */
+        .ch-empty-state { display:flex; flex:1; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:#374151; font-size:13px; padding:40px; }
+
+        /* flag bar */
+        .ch-flag-bar { border-top:1px solid rgba(109,40,217,0.2); background:rgba(3,1,14,0.98); padding:14px 20px; flex-shrink:0; backdrop-filter:blur(20px); }
+        .ch-flag-inner { display:flex; flex-direction:column; gap:10px; }
+        .ch-flag-header { display:flex; align-items:center; gap:8px; }
+        .ch-flag-icon-wrap { width:26px; height:26px; border-radius:7px; background:linear-gradient(135deg,#5b21b6,#7c3aed); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .ch-flag-label { color:#c4b5fd; font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; }
+        .ch-awaiting-tag { margin-left:auto; display:flex; align-items:center; gap:5px; background:rgba(167,139,250,0.07); border:1px solid rgba(167,139,250,0.18); border-radius:6px; padding:3px 10px; color:#7c6fa0; font-size:9px; letter-spacing:2px; font-weight:700; text-transform:uppercase; }
+        .ch-await-dot { width:5px; height:5px; border-radius:50%; background:#a78bfa; box-shadow:0 0 6px #a78bfa; animation:dopulse 1.6s infinite; flex-shrink:0; }
+        .ch-flag-form { display:flex; gap:10px; }
+        .ch-flag-form .ch-flag-input { flex:1 !important; }
+        .ch-transmit-btn { display:flex; align-items:center; gap:7px; padding:12px 22px; background:rgba(109,40,217,0.22); border:1px solid rgba(167,139,250,0.3); border-radius:9px; cursor:not-allowed; color:#7c6fa0; font-size:13px; font-weight:800; letter-spacing:2px; white-space:nowrap; text-transform:uppercase; font-family:inherit; transition:all 0.2s; }
+        .ch-transmit-btn.ch-transmit-active { background:linear-gradient(135deg,#5b21b6,#7c3aed); cursor:pointer; color:#fff; border-color:rgba(167,139,250,0.5); box-shadow:0 0 24px rgba(109,40,217,0.4); animation:submitPulse 2.2s ease-in-out infinite; }
+        .ch-transmit-btn.ch-transmit-active:hover { box-shadow:0 0 40px rgba(109,40,217,0.65); transform:translateY(-1px); }
+        .ch-attempts-info { color:#4b5563; font-size:10px; letter-spacing:1px; }
+        .ch-flag-msg { display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:8px; font-size:13px; border:1px solid; animation:fadeIn 0.25s ease; }
+        .ch-msg-error  { background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.3); color:#fca5a5; }
+        .ch-msg-success{ background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.3); color:#6ee7b7; }
+        .ch-flag-status { display:flex; align-items:center; gap:10px; font-size:14px; }
+
+        /* ─── right panel ────────────────────────────────────────── */
+        .ch-right-scroll { overflow-y:auto; flex:1; padding:16px 14px; display:flex; flex-direction:column; gap:14px; }
+        .ch-right-scroll::-webkit-scrollbar { width:4px; }
+        .ch-right-scroll::-webkit-scrollbar-thumb { background:rgba(109,40,217,0.35); border-radius:4px; }
+
+        .ch-team-card { background:linear-gradient(135deg,rgba(109,40,217,0.12),rgba(109,40,217,0.04)); border:1px solid rgba(109,40,217,0.3); border-radius:12px; padding:16px 18px; position:relative; overflow:hidden; }
+        .ch-tc-accent-bar { position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,#7c3aed,#06b6d4); }
+        .ch-tc-label { color:#6b7280; font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; margin-bottom:6px; }
+        .ch-tc-name { font-size:14px; font-weight:700; color:#e2e8f0; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; letter-spacing:1px; }
+        .ch-tc-score-row { display:flex; align-items:baseline; gap:3px; }
+        .ch-tc-big { font-size:36px; font-weight:900; color:#e2e8f0; line-height:1; }
+        .ch-tc-denom { color:#4b5563; font-size:20px; }
+        .ch-tc-sub { color:#6b7280; font-size:12px; margin-bottom:10px; }
+        .ch-tc-pts-row { display:flex; align-items:center; gap:6px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.22); border-radius:9px; padding:10px 14px; }
+        .ch-tc-pts-label { color:#6b7280; font-size:10px; font-weight:700; letter-spacing:2px; flex:1; text-transform:uppercase; }
+        .ch-tc-pts-val { color:#fbbf24; font-size:20px; font-weight:900; }
+
+        .ch-ops-card { background:rgba(5,2,18,0.8); border:1px solid rgba(55,65,81,0.25); border-radius:11px; padding:14px 16px; }
+        .ch-ops-row { display:flex; justify-content:space-between; margin-bottom:9px; }
+        .ch-ops-row:last-child { margin-bottom:0; }
+        .ch-ops-key { color:#94a3b8; font-size:12px; letter-spacing:1px; }
+        .ch-ops-val { font-size:12px; font-weight:700; }
+        .ch-ops-val.ok  { color:#10b981; }
+        .ch-ops-val.bad { color:#ef4444; }
+
+        .ch-feed-wrap { display:flex; flex-direction:column; flex:1; min-height:0; }
+        .ch-feed-toggle { display:flex; align-items:center; gap:6px; background:transparent; border:none; cursor:pointer; padding:4px 0 10px; width:100%; font-family:inherit; }
+        .ch-feed-toggle span { color:#a78bfa; font-size:11px; font-weight:700; letter-spacing:2px; flex:1; text-align:left; text-transform:uppercase; }
+        .ch-feed-scroll { overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:6px; max-height:260px; }
+        .ch-feed-scroll::-webkit-scrollbar { width:3px; }
+        .ch-feed-scroll::-webkit-scrollbar-thumb { background:rgba(109,40,217,0.35); border-radius:3px; }
+        .ch-feed-empty { color:#374151; font-size:12px; text-align:center; padding:18px 0; border:1px dashed rgba(55,65,81,0.3); border-radius:9px; display:flex; flex-direction:column; align-items:center; gap:7px; }
+        .ch-feed-item { padding:10px 12px; background:rgba(8,5,22,0.75); border:1px solid rgba(55,65,81,0.25); border-radius:8px; border-left:2px solid; flex-shrink:0; }
+        .ch-feed-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+        .ch-feed-team { color:#e2e8f0; font-size:12px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px; }
+        .ch-feed-action { font-size:9px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
+        .ch-feed-action.solved { color:#10b981; }
+        .ch-feed-action.hint   { color:#f59e0b; }
+        .ch-feed-action.other  { color:#a78bfa; }
+        .ch-feed-msg { color:#6b7280; font-size:11px; line-height:1.4; margin-bottom:4px; }
+        .ch-feed-pts { font-size:12px; font-weight:700; }
+        .ch-feed-pts.pos { color:#6ee7b7; }
+        .ch-feed-pts.neg { color:#fca5a5; }
+
+        /* mobile backdrop */
+        .ch-mobile-backdrop { position:fixed; inset:0; z-index:199; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); }
+
+        /* ─── hint confirm modal ─────────────────────────────────── */
+        .ch-modal-overlay { position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.82); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; }
+        .ch-modal { width:440px; max-width:90vw; padding:24px 24px 20px; animation:fadeIn 0.2s ease; }
+        .ch-modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+        .ch-modal-title { margin:0; color:#e9d5ff; font-size:17px; font-weight:900; letter-spacing:2px; }
+        .ch-modal-close { background:none; border:none; cursor:pointer; color:#6b7280; padding:4px; display:flex; align-items:center; justify-content:center; transition:color 0.15s; }
+        .ch-modal-close:hover { color:#e2e8f0; }
+        .ch-modal-body { color:#94a3b8; font-size:13px; line-height:1.7; margin-bottom:14px; }
+        .ch-modal-warning { margin-bottom:16px; display:flex; align-items:center; gap:8px; font-size:13px; }
+        .ch-modal-actions { display:flex; gap:8px; justify-content:flex-end; }
+        .ch-modal-actions .btn-game-secondary { padding:9px 16px; font-size:12px; }
+        .ch-modal-actions .btn-game-danger    { padding:9px 16px; font-size:12px; }
+
+        /* loading screen */
+        .ch-loading-screen { min-height:100vh; background:#080614; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px; font-family:'Share Tech Mono','Courier New',monospace; }
+        .ch-spin-ring { width:44px; height:44px; border-radius:50%; border:2px solid rgba(109,40,217,0.2); border-top-color:#7c3aed; animation:spin 0.8s linear infinite; }
+
+        /* ─── responsive ─────────────────────────────────────────── */
+        @media (max-width:900px) {
+          .ch-mob-btn { display:flex; }
+          .ch-brand-name { display:none; }
+          .ch-topbar-missions { display:none; }
+          .ch-topbar-divider { display:none; }
+          .ch-nav-link span { display:none; }
+          .ch-nav-link { padding:6px 8px; }
+          .ch-score-num { font-size:14px; }
+          .ch-left-panel, .ch-right-panel {
+            position:fixed; top:54px; z-index:200; height:calc(100vh - 54px);
+            transform:translateX(-110%); transition:transform 0.28s ease !important;
+            width:288px !important; min-width:288px !important;
+          }
+          .ch-right-panel { left:auto; right:0; transform:translateX(110%); }
+          .ch-left-panel.ch-mobile-slide  { transform:translateX(0); }
+          .ch-right-panel.ch-mobile-slide { transform:translateX(0); }
+          .ch-panel-toggle { display:none; }
+          .ch-collapsed-strip { display:none; }
+          .ch-center-scroll { padding:18px 16px 16px; }
+        }
+        @media (max-width:600px) {
+          .ch-mission-title { font-size:17px; }
+          .ch-portrait { width:80px; }
+          .ch-intel-info { left:90px; }
+          .ch-payload-code { font-size:12.5px; }
+          .ch-flag-bar { padding:12px 14px; }
+          .ch-transmit-btn { padding:11px 14px; font-size:11px; letter-spacing:1px; }
+          .ch-score-badge { padding:5px 10px; }
+          .ch-team-name { max-width:80px; }
+        }
       `}</style>
     </div>
   );

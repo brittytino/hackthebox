@@ -82,7 +82,7 @@ export class ChallengesService {
     const staticFlags: Record<number, string[]> = {
       1: ['ctf{server.room-er42,east-wing}'],
       2: ['ctf#accessgranted'],
-      4: ['ctf{pas+pas+pas+42}'],
+      4: ['ctf{pas+dra+mon+42}'],
       5: ['ctf{rdfnc6okbay5cayzid3g1dcf}'],
       7: ['ctf{blackout.feb14.payload}'],
       8: ['ctf{defusal.killswitch.overrode}'],
@@ -98,15 +98,15 @@ export class ChallengesService {
 
   private getDefaultHintForLevel(absoluteLevel: number): string {
     const hints: Record<number, string> = {
-      1: 'The trailing "=" is a signature of a common encoding. The data has been transformed through three layers — work from the outermost encoding inward.',
-      2: 'Each fragment uses a different common encoding. Look at character patterns: numeric pairs, 8-digit binary groups, and shifted alphabetic text. Concatenate decoded results as A+B+C.',
-      3: 'Build the input string with pipe separators exactly as shown. Use an online MD5 hash calculator. Take the first 8 lowercase hex characters.',
-      4: 'Identify each hash type by its character length (32, 40, 64 hex characters). Use hash lookup databases or cracking tools. The passwords may be simpler than you expect.',
-      5: 'The outer encoding is hexadecimal — convert pairs of hex digits to ASCII characters. The result is a well-known web authentication format with three dot-separated sections. Decode the middle section.',
-      6: 'Concatenate directly without separators: YourTeamName5CIPHER2026. SHA-256 hash the full string, take first 8 lowercase hex characters.',
-      7: 'Four different encodings. Look at character patterns to identify each: binary digits, hex pairs, Base64 padding characters, and alphabetic-only substitution. Assemble decoded results in order 1-2-3-4.',
-      8: 'Start by converting the outermost hex to ASCII. The result is still encoded — keep going layer by layer. The final fully-decoded output is a complete flag string including CTF{...}.',
-      9: 'The outer layer is hex. Inside is a nested structure — each decoded layer reveals the next. Look for common data formats (JSON, web tokens). A final alphabetic transformation reveals the 6-character vault code.',
+      1: 'Identify the outer encoding by character pattern and padding, decode once, then validate if another transformation is still present.',
+      2: 'Treat each fragment independently and determine its numeral/cipher system before combining decoded outputs in sequence.',
+      3: 'Construct the team-bound input exactly with required separators and constants, then derive the first 8 lowercase hex characters.',
+      4: 'Use hash length to classify algorithm type, recover each plaintext, then build the final combined key format.',
+      5: 'Decode the outer blob first, inspect token-like structure, then extract and normalize the embedded credential value.',
+      6: 'Build the exact concatenated team string with constants, hash using SHA-256, and submit the required leading segment.',
+      7: 'Each shard is in a different representation; decode each to readable text and merge in capture order.',
+      8: 'Proceed layer-by-layer: decode, reassess data type, and continue until stable plaintext flag output appears.',
+      9: 'Expect nested structured data across multiple decode stages; verify each intermediate output before extracting final vault code.',
     };
 
     return hints[absoluteLevel] || '';
@@ -176,8 +176,8 @@ export class ChallengesService {
         difficulty: challenge.difficulty,
         order: challenge.order,
         hints:
-          this.getDefaultHintForLevel(this.getAbsoluteLevel(challenge)) ||
-          challenge.hints,
+          challenge.hints ||
+          this.getDefaultHintForLevel(this.getAbsoluteLevel(challenge)),
         hintPenalty: challenge.hintPenalty,
         maxAttempts: challenge.maxAttempts,
         round: challenge.round,
@@ -379,8 +379,7 @@ export class ChallengesService {
     }
 
     const absoluteLevel = this.getAbsoluteLevel(challenge);
-    const hintText =
-      this.getDefaultHintForLevel(absoluteLevel) || challenge.hints || '';
+    const hintText = challenge.hints || this.getDefaultHintForLevel(absoluteLevel) || '';
 
     if (!hintText) {
       throw new BadRequestException('No hint available for this challenge');

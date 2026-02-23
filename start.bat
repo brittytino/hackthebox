@@ -33,7 +33,7 @@ if errorlevel 1 (
     echo.
     echo Common fixes:
     echo   1. Restart Docker Desktop
-    echo   2. Check ports 3000, 3001, 5433, 6380 are free
+    echo   2. Check ports 43117, 43118, 45432, 46379, 45050 are free
     pause
     exit /b 1
 )
@@ -71,10 +71,11 @@ echo   Platform is Running!
 echo ========================================
 echo.
 echo Access points:
-echo   Frontend:  http://10.1.50.223:3000
-echo   Backend:   http://10.1.50.223:3001
-echo   Database:  10.1.50.223:5433 (PostgreSQL)
-echo   Redis:     10.1.50.223:6380
+echo   Frontend:  http://10.1.50.223:43117
+echo   Backend:   http://10.1.50.223:43118
+echo   Database:  10.1.50.223:45432 (PostgreSQL)
+echo   Redis:     10.1.50.223:46379
+echo   pgAdmin:   http://10.1.50.223:45050
 echo.
 echo Admin Login:
 echo   Email:     admin@hackthebox.local
@@ -92,6 +93,6 @@ echo NOTE: To reset all data and re-seed, run setup.bat
 echo.
 echo Opening browser in 3 seconds...
 timeout /t 3 /nobreak >nul
-start http://10.1.50.223:3000
+start http://10.1.50.223:43117
 echo.
 pause

@@ -33,7 +33,7 @@ The script will:
 - 🏗️ Build and start all containers
 - 🗄️ Initialize the database with migrations
 - 🌱 Seed admin user and challenges
-- 🌐 Open your browser to `http://localhost:3000`
+- 🌐 Open your browser to `http://localhost:43117`
 
 ### First Time Setup
 
@@ -58,9 +58,9 @@ If it's your first time running the platform:
 
 Once running, access these URLs:
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:3001
-- **Health Check**: http://localhost:3001/api/health
+- **Frontend**: http://localhost:43117
+- **Backend API**: http://localhost:43118
+- **Health Check**: http://localhost:43118/api/health
 
 ### Default Admin Credentials
 
@@ -113,10 +113,10 @@ docker-compose up -d --build
 ## 📦 What's Included
 
 ### Services
-- **PostgreSQL 16** - Database on port `5433`
-- **Redis 7** - Cache/Session store on port `6380`
-- **Backend** - NestJS API on port `3001`
-- **Frontend** - Next.js 15 on port `3000`
+- **PostgreSQL 16** - Database on port `45432`
+- **Redis 7** - Cache/Session store on port `46379`
+- **Backend** - NestJS API on port `43118`
+- **Frontend** - Next.js 15 on port `43117`
 
 ### Features
 - ✅ User authentication with JWT
@@ -137,14 +137,14 @@ docker-compose up -d --build
 
 ### Port already in use
 **Error**: `bind: address already in use`
-**Fix**: Stop services using ports 3000, 3001, 5433, or 6380
+**Fix**: Stop services using ports 43117, 43118, 45432, or 46379
 ```bash
 # Windows
-netstat -ano | findstr :3000
+netstat -ano | findstr :43117
 taskkill /PID <PID> /F
 
 # Linux/Mac
-sudo lsof -ti:3000 | xargs kill -9
+sudo lsof -ti:43117 | xargs kill -9
 ```
 
 ### Build fails
@@ -167,7 +167,7 @@ docker-compose logs postgres
 **Fix**: Ensure backend is running and check `.env.local`:
 ```bash
 docker-compose logs backend
-# Verify NEXT_PUBLIC_API_URL=http://localhost:3001 in apps/frontend/.env.local
+# Verify NEXT_PUBLIC_API_URL=http://localhost:43118 in apps/frontend/.env.local
 ```
 
 ## 📁 Project Structure

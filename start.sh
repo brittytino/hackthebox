@@ -64,10 +64,11 @@ echo "  Setup Complete!"
 echo "========================================"
 echo ""
 echo "Access points:"
-echo "  Frontend:  http://localhost:3000"
-echo "  Backend:   http://localhost:3001"
-echo "  Database:  localhost:5433 (PostgreSQL)"
-echo "  Redis:     localhost:6380"
+echo "  Frontend:  http://localhost:43117"
+echo "  Backend:   http://localhost:43118"
+echo "  Database:  localhost:45432 (PostgreSQL)"
+echo "  Redis:     localhost:46379"
+echo "  pgAdmin:   http://localhost:45050"
 echo ""
 echo "Admin Login:"
 echo "  Email:     admin@hackthebox.local"
@@ -83,11 +84,11 @@ sleep 2
 
 # Try to open browser
 if command -v xdg-open > /dev/null; then
-    xdg-open http://localhost:3000
+    xdg-open http://localhost:43117
 elif command -v open > /dev/null; then
-    open http://localhost:3000
+    open http://localhost:43117
 else
-    echo "Please open http://localhost:3000 in your browser"
+    echo "Please open http://localhost:43117 in your browser"
 fi
 
 echo ""

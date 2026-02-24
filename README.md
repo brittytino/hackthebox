@@ -59,8 +59,8 @@ If it's your first time running the platform:
 Once running, access these URLs:
 
 - **Frontend**: http://localhost:43117
-- **Backend API**: http://localhost:43118
-- **Health Check**: http://localhost:43118/api/health
+- **Backend API**: http://localhost:43118 (optional direct)
+- **Health Check**: http://localhost:43118/api/health (optional direct)
 
 ### Default Admin Credentials
 
@@ -167,7 +167,7 @@ docker-compose logs postgres
 **Fix**: Ensure backend is running and check `.env.local`:
 ```bash
 docker-compose logs backend
-# Verify NEXT_PUBLIC_API_URL=http://localhost:43118 in apps/frontend/.env.local
+# Verify NEXT_PUBLIC_API_URL=/api in apps/frontend/.env.local
 ```
 
 ## 📁 Project Structure

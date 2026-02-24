@@ -20,8 +20,8 @@ export default function StoryControl() {
     try {
       const token = localStorage.getItem('token');
       const [stateRes, progressRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:43118'}/story/state`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:43118'}/story/admin/all-progress`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/story/state`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/story/admin/all-progress`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -43,7 +43,7 @@ export default function StoryControl() {
   const handleStartStory = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:43118'}/story/admin/start`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/story/admin/start`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -65,7 +65,7 @@ export default function StoryControl() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:43118'}/story/admin/end`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/story/admin/end`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -88,7 +88,7 @@ export default function StoryControl() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:43118'}/story/admin/reset`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/story/admin/reset`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

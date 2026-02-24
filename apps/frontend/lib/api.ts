@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:43118';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 // Ensure API_URL always ends with /api
 const API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL.replace(/\/$/, '')}/api`;
 

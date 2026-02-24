@@ -50,7 +50,7 @@ export default function LeaderboardPage() {
 
   // SSE live updates
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:43118';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
     const base = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl.replace(/\/$/, '')}/api`;
     const es = new EventSource(`${base}/scoreboard/live`);
     es.onmessage = (ev) => {

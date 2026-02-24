@@ -28,7 +28,7 @@ Once running:
 | Service | URL | Description |
 |---------|-----|-------------|
 | **Frontend** | http://localhost:43117 | Main application UI |
-| **Backend** | http://localhost:43118 | REST API |
+| **Backend** | http://localhost:43118 | REST API (optional direct) |
 | **Database** | localhost:45432 | PostgreSQL (user: postgres) |
 | **Redis** | localhost:46379 | Cache store |
 

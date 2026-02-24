@@ -24,6 +24,26 @@ if errorlevel 1 (
 )
 echo [OK] Docker is running
 
+REM Load .env values (fallbacks for display)
+set FRONTEND_URL=http://10.1.50.223:43117
+set BACKEND_PORT=43118
+set POSTGRES_HOST_PORT=45432
+set REDIS_HOST_PORT=46379
+set PGADMIN_HOST_PORT=45050
+if exist ".env" (
+    for /f "usebackq tokens=1,* delims==" %%A in (".env") do (
+        if /i "%%A"=="FRONTEND_URL" set FRONTEND_URL=%%B
+        if /i "%%A"=="BACKEND_PORT" set BACKEND_PORT=%%B
+        if /i "%%A"=="POSTGRES_HOST_PORT" set POSTGRES_HOST_PORT=%%B
+        if /i "%%A"=="REDIS_HOST_PORT" set REDIS_HOST_PORT=%%B
+        if /i "%%A"=="PGADMIN_HOST_PORT" set PGADMIN_HOST_PORT=%%B
+    )
+)
+set HOST_NAME=10.1.50.223
+for /f "tokens=1,2,3 delims=/" %%A in ("%FRONTEND_URL%") do set HOST_PORT=%%C
+for /f "tokens=1 delims=:" %%A in ("%HOST_PORT%") do set HOST_NAME=%%A
+set BACKEND_URL=http://%HOST_NAME%:%BACKEND_PORT%
+
 echo.
 echo [1/3] Starting existing containers (no data wipe)...
 docker-compose up -d
@@ -71,11 +91,11 @@ echo   Platform is Running!
 echo ========================================
 echo.
 echo Access points:
-echo   Frontend:  http://10.1.50.223:43117
-echo   Backend:   http://10.1.50.223:43118
-echo   Database:  10.1.50.223:45432 (PostgreSQL)
-echo   Redis:     10.1.50.223:46379
-echo   pgAdmin:   http://10.1.50.223:45050
+echo   Frontend:  %FRONTEND_URL%
+echo   Backend:   %BACKEND_URL%
+echo   Database:  %HOST_NAME%:%POSTGRES_HOST_PORT% (PostgreSQL)
+echo   Redis:     %HOST_NAME%:%REDIS_HOST_PORT%
+echo   pgAdmin:   http://%HOST_NAME%:%PGADMIN_HOST_PORT%
 echo.
 echo Admin Login:
 echo   Email:     admin@hackthebox.local
@@ -93,6 +113,6 @@ echo NOTE: To reset all data and re-seed, run setup.bat
 echo.
 echo Opening browser in 3 seconds...
 timeout /t 3 /nobreak >nul
-start http://10.1.50.223:43117
+start %FRONTEND_URL%
 echo.
 pause

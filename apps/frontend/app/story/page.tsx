@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { gsap } from 'gsap';
 import { ChevronRight, SkipForward, ArrowLeft } from 'lucide-react';
+import { api } from '@/lib/api';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 type Scene = {
@@ -432,14 +433,58 @@ function StoryInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const challengeParam = searchParams.get('challenge');
-  const challengeNum = challengeParam ? parseInt(challengeParam, 10) : null;
+  const parsedChallenge = challengeParam ? parseInt(challengeParam, 10) : NaN;
+  const challengeNum = Number.isInteger(parsedChallenge) && parsedChallenge >= 1 && parsedChallenge <= 9
+    ? parsedChallenge
+    : null;
 
-  const scenes: Scene[] = challengeNum !== null
-    ? (CHALLENGE_SCENES[challengeNum] ?? INTRO_SCENES)
+  const [resolvedChallengeNum, setResolvedChallengeNum] = useState<number | null>(challengeNum);
+  const [accessReady, setAccessReady] = useState(challengeNum === null);
+
+  useEffect(() => {
+    setResolvedChallengeNum(challengeNum);
+    setAccessReady(challengeNum === null);
+  }, [challengeNum]);
+
+  useEffect(() => {
+    if (challengeNum === null) {
+      setAccessReady(true);
+      return;
+    }
+
+    let cancelled = false;
+
+    api.challenges.getCurrent().then((data) => {
+      if (cancelled) return;
+      const currentLevel = Math.min(Math.max(data?.progress?.currentLevel ?? 1, 1), 9);
+      const maxDebrief = Math.max(0, currentLevel - 1);
+
+      if (maxDebrief <= 0) {
+        setResolvedChallengeNum(null);
+        setAccessReady(true);
+        router.replace('/timeline');
+        return;
+      }
+
+      setResolvedChallengeNum(Math.min(challengeNum, maxDebrief));
+      setAccessReady(true);
+    }).catch(() => {
+      if (cancelled) return;
+      setResolvedChallengeNum(null);
+      setAccessReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [challengeNum, router]);
+
+  const scenes: Scene[] = resolvedChallengeNum !== null
+    ? (CHALLENGE_SCENES[resolvedChallengeNum] ?? INTRO_SCENES)
     : INTRO_SCENES;
 
-  const destination = getDestination(challengeNum);
-  const isIntro = challengeNum === null;
+  const destination = getDestination(resolvedChallengeNum);
+  const isIntro = resolvedChallengeNum === null;
 
   const [sceneIdx, setSceneIdx] = useState(0);
   const [displayText, setDisplayText] = useState('');
@@ -520,6 +565,14 @@ function StoryInner() {
   const speakerColor = scene.speakerColor || '#a78bfa';
   const isNarrator = scene.speaker === 'NARRATOR';
   const isUmar = scene.speaker.includes('UMAR');
+
+  if (!accessReady) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontFamily: "'Inter',sans-serif", letterSpacing: 2, fontSize: 12 }}>
+        VALIDATING STORY ACCESS...
+      </div>
+    );
+  }
 
   if (showEndCard) return <EndTitleCard onClose={() => router.push('/dashboard')} />;
 

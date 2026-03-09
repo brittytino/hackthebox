@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MASTER VAULT - Operation Cipher Strike</title>
     <style>
+        :root {
+            --bg-1: #070813;
+            --bg-2: #0d0821;
+            --panel: rgba(8, 5, 22, 0.92);
+            --panel-border: rgba(124, 58, 237, 0.45);
+            --text-main: #e9d5ff;
+            --text-muted: #94a3b8;
+            --accent: #7c3aed;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-gold: #fbbf24;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,11 +26,13 @@
         }
 
         body {
-            font-family: 'Courier New', monospace;
-            background: linear-gradient(135deg, #0a0a14 0%, #1a0a2e 50%, #0a0310 100%);
-            color: #e9d5ff;
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            background:
+                radial-gradient(ellipse at top, rgba(124, 58, 237, 0.12), transparent 65%),
+                linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 55%, #06030f 100%);
+            color: var(--text-main);
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
             overflow-x: hidden;
         }
 
@@ -38,65 +54,101 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
             position: relative;
             z-index: 10;
         }
 
         .alert-banner {
-            background: linear-gradient(90deg, #ef4444, #dc2626);
-            border: 2px solid #fca5a5;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
+            background: linear-gradient(135deg, rgba(127, 29, 29, 0.85), rgba(153, 27, 27, 0.8));
+            border: 1px solid rgba(252, 165, 165, 0.5);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 18px;
             text-align: center;
             animation: pulse-glow 2s infinite;
-            box-shadow: 0 0 40px rgba(239, 68, 68, 0.5);
+            box-shadow: 0 0 36px rgba(239, 68, 68, 0.35);
         }
 
         @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.5); }
-            50% { box-shadow: 0 0 60px rgba(239, 68, 68, 0.8); }
+            0%, 100% { box-shadow: 0 0 26px rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 46px rgba(239, 68, 68, 0.6); }
         }
 
         .alert-banner h1 {
-            font-size: 28px;
+            font-size: clamp(20px, 3vw, 32px);
             font-weight: 900;
-            letter-spacing: 4px;
-            margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 16px rgba(255, 255, 255, 0.55);
+            text-transform: uppercase;
+        }
+
+        .alert-sub {
+            font-size: 14px;
+            margin: 8px 0;
+            color: #fecaca;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .alert-rule {
+            font-size: 12px;
+            color: #fca5a5;
+            margin-top: 6px;
+            letter-spacing: 0.7px;
         }
 
         .countdown-timer {
-            font-size: 48px;
+            font-size: clamp(34px, 5vw, 56px);
             font-weight: 900;
-            color: #fbbf24;
-            margin: 20px 0;
-            text-shadow: 0 0 30px rgba(251, 191, 36, 0.8);
-            letter-spacing: 8px;
+            color: var(--accent-gold);
+            margin: 12px 0 10px;
+            text-shadow: 0 0 24px rgba(251, 191, 36, 0.65);
+            letter-spacing: 6px;
         }
 
         .vault-panel {
-            background: linear-gradient(135deg, rgba(15, 8, 40, 0.95), rgba(5, 2, 20, 0.98));
-            border: 2px solid rgba(109, 40, 217, 0.6);
+            background: linear-gradient(135deg, rgba(15, 8, 40, 0.93), rgba(5, 2, 20, 0.96));
+            border: 1px solid var(--panel-border);
             border-radius: 16px;
-            padding: 30px;
+            padding: 24px;
             margin-bottom: 20px;
-            box-shadow: 0 0 40px rgba(109, 40, 217, 0.3);
+            box-shadow: 0 0 30px rgba(109, 40, 217, 0.25);
+        }
+
+        .vault-head {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .vault-title {
+            font-size: clamp(20px, 2.6vw, 30px);
+            color: #c4b5fd;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .vault-sub {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 16px;
         }
 
         .layer-header {
-            background: linear-gradient(90deg, #7c3aed, #a78bfa);
-            padding: 12px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 18px;
+            background: linear-gradient(90deg, rgba(124, 58, 237, 0.8), rgba(167, 139, 250, 0.72));
+            padding: 10px 14px;
+            border-radius: 9px;
+            margin-bottom: 14px;
+            font-size: clamp(15px, 2vw, 18px);
             font-weight: 700;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             display: flex;
             align-items: center;
             gap: 12px;
+            text-transform: uppercase;
         }
 
         .layer-status {
@@ -115,45 +167,47 @@
         }
 
         .code-block {
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(109, 40, 217, 0.4);
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(109, 40, 217, 0.3);
             border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
+            padding: 16px;
+            margin: 12px 0;
+            font-size: 13px;
             color: #67e8f9;
             word-break: break-all;
-            line-height: 1.8;
+            line-height: 1.7;
         }
 
         .instruction {
             background: rgba(6, 182, 212, 0.08);
-            border-left: 4px solid #06b6d4;
-            padding: 15px 20px;
-            margin: 15px 0;
+            border: 1px solid rgba(6, 182, 212, 0.25);
+            border-left: 4px solid var(--accent-cyan);
+            padding: 12px 14px;
+            margin: 12px 0;
             border-radius: 8px;
             color: #c4b5fd;
-            line-height: 1.8;
+            line-height: 1.7;
+            font-size: 14px;
         }
 
         .btn {
             background: linear-gradient(135deg, #5b21b6, #7c3aed);
-            border: none;
-            border-radius: 10px;
-            padding: 14px 28px;
+            border: 1px solid rgba(167, 139, 250, 0.45);
+            border-radius: 9px;
+            padding: 12px 20px;
             color: white;
             font-weight: 700;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+            box-shadow: 0 0 18px rgba(124, 58, 237, 0.35);
             letter-spacing: 1px;
-           }
+            text-transform: uppercase;
+        }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 30px rgba(124, 58, 237, 0.7);
+            transform: translateY(-1px);
+            box-shadow: 0 0 26px rgba(124, 58, 237, 0.55);
         }
 
         .btn:disabled {
@@ -166,7 +220,7 @@
             background: rgba(109, 40, 217, 0.2);
             border-radius: 10px;
             overflow: hidden;
-            margin: 20px 0;
+            margin: 12px 0 0;
         }
 
         .progress-fill {
@@ -177,9 +231,9 @@
 
         .success-message {
             background: linear-gradient(135deg, #064e3b, #10b981);
-            border: 2px solid #6ee7b7;
+            border: 1px solid #6ee7b7;
             border-radius: 12px;
-            padding: 30px;
+            padding: 24px;
             text-align: center;
             animation: fadeIn 1s ease;
         }
@@ -190,15 +244,16 @@
         }
 
         .final-flag {
-            font-size: 32px;
+            font-size: clamp(20px, 3.2vw, 34px);
             font-weight: 900;
             color: #fbbf24;
-            margin: 20px 0;
-            padding: 20px;
+            margin: 14px 0;
+            padding: 14px;
             background: rgba(0, 0, 0, 0.4);
             border-radius: 10px;
-            letter-spacing: 4px;
+            letter-spacing: 2px;
             text-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
+            word-break: break-word;
         }
 
         .status-dot {
@@ -219,12 +274,11 @@
         input[type="text"] {
             width: 100%;
             background: rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(109, 40, 217, 0.5);
-            border-radius: 10px;
-            padding: 14px 18px;
+            border: 1px solid rgba(109, 40, 217, 0.55);
+            border-radius: 8px;
+            padding: 12px 14px;
             color: #e9d5ff;
-            font-size: 16px;
-            font-family: 'Courier New', monospace;
+            font-size: 15px;
             margin: 10px 0;
         }
 
@@ -236,21 +290,79 @@
 
         .result-box {
             background: rgba(16, 185, 129, 0.1);
-            border: 2px solid #10b981;
+            border: 1px solid #10b981;
             border-radius: 10px;
-            padding: 20px;
-            margin: 15px 0;
-            font-size: 18px;
+            padding: 14px;
+            margin: 12px 0;
+            font-size: 15px;
             font-weight: 700;
             color: #6ee7b7;
         }
 
         .step-box {
-            margin: 20px 0;
+            margin: 14px 0;
             padding: 20px;
-            background: rgba(109, 40, 217, 0.1);
+            background: rgba(109, 40, 217, 0.08);
             border-radius: 10px;
             border: 1px solid rgba(109, 40, 217, 0.3);
+        }
+
+        .status-note {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #fca5a5;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        .status-note.ok {
+            color: #6ee7b7;
+        }
+
+        .is-locked {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(0.4);
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                max-width: 100%;
+            }
+
+            .vault-panel {
+                padding: 14px;
+            }
+
+            .alert-banner h1 {
+                font-size: 18px;
+                letter-spacing: 2px;
+            }
+
+            .countdown-timer {
+                font-size: 30px;
+                letter-spacing: 2px;
+            }
+
+            .step-box {
+                padding: 14px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            body {
+                padding: 10px;
+            }
+
+            .alert-rule,
+            .status-note,
+            .vault-sub {
+                font-size: 11px;
+            }
+
+            .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -259,15 +371,16 @@
     <div class="container">
         <div class="alert-banner">
             <h1>🚨 MASTER VAULT ACCESS 🚨</h1>
-            <p style="font-size: 18px; margin: 10px 0;">OPERATION BLACKOUT - FINAL COUNTDOWN</p>
+            <p class="alert-sub">OPERATION BLACKOUT - FINAL COUNTDOWN</p>
             <div class="countdown-timer" id="timer">30:00</div>
-            <p style="font-size: 14px; color: #fca5a5;">First team: 2000 points | Within 30 min: 1000 points | After: LOCKED FOREVER</p>
+            <p class="alert-rule">First team: 2000 points | Within 30 min: 1000 points | After: LOCKED FOREVER</p>
+            <p id="timerStatus" class="status-note">Session timer starts on first vault access and continues across refresh.</p>
         </div>
 
         <div class="vault-panel">
-            <div style="text-align: center; margin-bottom: 30px;">
-                <h2 style="font-size: 24px; color: #a78bfa; margin-bottom: 10px;">THE MASTER KILL SWITCH</h2>
-                <p style="color: #9ca3af;">Multi-layer encryption protecting Operation BLACKOUT termination code</p>
+            <div class="vault-head">
+                <h2 class="vault-title">THE MASTER KILL SWITCH</h2>
+                <p class="vault-sub">Multi-layer encryption protecting Operation BLACKOUT termination code</p>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress" style="width: 0%;"></div>
                 </div>
@@ -339,11 +452,10 @@
                     LAYER 5: FINAL UNLOCK CODE GENERATION
                 </div>
                 <div class="instruction">
-                    <strong>FORMULA:</strong> Calculate MD5 hash of: <code>MASTER + X + Y + Z + KILLSWITCH</code><br>
-                    <strong>EXAMPLE:</strong> If coordinates are 42-17-89, calculate MD5 of "MASTER421789KILLSWITCH"<br>
-                    <strong>SUBMIT:</strong> Take first 6 characters of MD5 hash
+                    <strong>TASK:</strong> Derive the final 6-character vault code from all prior decoded layers.<br>
+                    <strong>SUBMIT:</strong> Enter the exact lowercase 6-character code.
                 </div>
-                <input type="text" id="md5Input" placeholder="Enter first 6 characters of MD5 hash">
+                <input type="text" id="md5Input" placeholder="Enter 6-character vault code">
                 <button class="btn" onclick="checkLayer5()">Generate Final Code</button>
                 <div id="result5" style="display: none;"></div>
             </div>
@@ -351,52 +463,102 @@
             <!-- SUCCESS MESSAGE -->
             <div id="successMessage" style="display: none;">
                 <div class="success-message">
-                    <h1 style="font-size: 32px; margin-bottom: 20px;">🎉 MASTER VAULT UNLOCKED 🎉</h1>
-                    <p style="font-size: 18px; margin-bottom: 20px;">OPERATION BLACKOUT TERMINATED</p>
+                    <h1 class="vault-title" style="margin-bottom: 10px; color: #d1fae5;">🎉 MASTER VAULT UNLOCKED 🎉</h1>
+                    <p style="font-size: 16px; margin-bottom: 14px;">OPERATION BLACKOUT TERMINATED</p>
                     <div class="final-flag" id="finalFlag"></div>
-                    <p style="margin-top: 20px; color: #6ee7b7;">Submit this flag in the main challenge page to claim your points!</p>
-                    <p style="margin-top: 10px; font-size: 14px; color: #9ca3af;">The city is saved. 50,000 jobs secured. Mission complete.</p>
+                    <p style="margin-top: 14px; color: #6ee7b7;">Submit this flag in the main challenge page to claim your points.</p>
+                    <p style="margin-top: 8px; font-size: 13px; color: #d1d5db;">The city is saved. 50,000 jobs secured. Mission complete.</p>
                 </div>
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px;">
+        <div style="text-align: center; margin-top: 16px; color: #6b7280; font-size: 12px; letter-spacing: 1px;">
             <span class="status-dot"></span>
             <span>Operation Cipher Strike - Final Challenge</span>
         </div>
     </div>
 
     <script>
-        // Countdown timer
-        let timeLeft = 30 * 60; // 30 minutes in seconds
+        // Countdown timer (persistent across refreshes)
+        const TIMER_DURATION_SECONDS = 30 * 60;
+        const TIMER_START_KEY = 'master_vault_started_at_v1';
+        const VAULT_UNLOCKED_KEY = 'master_vault_unlocked_v1';
+
         const timerElement = document.getElementById('timer');
-        
-        const countdown = setInterval(() => {
-            timeLeft--;
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            if (timeLeft <= 0) {
-                clearInterval(countdown);
-                timerElement.textContent = 'TIME EXPIRED';
-                timerElement.style.color = '#ef4444';
-                alert('VAULT LOCKED PERMANENTLY! The challenge has expired.');
+        const timerStatusElement = document.getElementById('timerStatus');
+
+        let startedAt = Number(localStorage.getItem(TIMER_START_KEY));
+        if (!startedAt || Number.isNaN(startedAt)) {
+            startedAt = Date.now();
+            localStorage.setItem(TIMER_START_KEY, String(startedAt));
+        }
+
+        function setLockedState() {
+            timerElement.textContent = 'TIME EXPIRED';
+            timerElement.style.color = '#ef4444';
+            document.querySelectorAll('.step-box').forEach((box) => box.classList.add('is-locked'));
+            if (timerStatusElement) {
+                timerStatusElement.textContent = 'Vault lock window expired for this browser session.';
+                timerStatusElement.classList.remove('ok');
             }
-        }, 1000);
+        }
+
+        function setUnlockedState() {
+            timerElement.textContent = 'VAULT UNLOCKED';
+            timerElement.style.color = '#10b981';
+            if (timerStatusElement) {
+                timerStatusElement.textContent = 'Vault solved. Timer frozen for this session.';
+                timerStatusElement.classList.add('ok');
+            }
+        }
+
+        function getRemainingSeconds() {
+            const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+            return Math.max(TIMER_DURATION_SECONDS - elapsed, 0);
+        }
+
+        let countdown = null;
+
+        function startCountdown() {
+            if (localStorage.getItem(VAULT_UNLOCKED_KEY) === '1') {
+                setUnlockedState();
+                return;
+            }
+
+            const tick = () => {
+                const timeLeft = getRemainingSeconds();
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')} : ${seconds.toString().padStart(2, '0')}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    setLockedState();
+                }
+            };
+
+            tick();
+            countdown = setInterval(tick, 1000);
+        }
+
+        startCountdown();
 
         // Correct answers for validation
         const LAYER1_ANSWER = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2YXVsdF9rZXkiOiI0Mi0xNy04OSIsImRhdGEiOiJrbGxzd2l0Y2gifQ.89d1roG5HmocObazV9vRyQtqHnBFjqFUO7DP8NkKMSav0Zk0MJkRt_';
         const LAYER2_ANSWER = 'eyJ2YXVsdF9rZXkiOiI0Mi0xNy04OSIsImRhdGEiOiJrbGxzd2l0Y2gifQ';
         const LAYER3_ANSWER = '42-17-89';
         const LAYER4_ANSWER = '42-17-89';
-        const LAYER5_ANSWER = '3d4f2a';
+        const LAYER5_ANSWER = 'a1b2c3';
 
         function updateProgress(percent) {
             document.getElementById('progress').style.width = percent + '%';
         }
 
         function checkLayer1() {
+            if (getRemainingSeconds() <= 0) {
+                setLockedState();
+                return;
+            }
             const input = document.getElementById('base64Input').value.trim();
             if (input === LAYER1_ANSWER) {
                 document.getElementById('status1').classList.add('complete');
@@ -411,6 +573,10 @@
         }
 
         function checkLayer2() {
+            if (getRemainingSeconds() <= 0) {
+                setLockedState();
+                return;
+            }
             const input = document.getElementById('jwtInput').value.trim();
             if (input.includes('eyJ') || input.toLowerCase().includes(LAYER2_ANSWER.toLowerCase())) {
                 document.getElementById('status2').classList.add('complete');
@@ -425,6 +591,10 @@
         }
 
         function checkLayer3() {
+            if (getRemainingSeconds() <= 0) {
+                setLockedState();
+                return;
+            }
             const input = document.getElementById('rot13Input').value.trim();
             // Actually the vault_key in JWT payload is already "42-17-89" not ROT13, but let's accept both
             if (input === '42-17-89' || input.toLowerCase().includes('42')) {
@@ -440,11 +610,15 @@
         }
 
         function checkLayer4() {
+            if (getRemainingSeconds() <= 0) {
+                setLockedState();
+                return;
+            }
             const input = document.getElementById('coordInput').value.trim();
             if (input === LAYER4_ANSWER || input === '42-17-89') {
                 document.getElementById('status4').classList.add('complete');
                 document.getElementById('status4').textContent = '✓';
-                document.getElementById('result4').innerHTML = '<div class="result-box">✓ Layer 4 Complete - Ready for MD5 Generation<br>Use: MASTER421789KILLSWITCH</div>';
+                document.getElementById('result4').innerHTML = '<div class="result-box">✓ Layer 4 Complete - Final vault sequence can now be derived</div>';
                 document.getElementById('result4').style.display = 'block';
                 document.getElementById('layer5').style.display = 'block';
                 updateProgress(80);
@@ -454,6 +628,10 @@
         }
 
         function checkLayer5() {
+            if (getRemainingSeconds() <= 0) {
+                setLockedState();
+                return;
+            }
             const input = document.getElementById('md5Input').value.trim().toLowerCase();
             if (input === LAYER5_ANSWER) {
                 document.getElementById('status5').classList.add('complete');
@@ -463,16 +641,16 @@
                 updateProgress(100);
                 
                 // Show final flag
-                const finalFlag = 'CTF{MASTER_3d4f2a_VAULT}';
+                const finalFlag = 'CTF{MASTER_a1b2c3_VAULT}';
                 document.getElementById('finalFlag').textContent = finalFlag;
                 document.getElementById('successMessage').style.display = 'block';
                 
-                // Stop timer
+                // Stop and persist solved state
+                localStorage.setItem(VAULT_UNLOCKED_KEY, '1');
                 clearInterval(countdown);
-                timerElement.textContent = 'VAULT UNLOCKED';
-                timerElement.style.color = '#10b981';
+                setUnlockedState();
             } else {
-                alert('❌ Incorrect! Calculate MD5 of MASTER421789KILLSWITCH and take first 6 chars.');
+                alert('❌ Incorrect! Re-check each prior layer and derive the exact 6-character vault code.');
             }
         }
 
@@ -482,7 +660,7 @@
         console.log('Layer 2: JWT has 3 parts separated by dots - decode the middle part');
         console.log('Layer 3: Look for "vault_key" field in JWT payload');
         console.log('Layer 4: Coordinates are already in X-Y-Z format');
-        console.log('Layer 5: MD5 of MASTER + X + Y + Z + KILLSWITCH (no spaces!)');
+        console.log('Layer 5: Reuse all validated outputs from earlier layers to derive the final 6-character vault code');
     </script>
 </body>
 </html>

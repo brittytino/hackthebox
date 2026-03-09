@@ -251,23 +251,23 @@ He makes a decision.
 **YOUR TASK:**  
 Decode the triple-encoded message (Base64 → ROT13 → Reverse) to reveal the terrorist command location inside the mall.
 
-**Answer Format:** `HTB{decoded_location}`
+**Answer Format:** `CTF{decoded_location}`
 
 ---
 
 ### Level 1.2: The Fragmented Server Map
 **Time:** 4:15 AM - Veera Infiltrating Lower Levels
 
-**Veera:** *"Good work. The command center is in Server Room ER-42, East Wing, basement level. But Saif fragmented the access code across three encrypted files stored in different parts of the network. Each one uses a different encoding method—Hexadecimal, Binary, and Caesar cipher. You need to decode all three fragments and combine them in the correct sequence to get the full access code. The format is: Fragment-A + Fragment-B + Fragment-C, separated by underscores."*
+**Veera:** *"Good work. The command center is in Server Room ER-42, East Wing, basement level. But Saif fragmented the access code across three encrypted files stored in different parts of the network. Each one uses a different encoding method—decimal ASCII, octal ASCII, and Atbash cipher. You need to decode all three fragments and combine them in the correct sequence to get the full access code. The format is: Fragment-A + Fragment-B + Fragment-C, separated by underscores."*
 
 **Domnic (via radio):** *"Veera, they're moving hostages to the main food court. They're setting up execution cameras. We're running out of time!"*
 
 **Veera:** *"Then work faster."*
 
 **YOUR TASK:**  
-Decode three fragments (Hex, Binary, Caesar cipher) from separate files and assemble them in order to create the server room access code.
+Decode three fragments (decimal ASCII, octal ASCII, Atbash cipher) from separate files and assemble them in order to create the server room access code.
 
-**Answer Format:** `HTB{FRAGMENT_A_FRAGMENT_B_FRAGMENT_C}`
+**Answer Format:** `CTF{FRAGMENT_A_FRAGMENT_B_FRAGMENT_C}`
 
 ---
 
@@ -287,7 +287,7 @@ Calculate the vault unlock code using:
 - Current round number (1)
 - Convert sum to hexadecimal, take last 8 characters
 
-**Answer Format:** `HTB{HEX_CODE}`
+**Answer Format:** `CTF{HEX_CODE}`
 
 ---
 
@@ -327,7 +327,7 @@ Crack three password hashes:
 
 Extract the first 3 letters of each cracked password, combine them, and add "42" at the end.
 
-**Answer Format:** `HTB{COMBINED_KEY42}`
+**Answer Format:** `CTF{COMBINED_KEY42}`
 
 ---
 
@@ -343,14 +343,14 @@ Extract the first 3 letters of each cracked password, combine them, and add "42"
 **YOUR TASK:**  
 Decode a hex-encoded JWT token, extract the payload, retrieve the secret code, and reverse it.
 
-**Answer Format:** `HTB{REVERSED_SECRET}`
+**Answer Format:** `CTF{REVERSED_SECRET}`
 
 ---
 
 ### Level 2.3: The Pattern Lock (Team-Specific Challenge)
 **Time:** 6:15 AM - Final Database Barrier
 
-**Veera:** *"Almost there. But Saif's final database—the one with the cyber attack payload—has a pattern lock. It's dynamically generated based on the investigating team's data. The formula is: SHA-256 hash of [YOUR_TEAM_NAME] + [CURRENT_ROUND] + [CHALLENGES_SOLVED_SO_FAR] + [SECRET_SALT: CIPHER2026]. Take the first 8 characters of your hash. This is an anti-sharing mechanism—every team gets a unique answer based on their own progress."*
+**Veera:** *"Almost there. But Saif's final database—the one with the cyber attack payload—has a pattern lock. It's dynamically generated based on the investigating team's data. The formula is: SHA-256 hash of [YOUR_TEAM_NAME] + [CURRENT_ROUND] + [CHALLENGES_SOLVED_SO_FAR] + [SECRET_SALT: HACKTHEBOX2026]. Take the first 8 characters of your hash. This is an anti-sharing mechanism—every team gets a unique answer based on their own progress."*
 
 **Althaf (via emergency broadcast):** *"All teams, be advised: the Home Minister just staged a fake execution of his own wife and daughter on live TV to force the government's hand. But our intel suggests the Home Minister is IN ON THIS. He's working with Saif. This is bigger than we thought."*
 
@@ -361,11 +361,11 @@ Calculate your team's unique SHA-256 hash:
 - Your actual team name
 - Current round (2)
 - Number of challenges solved so far (5)
-- Secret salt: CIPHER2026
+- Secret salt: HACKTHEBOX2026
 
 Submit the first 8 characters of the resulting hash.
 
-**Answer Format:** `HTB{FIRST_8_CHARS}`
+**Answer Format:** `CTF{FIRST_8_CHARS}`
 
 ---
 
@@ -418,7 +418,7 @@ Decode four separate encrypted fragments:
 
 Combine all four in order, separated by underscores.
 
-**Answer Format:** `HTB{FRAG1_FRAG2_FRAG3_FRAG4}`
+**Answer Format:** `CTF{FRAG1_FRAG2_FRAG3_FRAG4}`
 
 ---
 
@@ -439,7 +439,7 @@ Decode a deeply nested payload through 5 layers:
 6. Check if divisible by 7
 7. Add correct suffix (_PRIME or _COMPOSITE)
 
-**Answer Format:** `HTB{DECODED_TEXT_SUFFIX}`
+**Answer Format:** `CTF{DECODED_TEXT_SUFFIX}`
 
 ---
 
@@ -484,7 +484,7 @@ Decode the ultimate master flag through a massively complex sequence:
 **Step 7:** Verify with SHA-256 hash (given in instructions)  
 **Step 8:** If hash matches, submit as final flag  
 
-**Answer Format:** `HTB{MASTER_FLAG_TEXT}`
+**Answer Format:** `CTF{MASTER_FLAG_TEXT}`
 
 ---
 

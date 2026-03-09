@@ -2,7 +2,7 @@
   "name": "hackthebox-backend",
   "version": "1.0.0",
   "description": "Hack The Box Backend API",
-  "main": "dist/main.js",
+  "main": "dist/src/main.js",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
@@ -10,7 +10,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:seed": "ts-node prisma/seed.ts",

@@ -16,7 +16,7 @@ import {
 interface MissionMeta {
   order: number; round: number; level: string;
   name: string; type: string;
-  difficulty: 'easy' | 'medium' | 'hard'; points: number;
+  difficulty: 'medium' | 'hard'; points: number;
   storyAct: string; storyTime: string; storyStatus: string;
   situation: string;
   intel: string;
@@ -46,7 +46,7 @@ const MISSIONS: MissionMeta[] = [
   {
     order: 1, round: 1, level: '1.1',
     name: 'The Intercepted Transmission',
-    type: 'CRYPTOGRAPHY', difficulty: 'easy', points: 100,
+    type: 'CRYPTOGRAPHY', difficulty: 'medium', points: 100,
     storyAct: 'ACT II — THE SIEGE BEGINS',
     storyTime: '03:47 AM  Basement Server Room',
     storyStatus: ' 1,200 HOSTAGES  NEXT EXECUTION IN 28 MIN',
@@ -98,7 +98,7 @@ const MISSIONS: MissionMeta[] = [
   {
     order: 5, round: 2, level: '2.2',
     name: 'The JWT Inception',
-    type: 'WEB/TOKEN', difficulty: 'hard', points: 300,
+    type: 'WEB/TOKEN', difficulty: 'medium', points: 300,
     storyAct: 'ACT IV — THE BETRAYAL',
     storyTime: '05:50 AM  Terrorist Admin Panel',
     storyStatus: ' BREAKING: HOME MINISTER\'S EXECUTION STAGED',
@@ -124,7 +124,7 @@ const MISSIONS: MissionMeta[] = [
   {
     order: 7, round: 3, level: '3.1',
     name: 'The Payload Hunt',
-    type: 'REVERSE ENG', difficulty: 'hard', points: 400,
+    type: 'REVERSE ENG', difficulty: 'medium', points: 400,
     storyAct: 'ACT IV — ESCAPE PHASE',
     storyTime: '07:10 AM  BLACKOUT Payload Analysis',
     storyStatus: ' VEERA INJURED  FAROOQ CROSSED BORDER',
@@ -201,8 +201,10 @@ function ChallengesInner() {
   const [storyModal, setStoryModal] = useState<{ level: number } | null>(null);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
-  // Hint cache: maps challengeId → { text, shown }
-  const [hintCache, setHintCache] = useState<Record<string, { text: string; shown: boolean }>>({})
+  const [focusMode, setFocusMode] = useState(false);
+  const [compactMode, setCompactMode] = useState(false);
+  // Hint cache: maps challengeId → { texts, shown, revealed, total }
+  const [hintCache, setHintCache] = useState<Record<string, { texts: string[]; shown: boolean; revealed: number; total: number }>>({})
   // Mobile panel overlay: 'missions' | 'intel' | null
   const [mobilePanel, setMobilePanel] = useState<'missions' | 'intel' | null>(null);
 
@@ -243,18 +245,14 @@ function ChallengesInner() {
       setApiResponse(ch);
       setActivity(Array.isArray(act) ? act.slice(0, 20) : []);
       if (!selectedLevel) {
-        // If URL has ?level=N, use that; otherwise use current level
-        if (levelParam) {
-          const order = parseInt(levelParam, 10);
-          const found = MISSIONS[Math.min(Math.max(order, 1), 9) - 1];
-          setSelectedLevel(found?.level ?? '1.1');
-        } else {
-          const lvl = ch?.progress?.currentLevel ?? 1;
-          setSelectedLevel(MISSIONS[Math.min(lvl, 9) - 1]?.level ?? '1.1');
-        }
+        const current = Math.min(Math.max(ch?.progress?.currentLevel ?? 1, 1), 9);
+        const requested = levelParam ? parseInt(levelParam, 10) : current;
+        const safeRequested = Number.isFinite(requested) ? Math.min(Math.max(requested, 1), current) : current;
+        const found = MISSIONS[safeRequested - 1];
+        setSelectedLevel(found?.level ?? '1.1');
       }
     } catch {
-      if (!selectedLevel) setSelectedLevel(levelParam ? MISSIONS[parseInt(levelParam, 10) - 1]?.level ?? '1.1' : '1.1');
+      if (!selectedLevel) setSelectedLevel('1.1');
     } finally {
       setLoading(false);
     }
@@ -277,6 +275,13 @@ function ChallengesInner() {
     }
     loadData();
   }, [router, loadData]);
+
+  useEffect(() => {
+    const onResize = () => setCompactMode(window.innerWidth <= 1500);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   // GSAP entrance animations
   useEffect(() => {
@@ -303,6 +308,19 @@ function ChallengesInner() {
   const rc = ROUND_CONFIG[meta?.round ?? 1];
   const challengeId = apiResponse?.challenge?.id;
   const currentHint = challengeId ? hintCache[challengeId] : undefined;
+  const nextHintPenalty = (() => {
+    if (!meta) return apiResponse?.challenge?.hintPenalty ?? 50;
+    if (meta.difficulty !== 'hard') return apiResponse?.challenge?.hintPenalty ?? 50;
+    const revealed = currentHint?.revealed ?? 0;
+    const roundPenalties: Record<number, number[]> = {
+      1: [40, 80],
+      2: [80, 120],
+      3: [120, 180],
+    };
+    const penalties = roundPenalties[meta.round] || [80, 120];
+    const idx = Math.max(0, Math.min(revealed, penalties.length - 1));
+    return penalties[idx];
+  })();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -330,10 +348,26 @@ function ChallengesInner() {
     setRevealingHint(true);
     try {
       const res = await api.challenges.useHint(challengeId);
-      const hintText = res.hint || '';
-      setHintCache(prev => ({ ...prev, [challengeId]: { text: hintText, shown: true } }));
+      const unlockedHints = Array.isArray(res.unlockedHints)
+        ? res.unlockedHints
+        : (res.hint ? [res.hint] : []);
+      const totalHints = res.totalHints || unlockedHints.length || 1;
+      const hintIndex = res.hintIndex || unlockedHints.length || 1;
+      setHintCache(prev => ({
+        ...prev,
+        [challengeId]: {
+          texts: unlockedHints,
+          shown: true,
+          revealed: hintIndex,
+          total: totalHints,
+        },
+      }));
       setShowHintConfirm(false);
-      setMessage(res.alreadyUsed ? 'Intel already unlocked (no further deduction).' : `Intel unlocked. ${res.penaltyApplied} pts deducted.`);
+      setMessage(
+        res.alreadyUsed
+          ? 'All available intel for this mission is already unlocked (no further deduction).'
+          : `Intel tier ${hintIndex}/${totalHints} unlocked. ${res.penaltyApplied} pts deducted.`,
+      );
       setIsError(false);
       await loadData();
     } catch (err: any) {
@@ -346,7 +380,17 @@ function ChallengesInner() {
     if (!challengeId) return;
     const existing = hintCache[challengeId];
     if (existing) {
-      setHintCache(prev => ({ ...prev, [challengeId]: { ...prev[challengeId], shown: !prev[challengeId].shown } }));
+      if (existing.shown) {
+        setHintCache(prev => ({ ...prev, [challengeId]: { ...prev[challengeId], shown: false } }));
+        return;
+      }
+
+      if (existing.revealed < existing.total) {
+        setShowHintConfirm(true);
+        return;
+      }
+
+      setHintCache(prev => ({ ...prev, [challengeId]: { ...prev[challengeId], shown: true } }));
     } else {
       setShowHintConfirm(true);
     }
@@ -438,6 +482,13 @@ function ChallengesInner() {
   const teamName = apiResponse?.team?.name ?? '—';
   const storyChallenge = Math.min(Math.max(meta?.order ?? currentLevel, 1), 9);
   const storyHref = `/story?challenge=${storyChallenge}`;
+  const masterVaultUrl = (() => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api';
+    if (/^https?:\/\//i.test(apiBase)) {
+      return `${apiBase.replace(/\/api\/?$/, '')}/public/challenges/master-vault.html`;
+    }
+    return '/public/challenges/master-vault.html';
+  })();
 
   return (
     <div ref={containerRef} className="ch-root">
@@ -456,6 +507,16 @@ function ChallengesInner() {
           <Link href="/dashboard" className="ch-nav-link"><Activity size={13} /><span>HQ</span></Link>
           <Link href="/leaderboard" className="ch-nav-link"><Trophy size={13} /><span>RANKS</span></Link>
           <Link href={storyHref} className="ch-nav-link"><Map size={13} /><span>STORY</span></Link>
+          <button
+            type="button"
+            className={`ch-focus-btn ${focusMode ? 'active' : ''}`}
+            onClick={() => setFocusMode(v => !v)}
+            aria-label={focusMode ? 'Exit focus mode' : 'Enter focus mode'}
+            title={focusMode ? 'Exit focus mode' : 'Focus mode'}
+          >
+            {focusMode ? <EyeOff size={13} /> : <Eye size={13} />}
+            <span>{focusMode ? 'EXIT FOCUS' : 'FOCUS'}</span>
+          </button>
         </nav>
 
         <div className="ch-topbar-divider" />
@@ -490,7 +551,7 @@ function ChallengesInner() {
       </header>
 
       {/* ── 3-COL LAYOUT ── */}
-      <div className="ch-body">
+      <div className={`ch-body ${focusMode ? 'ch-focus-mode' : ''} ${compactMode ? 'ch-compact' : ''}`}>
 
         {/* LEFT: ZIG-ZAG TIMELINE (collapsible) */}
         <aside
@@ -635,6 +696,12 @@ function ChallengesInner() {
                 </span>
               </div>
 
+              {focusMode && (
+                <div className="ch-focus-note">
+                  Focus mode enabled — side intel panels hidden for distraction-free solving.
+                </div>
+              )}
+
               {/* ─ Title ─ */}
               <div className="ch-title-block">
                 <div className="ch-act-label">{meta.storyAct}</div>
@@ -644,7 +711,7 @@ function ChallengesInner() {
               {/* ─ Character Intel Banner ─ */}
               <div className="ch-intel-banner" style={{
                 border: `1px solid ${rc.border}`,
-                boxShadow: `0 0 50px ${rc.glow}, 0 8px 40px rgba(0,0,0,0.6)`,
+                boxShadow: `0 0 24px ${rc.glow}, 0 6px 20px rgba(0,0,0,0.45)`,
               }}>
                 {/* Top accent line */}
                 <div className="ch-intel-accent-line" style={{ background: `linear-gradient(90deg,transparent,${rc.primary},transparent)` }} />
@@ -653,7 +720,7 @@ function ChallengesInner() {
                   <div className="ch-intel-grid-bg" />
                   {/* Portrait */}
                   <div className="ch-portrait">
-                    <Image src={meta.characterImage} alt={meta.character} fill style={{ objectFit: 'cover', objectPosition: 'top center', filter: 'drop-shadow(8px 0 16px rgba(0,0,0,0.8))' }} priority />
+                    <Image src={meta.characterImage} alt={meta.character} fill style={{ objectFit: 'contain', objectPosition: 'center bottom', filter: 'drop-shadow(8px 0 16px rgba(0,0,0,0.8))' }} priority />
                   </div>
                   {/* Info overlay */}
                   <div className="ch-intel-info">
@@ -697,6 +764,18 @@ function ChallengesInner() {
                   CIPHER PAYLOAD
                   {state === 'active' && <span className="ch-live-dot" />}
                 </div>
+
+                {state === 'active' && meta.level === '3.3' && (
+                  <div className="ch-vault-link-box">
+                    <div className="ch-vault-link-title">FINAL ARTIFACT ACCESS</div>
+                    <p className="ch-vault-link-text">Open the interactive Master Vault interface to complete the final decode pipeline for Level 3.3.</p>
+                    <a className="ch-vault-link-btn" href={masterVaultUrl} target="_blank" rel="noreferrer">
+                      OPEN MASTER VAULT <ChevronRight size={14} />
+                    </a>
+                    <div className="ch-vault-link-path">Endpoint: {masterVaultUrl}</div>
+                  </div>
+                )}
+
                 {state === 'active' && (
                   <div className="game-scroll ch-payload-code">
                     {apiResponse?.challenge?.description
@@ -720,14 +799,22 @@ function ChallengesInner() {
                   <div className="ch-hint-section">
                     <button onClick={toggleHintDisplay} className={`ch-hint-btn ${currentHint ? 'ch-hint-unlocked' : ''}`}>
                       {currentHint?.shown ? <EyeOff size={13} /> : <Eye size={13} />}
-                      {currentHint ? (currentHint.shown ? 'HIDE INTEL' : 'SHOW INTEL') : 'REVEAL INTEL'}
-                      {!currentHint && <span className="ch-hint-cost">−{apiResponse?.challenge?.hintPenalty ?? 50} pts</span>}
-                      {currentHint && <span className="ch-hint-unlocked-tag">UNLOCKED</span>}
+                      {currentHint
+                        ? (currentHint.shown
+                          ? 'HIDE INTEL'
+                          : (currentHint.revealed < currentHint.total ? 'REVEAL NEXT INTEL' : 'SHOW INTEL'))
+                        : 'REVEAL INTEL'}
+                      {(!currentHint || (currentHint.revealed < currentHint.total)) && <span className="ch-hint-cost">−{nextHintPenalty} pts</span>}
+                      {currentHint && <span className="ch-hint-unlocked-tag">{currentHint.revealed}/{currentHint.total} UNLOCKED</span>}
                     </button>
-                    {currentHint?.shown && currentHint.text && (
+                    {currentHint?.shown && currentHint.texts.length > 0 && (
                       <div className="ch-hint-box">
                         <div className="ch-hint-label">MISSION INTEL</div>
-                        <p className="ch-hint-text">{currentHint.text}</p>
+                        {currentHint.texts.map((hintText, hintIdx) => (
+                          <p key={`${hintIdx}-${hintText.slice(0, 16)}`} className="ch-hint-text">
+                            <strong>Hint {hintIdx + 1}:</strong> {hintText}
+                          </p>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -895,7 +982,7 @@ function ChallengesInner() {
             </div>
             <p className="ch-modal-body">Mission intel is classified. Accessing it deducts points from your team score. Once revealed, intel stays visible at no further cost — you can hide/show it freely.</p>
             <div className="game-alert-error ch-modal-warning">
-              <AlertTriangle size={13} />One-time penalty: −{apiResponse?.challenge?.hintPenalty ?? 50} points
+              <AlertTriangle size={13} />Penalty for next intel tier: −{nextHintPenalty} points
             </div>
             <div className="ch-modal-actions">
               <button className="btn-game-secondary" onClick={() => setShowHintConfirm(false)}>Abort</button>
@@ -1052,7 +1139,7 @@ function ChallengesInner() {
         @keyframes scanLine { 0%{transform:translateY(-100%)} 100%{transform:translateY(100%)} }
 
         /* ─── root / bg ─────────────────────────────────────────── */
-        .ch-root { height:100vh; background:#070813; display:flex; flex-direction:column; font-family:'Share Tech Mono','Courier New',monospace; position:relative; overflow:hidden; }
+        .ch-root { height:100vh; height:100dvh; background:#070813; display:flex; flex-direction:column; font-family:'Share Tech Mono','Courier New',monospace; position:relative; overflow:hidden; }
         .ch-bg-grid { position:fixed; inset:0; pointer-events:none; z-index:0;
           background-image:
             repeating-linear-gradient(0deg,rgba(109,40,217,0.025) 0,rgba(109,40,217,0.025) 1px,transparent 1px,transparent 52px),
@@ -1060,13 +1147,16 @@ function ChallengesInner() {
             radial-gradient(ellipse 90% 70% at 50% 0%,rgba(109,40,217,0.07),transparent 72%); }
 
         /* ─── topbar ─────────────────────────────────────────────── */
-        .ch-topbar { position:sticky; top:0; z-index:50; display:flex; align-items:center; padding:0 20px; height:54px; border-bottom:1px solid rgba(109,40,217,0.22); background:rgba(4,2,14,0.97); backdrop-filter:blur(24px); gap:10px; flex-shrink:0; }
+        .ch-topbar { position:sticky; top:0; z-index:50; display:flex; align-items:center; padding:0 20px; height:56px; border-bottom:1px solid rgba(109,40,217,0.2); background:rgba(4,2,14,0.97); backdrop-filter:blur(24px); gap:10px; flex-shrink:0; }
         .ch-brand { display:flex; align-items:center; gap:9px; text-decoration:none; }
         .ch-brand-icon { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#7c3aed,#06b6d4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .ch-brand-name { color:#e2e8f0; font-size:14px; font-weight:900; letter-spacing:3px; text-transform:uppercase; white-space:nowrap; }
         .ch-topbar-nav { display:flex; align-items:center; gap:4px; margin-left:auto; }
-        .ch-nav-link { display:flex; align-items:center; gap:5px; color:#6b7280; font-size:11px; font-weight:700; letter-spacing:2px; text-decoration:none; text-transform:uppercase; padding:6px 12px; border:1px solid rgba(55,65,81,0.38); border-radius:7px; transition:all 0.15s; white-space:nowrap; }
+        .ch-nav-link { display:flex; align-items:center; gap:5px; color:#6b7280; font-size:11px; font-weight:700; letter-spacing:2px; text-decoration:none; text-transform:uppercase; padding:6px 12px; border:1px solid rgba(55,65,81,0.36); border-radius:7px; transition:all 0.15s; white-space:nowrap; }
         .ch-nav-link:hover { color:#c4b5fd; border-color:rgba(167,139,250,0.4); background:rgba(109,40,217,0.08); }
+        .ch-focus-btn { display:flex; align-items:center; gap:5px; color:#6b7280; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:6px 12px; border:1px solid rgba(55,65,81,0.36); border-radius:7px; background:transparent; cursor:pointer; font-family:inherit; transition:all 0.15s; }
+        .ch-focus-btn:hover { color:#c4b5fd; border-color:rgba(167,139,250,0.4); background:rgba(109,40,217,0.08); }
+        .ch-focus-btn.active { color:#e9d5ff; border-color:rgba(167,139,250,0.55); background:rgba(109,40,217,0.2); }
         .ch-topbar-divider { width:1px; height:22px; background:rgba(109,40,217,0.3); margin:0 4px; flex-shrink:0; }
         .ch-topbar-missions { display:flex; align-items:center; gap:3px; white-space:nowrap; }
         .ch-tb-done { color:#a78bfa; font-size:13px; font-weight:900; }
@@ -1081,15 +1171,32 @@ function ChallengesInner() {
         .ch-mob-btn { display:none; background:rgba(109,40,217,0.12); border:1px solid rgba(109,40,217,0.3); border-radius:7px; color:#a78bfa; cursor:pointer; padding:7px 9px; align-items:center; justify-content:center; flex-shrink:0; }
 
         /* ─── 3-col body ─────────────────────────────────────────── */
-        .ch-body { position:relative; z-index:10; flex:1; display:flex; min-height:0; height:calc(100vh - 54px); }
+        .ch-body { position:relative; z-index:10; flex:1; display:flex; min-height:0; height:calc(100vh - 56px); }
 
         /* ─── side panels ────────────────────────────────────────── */
         .ch-left-panel  { border-right:1px solid rgba(109,40,217,0.18); background:rgba(3,1,14,0.9); backdrop-filter:blur(20px); display:flex; flex-direction:column; transition:width 0.28s ease,min-width 0.28s ease; overflow:hidden; position:relative; height:100%; flex-shrink:0; }
         .ch-right-panel { border-left:1px solid rgba(109,40,217,0.18);  background:rgba(3,1,14,0.9); backdrop-filter:blur(20px); display:flex; flex-direction:column; transition:width 0.28s ease,min-width 0.28s ease; overflow:hidden; position:relative; height:100%; flex-shrink:0; }
-        .ch-left-panel.ch-panel-open   { width:288px; min-width:288px; }
-        .ch-right-panel.ch-panel-open  { width:300px; min-width:300px; }
+        .ch-left-panel.ch-panel-open   { width:clamp(228px, 16.5vw, 270px); min-width:clamp(228px, 16.5vw, 270px); }
+        .ch-right-panel.ch-panel-open  { width:clamp(236px, 17.5vw, 282px); min-width:clamp(236px, 17.5vw, 282px); }
         .ch-left-panel.ch-panel-collapsed,
         .ch-right-panel.ch-panel-collapsed { width:48px; min-width:48px; }
+        .ch-focus-mode .ch-left-panel,
+        .ch-focus-mode .ch-right-panel { width:0 !important; min-width:0 !important; opacity:0; pointer-events:none; border:none; }
+
+        .ch-compact .ch-left-panel.ch-panel-open { width:224px; min-width:224px; }
+        .ch-compact .ch-right-panel.ch-panel-open { width:232px; min-width:232px; }
+        .ch-compact .ch-center-scroll { padding:20px 20px 18px; gap:16px; }
+        .ch-compact .ch-payload-code { font-size:14px; line-height:1.85; }
+        .ch-compact .ch-mission-title { font-size:clamp(20px,2.2vw,28px); }
+        .ch-compact .ch-sitrep-text { font-size:14px; line-height:1.8; }
+
+        @media (max-width:1200px) {
+          .ch-left-panel.ch-panel-open { width:208px; min-width:208px; }
+          .ch-right-panel.ch-panel-open { width:216px; min-width:216px; }
+          .ch-center-scroll { padding:18px 16px 16px; gap:14px; }
+          .ch-mission-title { font-size:clamp(19px,2.2vw,26px); }
+          .ch-intel-scene { height:140px; }
+        }
         .ch-panel-toggle { position:absolute; top:50%; transform:translateY(-50%); z-index:30; width:16px; height:56px; background:linear-gradient(180deg,rgba(109,40,217,0.65),rgba(6,182,212,0.45)); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px rgba(109,40,217,0.4); transition:opacity 0.15s; }
         .ch-panel-toggle:hover { opacity:0.8; }
         .ch-panel-toggle-r { right:-1px; border-radius:0 8px 8px 0; }
@@ -1099,12 +1206,12 @@ function ChallengesInner() {
         .ch-dot-pip:hover { transform:scale(1.4); }
 
         /* ─── left timeline ──────────────────────────────────────── */
-        .ch-tl-scroll { overflow-y:auto; flex:1; padding:14px 0 20px; }
+        .ch-tl-scroll { overflow-y:auto; flex:1; padding:16px 0 22px; }
         .ch-tl-scroll::-webkit-scrollbar { width:4px; }
         .ch-tl-scroll::-webkit-scrollbar-track { background:transparent; }
         .ch-tl-scroll::-webkit-scrollbar-thumb { background:rgba(109,40,217,0.35); border-radius:4px; }
         .ch-tl-head { padding:0 14px 6px; display:flex; align-items:center; gap:6px; }
-        .ch-tl-title { color:#06b6d4; font-size:11px; font-weight:800; letter-spacing:3px; text-transform:uppercase; }
+        .ch-tl-title { color:#06b6d4; font-size:12px; font-weight:800; letter-spacing:3px; text-transform:uppercase; }
         .ch-tl-prog-wrap { padding:0 14px 10px; }
         .ch-tl-prog-info { display:flex; align-items:baseline; gap:3px; margin-bottom:6px; }
         .ch-tl-done { color:#a78bfa; font-size:15px; font-weight:900; }
@@ -1114,20 +1221,20 @@ function ChallengesInner() {
         .ch-round-line { flex:1; height:1px; }
         .ch-mc-row { padding:3px 8px; position:relative; }
         .ch-zz-dot { position:absolute; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; border:2px solid; z-index:2; left:12px; }
-        .ch-mc-card { padding:10px 10px 10px 28px; border-radius:10px; border:1px solid; border-left:3px solid; transition:all 0.18s ease; cursor:pointer; }
+        .ch-mc-card { padding:11px 11px 11px 28px; border-radius:10px; border:1px solid; border-left:3px solid; transition:all 0.18s ease; cursor:pointer; }
         .ch-mc-card:not(.ch-mc-locked):hover { filter:brightness(1.1); transform:translateX(2px); }
         .ch-mc-locked { cursor:default; opacity:0.5; }
         .ch-mci-row { display:flex; align-items:center; gap:5px; margin-bottom:4px; }
         .ch-mc-icon { flex-shrink:0; }
-        .ch-mc-lvl { color:#cbd5e1; font-size:11px; font-weight:800; }
-        .ch-mc-name { font-size:12px; font-weight:600; color:#9ca3af; line-height:1.35; transition:color 0.15s; }
+        .ch-mc-lvl { color:#cbd5e1; font-size:12px; font-weight:800; }
+        .ch-mc-name { font-size:13px; font-weight:600; color:#9ca3af; line-height:1.4; transition:color 0.15s; }
         .ch-mc-sel .ch-mc-name { color:#e2e8f0; }
-        .ch-mc-pts { margin-top:4px; display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; }
+        .ch-mc-pts { margin-top:5px; display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; }
         .ch-mc-type { color:#6b7280; font-size:10px; letter-spacing:1px; text-transform:uppercase; }
 
         /* ─── center ─────────────────────────────────────────────── */
         .ch-center { flex:1; display:flex; flex-direction:column; min-width:0; height:100%; overflow:hidden; }
-        .ch-center-scroll { flex:1; overflow-y:auto; overflow-x:hidden; padding:24px 26px 20px; display:flex; flex-direction:column; gap:18px; }
+        .ch-center-scroll { flex:1; overflow-y:auto; overflow-x:hidden; padding:clamp(20px, 2vw, 28px) clamp(18px, 2.4vw, 34px) 22px; display:flex; flex-direction:column; gap:20px; }
         .ch-center-scroll::-webkit-scrollbar { width:5px; }
         .ch-center-scroll::-webkit-scrollbar-track { background:rgba(0,0,0,0.2); }
         .ch-center-scroll::-webkit-scrollbar-thumb { background:rgba(109,40,217,0.4); border-radius:4px; }
@@ -1141,7 +1248,7 @@ function ChallengesInner() {
 
         /* badges row */
         .ch-badges-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-        .ch-type-badge { color:#94a3b8; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
+        .ch-type-badge { color:#94a3b8; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
         .ch-pts-badge { color:#fbbf24; font-size:15px; font-weight:900; margin-left:2px; }
         .ch-state-chip { margin-left:auto; display:flex; align-items:center; gap:5px; font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase; }
         .ch-state-active { color:#a78bfa; }
@@ -1149,21 +1256,22 @@ function ChallengesInner() {
         .ch-state-locked { color:#4b5563; }
 
         /* title */
-        .ch-title-block { display:flex; flex-direction:column; gap:5px; }
-        .ch-act-label { color:#6b7280; font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; }
-        .ch-mission-title { margin:0; font-size:clamp(18px,2.5vw,26px); font-weight:900; color:#e9d5ff; letter-spacing:2px; text-transform:uppercase; line-height:1.2; text-shadow:0 0 28px rgba(124,58,237,0.3); }
+        .ch-title-block { display:flex; flex-direction:column; gap:6px; }
+        .ch-act-label { color:#6b7280; font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; }
+        .ch-mission-title { margin:0; font-size:clamp(22px,2.6vw,30px); font-weight:900; color:#e9d5ff; letter-spacing:2px; text-transform:uppercase; line-height:1.25; text-shadow:0 0 20px rgba(124,58,237,0.22); }
+        .ch-focus-note { color:#94a3b8; font-size:13px; background:rgba(109,40,217,0.12); border:1px solid rgba(109,40,217,0.28); border-radius:9px; padding:9px 12px; }
 
         /* intel banner */
         .ch-intel-banner { border:1px solid; border-radius:14px; overflow:hidden; position:relative; background:linear-gradient(135deg,rgba(2,1,12,0.98),rgba(12,7,36,0.97)); }
         .ch-intel-accent-line { position:absolute; top:0; left:0; right:0; height:2px; z-index:3; }
-        .ch-intel-scene { position:relative; height:150px; overflow:hidden; }
+        .ch-intel-scene { position:relative; height:clamp(144px, 17vh, 164px); overflow:hidden; }
         .ch-intel-grid-bg { position:absolute; inset:0; background:repeating-linear-gradient(45deg,rgba(109,40,217,0.04) 0,rgba(109,40,217,0.04) 1px,transparent 1px,transparent 14px); }
-        .ch-portrait { position:absolute; left:0; top:0; bottom:0; width:110px; overflow:hidden; }
-        .ch-intel-info { position:absolute; bottom:0; left:118px; right:0; padding:12px 16px 10px; display:flex; flex-direction:column; gap:6px; }
+        .ch-portrait { position:absolute; left:0; top:0; bottom:0; width:clamp(96px, 8vw, 116px); overflow:hidden; background:linear-gradient(90deg, rgba(0,0,0,0.26), transparent); }
+        .ch-intel-info { position:absolute; bottom:0; left:clamp(102px, 8.5vw, 124px); right:0; padding:12px 16px 10px; display:flex; flex-direction:column; gap:6px; }
         .ch-intel-row1 { display:flex; align-items:center; gap:8px; }
         .ch-operative-badge { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; padding:2px 8px; border:1px solid; border-radius:5px; }
-        .ch-char-name { color:#e2e8f0; font-size:14px; font-weight:800; letter-spacing:1px; }
-        .ch-intel-time { display:flex; align-items:center; gap:5px; color:#94a3b8; font-size:11px; }
+        .ch-char-name { color:#e2e8f0; font-size:15px; font-weight:800; letter-spacing:1px; }
+        .ch-intel-time { display:flex; align-items:center; gap:5px; color:#94a3b8; font-size:12px; }
         .ch-intel-status { display:inline-flex; align-items:center; gap:6px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:4px 10px; color:#fca5a5; font-size:10px; font-weight:700; letter-spacing:1px; width:fit-content; }
         .ch-status-dot { width:5px; height:5px; border-radius:50%; background:#ef4444; animation:dopulse 1.5s infinite; flex-shrink:0; }
         .ch-rescue-bar { display:flex; justify-content:space-between; align-items:center; padding:9px 16px 5px; }
@@ -1173,15 +1281,21 @@ function ChallengesInner() {
         .ch-rescue-fill { height:100%; border-radius:3px; transition:width 0.8s ease; }
 
         /* sitrep */
-        .ch-sitrep { background:rgba(3,1,14,0.7); border:1px solid rgba(109,40,217,0.17); border-radius:12px; padding:16px 20px; }
-        .ch-section-label { display:flex; align-items:center; gap:5px; color:#6b7280; font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; }
-        .ch-sitrep-text { color:#cbd5e1; font-size:14px; line-height:1.85; margin:0; }
+        .ch-sitrep { background:rgba(3,1,14,0.68); border:1px solid rgba(109,40,217,0.16); border-radius:12px; padding:18px 22px; }
+        .ch-section-label { display:flex; align-items:center; gap:5px; color:#6b7280; font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; }
+        .ch-sitrep-text { color:#cbd5e1; font-size:15px; line-height:1.95; margin:0; }
 
         /* payload */
-        .ch-payload-panel { padding:18px 20px; }
-        .ch-payload-header { display:flex; align-items:center; gap:7px; color:#06b6d4; font-size:11px; font-weight:800; letter-spacing:3px; text-transform:uppercase; margin-bottom:14px; }
+        .ch-payload-panel { padding:20px 22px; }
+        .ch-payload-header { display:flex; align-items:center; gap:7px; color:#06b6d4; font-size:12px; font-weight:800; letter-spacing:3px; text-transform:uppercase; margin-bottom:14px; }
         .ch-live-dot { width:6px; height:6px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981; animation:dopulse 1.8s infinite; margin-left:auto; }
-        .ch-payload-code { background:rgba(0,0,0,0.55); border:1px solid rgba(109,40,217,0.25); border-radius:10px; padding:16px 18px; font-family:'Share Tech Mono','Courier New',monospace; font-size:13.5px; color:#c4b5fd; line-height:1.95; white-space:pre-wrap; max-height:340px; overflow-y:auto; letter-spacing:0.3px; }
+        .ch-vault-link-box { margin-bottom:14px; padding:12px 14px; border:1px solid rgba(6,182,212,0.35); border-radius:10px; background:rgba(6,182,212,0.06); }
+        .ch-vault-link-title { color:#67e8f9; font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+        .ch-vault-link-text { color:#cbd5e1; font-size:13px; line-height:1.65; margin:0 0 10px; }
+        .ch-vault-link-btn { display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:#e2e8f0; background:rgba(109,40,217,0.3); border:1px solid rgba(167,139,250,0.45); border-radius:8px; padding:8px 12px; font-size:12px; font-weight:800; letter-spacing:1px; text-transform:uppercase; transition:all 0.15s; }
+        .ch-vault-link-btn:hover { background:rgba(109,40,217,0.45); box-shadow:0 0 16px rgba(109,40,217,0.4); }
+        .ch-vault-link-path { margin-top:8px; color:#94a3b8; font-size:11px; word-break:break-all; }
+        .ch-payload-code { background:rgba(0,0,0,0.52); border:1px solid rgba(109,40,217,0.22); border-radius:10px; padding:18px 20px; font-family:'Share Tech Mono','Courier New',monospace; font-size:14.5px; color:#c4b5fd; line-height:2; white-space:pre-wrap; max-height:360px; overflow-y:auto; letter-spacing:0.3px; }
         .ch-payload-code::-webkit-scrollbar { width:4px; }
         .ch-payload-code::-webkit-scrollbar-thumb { background:rgba(109,40,217,0.4); border-radius:3px; }
         .ch-payload-state { display:flex; align-items:center; gap:10px; border-radius:10px; padding:14px 16px; font-size:14px; }
@@ -1190,29 +1304,29 @@ function ChallengesInner() {
 
         /* hint */
         .ch-hint-section { margin-top:14px; }
-        .ch-hint-btn { display:inline-flex; align-items:center; gap:7px; padding:9px 16px; background:rgba(109,40,217,0.09); border:1px solid rgba(109,40,217,0.3); border-radius:8px; cursor:pointer; color:#c4b5fd; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; transition:all 0.15s; font-family:inherit; }
+        .ch-hint-btn { display:inline-flex; align-items:center; gap:7px; padding:10px 16px; background:rgba(109,40,217,0.08); border:1px solid rgba(109,40,217,0.27); border-radius:8px; cursor:pointer; color:#c4b5fd; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; transition:all 0.15s; font-family:inherit; }
         .ch-hint-btn:hover { background:rgba(109,40,217,0.18); border-color:rgba(167,139,250,0.6); }
         .ch-hint-btn.ch-hint-unlocked { background:rgba(245,158,11,0.1); border-color:rgba(245,158,11,0.4); color:#fbbf24; }
         .ch-hint-cost { color:#ef4444; font-size:10px; margin-left:3px; }
         .ch-hint-unlocked-tag { color:#10b981; font-size:10px; margin-left:3px; }
         .ch-hint-box { margin-top:10px; padding:14px 16px; background:rgba(15,8,40,0.7); border:1px solid rgba(109,40,217,0.38); border-radius:9px; border-left:3px solid #7c3aed; animation:fadeIn 0.3s ease; }
         .ch-hint-label { color:#a78bfa; font-size:10px; font-weight:800; letter-spacing:3px; text-transform:uppercase; margin-bottom:8px; }
-        .ch-hint-text { color:#c4b5fd; font-size:14px; line-height:1.8; margin:0; }
+        .ch-hint-text { color:#c4b5fd; font-size:15px; line-height:1.9; margin:0; }
 
         /* empty state */
         .ch-empty-state { display:flex; flex:1; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:#374151; font-size:13px; padding:40px; }
 
         /* flag bar */
-        .ch-flag-bar { border-top:1px solid rgba(109,40,217,0.2); background:rgba(3,1,14,0.98); padding:14px 20px; flex-shrink:0; backdrop-filter:blur(20px); }
+        .ch-flag-bar { border-top:1px solid rgba(109,40,217,0.18); background:rgba(3,1,14,0.98); padding:15px 22px; flex-shrink:0; backdrop-filter:blur(20px); }
         .ch-flag-inner { display:flex; flex-direction:column; gap:10px; }
         .ch-flag-header { display:flex; align-items:center; gap:8px; }
         .ch-flag-icon-wrap { width:26px; height:26px; border-radius:7px; background:linear-gradient(135deg,#5b21b6,#7c3aed); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-        .ch-flag-label { color:#c4b5fd; font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; }
+        .ch-flag-label { color:#c4b5fd; font-size:12px; font-weight:700; letter-spacing:3px; text-transform:uppercase; }
         .ch-awaiting-tag { margin-left:auto; display:flex; align-items:center; gap:5px; background:rgba(167,139,250,0.07); border:1px solid rgba(167,139,250,0.18); border-radius:6px; padding:3px 10px; color:#7c6fa0; font-size:9px; letter-spacing:2px; font-weight:700; text-transform:uppercase; }
         .ch-await-dot { width:5px; height:5px; border-radius:50%; background:#a78bfa; box-shadow:0 0 6px #a78bfa; animation:dopulse 1.6s infinite; flex-shrink:0; }
         .ch-flag-form { display:flex; gap:10px; }
         .ch-flag-form .ch-flag-input { flex:1 !important; }
-        .ch-transmit-btn { display:flex; align-items:center; gap:7px; padding:12px 22px; background:rgba(109,40,217,0.22); border:1px solid rgba(167,139,250,0.3); border-radius:9px; cursor:not-allowed; color:#7c6fa0; font-size:13px; font-weight:800; letter-spacing:2px; white-space:nowrap; text-transform:uppercase; font-family:inherit; transition:all 0.2s; }
+        .ch-transmit-btn { display:flex; align-items:center; gap:7px; padding:12px 22px; background:rgba(109,40,217,0.2); border:1px solid rgba(167,139,250,0.28); border-radius:9px; cursor:not-allowed; color:#7c6fa0; font-size:13px; font-weight:800; letter-spacing:2px; white-space:nowrap; text-transform:uppercase; font-family:inherit; transition:all 0.2s; }
         .ch-transmit-btn.ch-transmit-active { background:linear-gradient(135deg,#5b21b6,#7c3aed); cursor:pointer; color:#fff; border-color:rgba(167,139,250,0.5); box-shadow:0 0 24px rgba(109,40,217,0.4); animation:submitPulse 2.2s ease-in-out infinite; }
         .ch-transmit-btn.ch-transmit-active:hover { box-shadow:0 0 40px rgba(109,40,217,0.65); transform:translateY(-1px); }
         .ch-attempts-info { color:#4b5563; font-size:10px; letter-spacing:1px; }
@@ -1222,11 +1336,11 @@ function ChallengesInner() {
         .ch-flag-status { display:flex; align-items:center; gap:10px; font-size:14px; }
 
         /* ─── right panel ────────────────────────────────────────── */
-        .ch-right-scroll { overflow-y:auto; flex:1; padding:16px 14px; display:flex; flex-direction:column; gap:14px; }
+        .ch-right-scroll { overflow-y:auto; flex:1; padding:18px 14px; display:flex; flex-direction:column; gap:14px; }
         .ch-right-scroll::-webkit-scrollbar { width:4px; }
         .ch-right-scroll::-webkit-scrollbar-thumb { background:rgba(109,40,217,0.35); border-radius:4px; }
 
-        .ch-team-card { background:linear-gradient(135deg,rgba(109,40,217,0.12),rgba(109,40,217,0.04)); border:1px solid rgba(109,40,217,0.3); border-radius:12px; padding:16px 18px; position:relative; overflow:hidden; }
+        .ch-team-card { background:linear-gradient(135deg,rgba(109,40,217,0.1),rgba(109,40,217,0.03)); border:1px solid rgba(109,40,217,0.26); border-radius:12px; padding:16px 18px; position:relative; overflow:hidden; }
         .ch-tc-accent-bar { position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,#7c3aed,#06b6d4); }
         .ch-tc-label { color:#6b7280; font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; margin-bottom:6px; }
         .ch-tc-name { font-size:14px; font-weight:700; color:#e2e8f0; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; letter-spacing:1px; }
@@ -1241,8 +1355,8 @@ function ChallengesInner() {
         .ch-ops-card { background:rgba(5,2,18,0.8); border:1px solid rgba(55,65,81,0.25); border-radius:11px; padding:14px 16px; }
         .ch-ops-row { display:flex; justify-content:space-between; margin-bottom:9px; }
         .ch-ops-row:last-child { margin-bottom:0; }
-        .ch-ops-key { color:#94a3b8; font-size:12px; letter-spacing:1px; }
-        .ch-ops-val { font-size:12px; font-weight:700; }
+        .ch-ops-key { color:#94a3b8; font-size:13px; letter-spacing:1px; }
+        .ch-ops-val { font-size:13px; font-weight:700; }
         .ch-ops-val.ok  { color:#10b981; }
         .ch-ops-val.bad { color:#ef4444; }
 
@@ -1260,7 +1374,7 @@ function ChallengesInner() {
         .ch-feed-action.solved { color:#10b981; }
         .ch-feed-action.hint   { color:#f59e0b; }
         .ch-feed-action.other  { color:#a78bfa; }
-        .ch-feed-msg { color:#6b7280; font-size:11px; line-height:1.4; margin-bottom:4px; }
+        .ch-feed-msg { color:#6b7280; font-size:12px; line-height:1.45; margin-bottom:4px; }
         .ch-feed-pts { font-size:12px; font-weight:700; }
         .ch-feed-pts.pos { color:#6ee7b7; }
         .ch-feed-pts.neg { color:#fca5a5; }
@@ -1305,6 +1419,7 @@ function ChallengesInner() {
           .ch-panel-toggle { display:none; }
           .ch-collapsed-strip { display:none; }
           .ch-center-scroll { padding:18px 16px 16px; }
+          .ch-focus-btn span { display:none; }
         }
         @media (max-width:600px) {
           .ch-mission-title { font-size:17px; }

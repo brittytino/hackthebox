@@ -152,7 +152,7 @@ WARNING: Execution appears STAGED
 The final database—containing the cyberattack payload and February 14
 activation details—is protected by a team-specific pattern lock. Calculate
 your unique SHA-256 hash using your team name, progress data, and the
-secret salt "CIPHER2026". First 8 characters = your unlock code.
+secret salt "HACKTHEBOX2026". First 8 characters = your unlock code.
 
 HOSTAGE STATUS: 520 trapped | 680 rescued
 TERRORISTS: 5 active (10 eliminated)

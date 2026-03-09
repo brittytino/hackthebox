@@ -101,9 +101,9 @@ Veera has managed to access the mall's backup server room and intercepted an enc
       flag: 'CTF{Server.Room-ER42,East-Wing}',
       points: 100,
       order: 1,
-      difficulty: 'easy',
+      difficulty: 'medium',
       hintPenalty: 30,
-      hints: 'Start by identifying the encoding family from character set and padding. After decoding once, validate whether the output is readable or transformed again.',
+      hints: 'Look for the trailing `=` and limited symbol set to identify the first encoding step. If the first output still looks scrambled, apply one classic text transform at a time and check when the prefix starts resembling `CTF{`.',
 
     },
     {
@@ -137,7 +137,7 @@ The server room access code has been split across three encrypted files on the t
       order: 2,
       difficulty: 'medium',
       hintPenalty: 50,
-      hints: 'Treat each fragment independently and classify its notation before decoding. Convert all parts to plain text first, then merge in the presented sequence.',
+      hints: 'Treat A, B, and C as different systems. Decode each fragment to plain text separately (numeric bases for A/B, substitution-style cipher for C), then concatenate strictly in A -> B -> C order.',
 
     },
     {
@@ -165,7 +165,7 @@ The vault contains Saif's full attack blueprint. The biometric lock requires a t
       order: 3,
       difficulty: 'hard',
       hintPenalty: 70,
-      hints: 'This is deterministic input processing. Reconstruct the exact input string with correct separators and ordering before generating the final team-specific value.',
+      hints: 'This challenge is deterministic and team-bound: everyone gets a different answer. Reconstruct one exact input string from your registered team name plus fixed mission constants in strict order.||Use a legacy hash function for the vault lock, then submit only the first 8 lowercase hex characters wrapped as `CTF{........}`.',
 
     },
   ];
@@ -234,7 +234,7 @@ The hard drive holds three separate databases — sleeper cell identities, finan
       order: 1,
       difficulty: 'medium',
       hintPenalty: 80,
-      hints: 'Use hash length to identify likely algorithms, then test common password patterns with a cracking tool. Build the final answer only after all three values are recovered.',
+      hints: 'Identify each hash by length first, then crack them independently with common wordlist candidates. After recovery, take only the required prefix parts and assemble the final flag pattern exactly.',
 
     },
     {
@@ -262,7 +262,7 @@ The admin panel uses an obfuscated authentication token. Vikram has spotted evid
       order: 2,
       difficulty: 'medium',
       hintPenalty: 100,
-      hints: 'Decode the outer blob first, then inspect token structure by sections. If extracted fields still look invalid, check for one additional transformation on the credential value.',
+      hints: 'Start with the outer hex decode, then split the token by `.` and inspect each section. If the credential still looks obfuscated, apply one more lightweight transform before final flag formatting.',
 
     },
     {
@@ -290,7 +290,7 @@ The last database containing the BLACKOUT worm payload uses a team-specific patt
       order: 3,
       difficulty: 'hard',
       hintPenalty: 120,
-      hints: 'Build the team-derived input exactly as specified by challenge context, hash it with the intended modern algorithm, then submit only the required leading segment.',
+      hints: 'This lock is also team-specific and deterministic. Build the exact team-derived input from your real team name and fixed mission constants with no spacing/case mistakes.||Use SHA-256 for the final derivation and submit only the first 8 lowercase hex characters inside `CTF{........}`.',
 
     },
   ];
@@ -361,7 +361,7 @@ Veera escaped capture with Aparna's help. The BLACKOUT payload is fragmented acr
       order: 1,
       difficulty: 'medium',
       hintPenalty: 140,
-      hints: 'Each payload shard uses a different representation. Decode each shard to text, confirm it contributes meaningful output, then combine in original capture order.',
+      hints: 'Each shard uses a different encoding family (binary, hex, base64, and one text transform). Decode each into readable text and concatenate in fragment order 1 -> 2 -> 3 -> 4.',
 
     },
     {
@@ -388,7 +388,7 @@ CRITICAL: A logic bomb in Saif's attack script will trigger BLACKOUT immediately
       order: 2,
       difficulty: 'hard',
       hintPenalty: 170,
-      hints: 'Expect layered encoding. After every decode pass, reassess the new data type and continue until stable plaintext appears; stop only when the result matches flag semantics.',
+      hints: 'This payload is layered, not single-step. Decode one layer, inspect the resulting data type, then choose the next transformation from structure clues.||Do not brute-force random transforms: continue until output stabilizes into clean plaintext that matches valid flag semantics.',
 
     },
     {
@@ -403,9 +403,12 @@ CRITICAL: A logic bomb in Saif's attack script will trigger BLACKOUT immediately
     VAULT DATA:
     65794a306232746c62694936496d5635536d686952324e7054326c4b535656365354646f61556c7a535735534e574e4453545a4a61334259566b4e4b4f53356c65556f7957566857633252474f584a615747747054326c4b645531584f486c6a524531705a6c4575596c6447656d5248566e6b6966513d3d
 
+    VAULT INTERFACE ENDPOINT:
+    /public/challenges/master-vault.html
+
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    Recover the master vault flag from this artifact and submit it exactly.
+    Recover the master vault flag from this artifact chain and submit it exactly.
 
     FIRST TEAM TO SOLVE: 2x POINTS
     THE CITY IS COUNTING ON YOU.`,
@@ -418,7 +421,7 @@ A joint RAW-Police raid seized the server containing the MASTER KILL SWITCH. The
       order: 3,
       difficulty: 'hard',
       hintPenalty: 220,
-      hints: 'Approach this as a full pipeline challenge: decode stage by stage, validate intermediate output at each step, and extract only the exact code segment needed for final flag assembly.',
+      hints: 'Treat this as a full final pipeline: validate each intermediate artifact before moving forward; one wrong assumption breaks downstream layers.||The last step is strict extraction + exact formatting of the vault code into the final flag; partial or approximate reconstruction will fail validation.',
 
     },
   ];

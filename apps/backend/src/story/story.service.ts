@@ -26,7 +26,7 @@ export class StoryService {
     backdoorLocation: 'SCCC_VPN_NODE_47',
   };
 
-  private readonly ROUND3_FLAG = 'HTB{COIMBATORE_DARKWEAVE_DEACTIVATED_2026}';
+  private readonly ROUND3_FLAG = 'CTF{COIMBATORE_DARKWEAVE_DEACTIVATED_2026}';
 
   constructor(private prisma: PrismaService) {}
 

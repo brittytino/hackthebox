@@ -3,12 +3,20 @@ import { ValidationPipe, RequestMethod } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { existsSync } from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const publicCandidates = [
+    join(process.cwd(), 'public'),
+    join(__dirname, '..', 'public'),
+    join(__dirname, '..', '..', 'public'),
+  ];
+  const publicDir = publicCandidates.find((dir) => existsSync(dir)) || publicCandidates[0];
   
   // Serve static files from public directory
-  app.useStaticAssets(join(__dirname, '..', 'public'), {
+  app.useStaticAssets(publicDir, {
     prefix: '/public/',
   });
   
@@ -34,6 +42,7 @@ async function bootstrap() {
   
   console.log(`🚀 Backend is running on: http://localhost:${port}/api`);
   console.log(`📁 Static files available at: http://localhost:${port}/public/`);
+  console.log(`📂 Static assets path resolved to: ${publicDir}`);
 }
 
 bootstrap();

@@ -31,15 +31,15 @@ const COMPLETION_STORIES: Record<number, {
   character: string; characterImage: string;
   bgColor: string; accentColor: string; bgImage: string;
 }> = {
-  1: { title: 'TRANSMISSION DECODED', quote: '"Command center located — east wing, sub-level 3. Vikram, route the team. We move in 5 minutes."', subtext: 'Server Room ER-42 is the next target. The fragmented access codes await.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_determined.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/1.jpg' },
-  2: { title: 'ACCESS CODES ASSEMBLED', quote: '"ER-42 is open. Move, Veera — the patrol returns in 4 minutes. The biometric vault is on sub-level 2."', subtext: 'The time-locked vault holds the complete attack blueprint.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_serious.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/2.jpg' },
-  3: { title: 'VAULT CRACKED — ROUND 1 COMPLETE', quote: '"Attack plans retrieved. The second target is the power grid. Three encrypted databases are our next hurdle."', subtext: 'Round 1 complete. The Infiltration phase begins now.', character: 'Deputy NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/3.jpg' },
+  1: { title: 'TRANSMISSION DECODED', quote: '"Command center located â€” east wing, sub-level 3. Vikram, route the team. We move in 5 minutes."', subtext: 'Server Room ER-42 is the next target. The fragmented access codes await.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_determined.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/1.jpg' },
+  2: { title: 'ACCESS CODES ASSEMBLED', quote: '"ER-42 is open. Move, Veera â€” the patrol returns in 4 minutes. The biometric vault is on sub-level 2."', subtext: 'The time-locked vault holds the complete attack blueprint.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_serious.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/2.jpg' },
+  3: { title: 'VAULT CRACKED â€” ROUND 1 COMPLETE', quote: '"Attack plans retrieved. The second target is the power grid. Three encrypted databases are our next hurdle."', subtext: 'Round 1 complete. The Infiltration phase begins now.', character: 'Deputy NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/3.jpg' },
   4: { title: 'HASH TRAIL BROKEN', quote: '"Databases cracked. Farooq release is blocked. The government has hard evidence. But Saif knows we\'re inside."', subtext: 'The JWT admin token holds the next layer of proof.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_intense.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/4.jpg' },
-  5: { title: 'ADMIN ACCESS SECURED', quote: '"Logs confirmed — the minister\'s wife execution was theater. The government is being blackmailed. This changes everything."', subtext: 'One encrypted database remains. The BLACKOUT payload blueprint is inside.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_urgent.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/5.jpg' },
-  6: { title: 'PATTERN LOCK BROKEN — ROUND 2 COMPLETE', quote: '"Operation BLACKOUT is a worm targeting the city grid. Feb 14. Saravana is the mastermind. We need the kill switch — now."', subtext: 'Round 2 complete. The Final Strike begins.', character: 'Deputy NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/6.jpg' },
+  5: { title: 'ADMIN ACCESS SECURED', quote: '"Logs confirmed â€” the minister\'s wife execution was theater. The government is being blackmailed. This changes everything."', subtext: 'One encrypted database remains. The BLACKOUT payload blueprint is inside.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_urgent.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/5.jpg' },
+  6: { title: 'PATTERN LOCK BROKEN â€” ROUND 2 COMPLETE', quote: '"Operation BLACKOUT is a worm targeting the city grid. Feb 14. Saravana is the mastermind. We need the kill switch â€” now."', subtext: 'Round 2 complete. The Final Strike begins.', character: 'Deputy NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/6.jpg' },
   7: { title: 'PAYLOAD DECODED', quote: '"Now we understand the attack mechanism. Aparna handed us the fragments. The kill switch components are in two final systems."', subtext: 'A logic bomb guards the next layer. One wrong step activates BLACKOUT early.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_concerned.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/7.jpg' },
-  8: { title: 'LOGIC BOMB NEUTRALISED', quote: '"Bomb dead. Mall siege ended. Saif is in custody. One target remains — Saravana, The Phantom. The Master Vault holds everything."', subtext: 'Final challenge: The Master Vault. Use every skill you have learned.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_serious.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/8.jpg' },
-  9: { title: '?? OPERATION BLACKOUT — TERMINATED', quote: '"Saravana is arrested. The worm is destroyed. 50,000 jobs saved. Coimbatore is safe. You did it — all of you."', subtext: 'Mission complete. Your team has written history.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_relieved.png', bgColor: 'rgba(16,185,129,0.18)', accentColor: '#10b981', bgImage: '/images/background/9.jpg' },
+  8: { title: 'LOGIC BOMB NEUTRALISED', quote: '"Bomb dead. Mall siege ended. Saif is in custody. One target remains â€” Saravana, The Phantom. The Master Vault holds everything."', subtext: 'Final challenge: The Master Vault. Use every skill you have learned.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_serious.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/8.jpg' },
+  9: { title: '?? OPERATION BLACKOUT â€” TERMINATED', quote: '"Saravana is arrested. The worm is destroyed. 50,000 jobs saved. Coimbatore is safe. You did it â€” all of you."', subtext: 'Mission complete. Your team has written history.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_relieved.png', bgColor: 'rgba(16,185,129,0.18)', accentColor: '#10b981', bgImage: '/images/background/9.jpg' },
 };
 
 const MISSIONS: MissionMeta[] = [
@@ -47,11 +47,11 @@ const MISSIONS: MissionMeta[] = [
     order: 1, round: 1, level: '1.1',
     name: 'The Intercepted Transmission',
     type: 'CRYPTOGRAPHY', difficulty: 'medium', points: 100,
-    storyAct: 'ACT II — THE SIEGE BEGINS',
+    storyAct: 'ACT II â€” THE SIEGE BEGINS',
     storyTime: '03:47 AM  Basement Server Room',
     storyStatus: ' 1,200 HOSTAGES  NEXT EXECUTION IN 28 MIN',
     situation: 'Veera has gone dark inside the mall and found a backup server room in the basement. He taps the terrorist comms relay and intercepts an encrypted transmission addressed to Saif\'s inner circle. Decode it before they relocate the command center.',
-    intel: '"Intercepted a transmission from their encrypted relay. It\'s been through multiple encoding passes — figure out what they used and reverse it. Every second counts."',
+    intel: '"Intercepted a transmission from their encrypted relay. It\'s been through multiple encoding passes â€” figure out what they used and reverse it. Every second counts."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_determined.png',
     roundLabel: 'ROUND 1  BREACH',
@@ -60,11 +60,11 @@ const MISSIONS: MissionMeta[] = [
     order: 2, round: 1, level: '1.2',
     name: 'The Fragmented Server Map',
     type: 'FORENSICS', difficulty: 'medium', points: 150,
-    storyAct: 'ACT II — THE SIEGE BEGINS',
+    storyAct: 'ACT II â€” THE SIEGE BEGINS',
     storyTime: '04:15 AM  Approaching Server Room ER-42',
     storyStatus: ' PATROLS ACTIVE  NEXT EXECUTION IN 15 MIN',
-    situation: 'Vikram\'s cyber unit intercepts three encrypted files from the terrorist relay — the server room access code has been split into fragments. Veera is 50 meters away with armed patrols closing in. He needs the complete code now.',
-    intel: '"Three fragments, three different encodings. Identify each, decode them all, and assemble in order — A then B then C. No room for error. Veera is exposed."',
+    situation: 'Vikram\'s cyber unit intercepts three encrypted files from the terrorist relay â€” the server room access code has been split into fragments. Veera is 50 meters away with armed patrols closing in. He needs the complete code now.',
+    intel: '"Three fragments, three different encodings. Identify each, decode them all, and assemble in order â€” A then B then C. No room for error. Veera is exposed."',
     character: 'Vikram Singaravelan',
     characterImage: '/images/characters/vikram_serious.png',
     roundLabel: 'ROUND 1  BREACH',
@@ -76,8 +76,8 @@ const MISSIONS: MissionMeta[] = [
     storyAct: 'ROUND 1 FINALE',
     storyTime: '04:45 AM  Server Room ER-42',
     storyStatus: ' FIRST HOSTAGE EXECUTED ON LIVE TV',
-    situation: 'Veera reaches the biometric vault inside ER-42. The lock uses a team-personalised mathematical formula — every team computes a different answer. Anti-sharing security. Inside is Saif\'s full attack blueprint and proof of a second, larger threat.',
-    intel: '"Personalised vault lock — your code depends on your team\'s registration data. Compute it precisely or we\'re stuck. I cannot wait."',
+    situation: 'Veera reaches the biometric vault inside ER-42. The lock uses a team-personalised mathematical formula â€” every team computes a different answer. Anti-sharing security. Inside is Saif\'s full attack blueprint and proof of a second, larger threat.',
+    intel: '"Personalised vault lock â€” your code depends on your team\'s registration data. Compute it precisely or we\'re stuck. I cannot wait."',
     character: 'Deputy NSA Althaf',
     characterImage: '/images/characters/althaf_commanding.png',
     roundLabel: 'ROUND 1  BREACH',
@@ -86,10 +86,10 @@ const MISSIONS: MissionMeta[] = [
     order: 4, round: 2, level: '2.1',
     name: 'The Corrupted Hash Trail',
     type: 'HASH CRACKING', difficulty: 'medium', points: 250,
-    storyAct: 'ACT III — THE COUNTERATTACK',
+    storyAct: 'ACT III â€” THE COUNTERATTACK',
     storyTime: '05:12 AM  Vault Terminal',
     storyStatus: ' GOVT CAVING  FAROOQ RELEASE PREP STARTED',
-    situation: 'The hard drive from the vault holds three password-protected databases — sleeper cell identities, financial backers, and the BLACKOUT payload. If Veera can crack these before Farooq is released, the transfer can be blocked.',
+    situation: 'The hard drive from the vault holds three password-protected databases â€” sleeper cell identities, financial backers, and the BLACKOUT payload. If Veera can crack these before Farooq is released, the transfer can be blocked.',
     intel: '"Three locked databases, three hashed passwords. Crack them all and assemble the master key. This is the evidence that stops Farooq\'s release."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_intense.png',
@@ -99,10 +99,10 @@ const MISSIONS: MissionMeta[] = [
     order: 5, round: 2, level: '2.2',
     name: 'The JWT Inception',
     type: 'WEB/TOKEN', difficulty: 'medium', points: 300,
-    storyAct: 'ACT IV — THE BETRAYAL',
+    storyAct: 'ACT IV â€” THE BETRAYAL',
     storyTime: '05:50 AM  Terrorist Admin Panel',
     storyStatus: ' BREAKING: HOME MINISTER\'S EXECUTION STAGED',
-    situation: 'Veera is inside the admin panel — but the authentication token has been obfuscated to evade scanners. Vikram spotted that the Home Minister\'s "wife execution" was theater staged for compliance. Decode the token to prove the conspiracy.',
+    situation: 'Veera is inside the admin panel â€” but the authentication token has been obfuscated to evade scanners. Vikram spotted that the Home Minister\'s "wife execution" was theater staged for compliance. Decode the token to prove the conspiracy.',
     intel: '"The token is encoded and buried inside a wrapper. Strip the layers, find the hidden credential, and reverse it. That\'s our proof the Home Minister is a traitor."',
     character: 'Vikram Singaravelan',
     characterImage: '/images/characters/vikram_urgent.png',
@@ -115,7 +115,7 @@ const MISSIONS: MissionMeta[] = [
     storyAct: 'ROUND 2 FINALE',
     storyTime: '06:15 AM  Final Encrypted Database',
     storyStatus: ' FAROOQ BORDER CROSSING IN 3 HOURS',
-    situation: 'The final database — containing the BLACKOUT worm payload and Feb 14 activation details — has a team-specific lock designed to prevent answer sharing. Althaf demands it cracked before Farooq crosses the border.',
+    situation: 'The final database â€” containing the BLACKOUT worm payload and Feb 14 activation details â€” has a team-specific lock designed to prevent answer sharing. Althaf demands it cracked before Farooq crosses the border.',
     intel: '"This lock is unique to your team. Compute your personalised code using the formula provided. No shared answers exist. Calculate yours and unlock the BLACKOUT blueprint."',
     character: 'Deputy NSA Althaf',
     characterImage: '/images/characters/althaf_concerned.png',
@@ -125,10 +125,10 @@ const MISSIONS: MissionMeta[] = [
     order: 7, round: 3, level: '3.1',
     name: 'The Payload Hunt',
     type: 'REVERSE ENG', difficulty: 'medium', points: 400,
-    storyAct: 'ACT IV — ESCAPE PHASE',
+    storyAct: 'ACT IV â€” ESCAPE PHASE',
     storyTime: '07:10 AM  BLACKOUT Payload Analysis',
     storyStatus: ' VEERA INJURED  FAROOQ CROSSED BORDER',
-    situation: 'Veera was captured but escaped with help from Aparna — the Home Minister\'s daughter who chose the right side. The BLACKOUT payload is split across four encrypted fragments. Decode them all to understand the activation mechanism and build the kill switch.',
+    situation: 'Veera was captured but escaped with help from Aparna â€” the Home Minister\'s daughter who chose the right side. The BLACKOUT payload is split across four encrypted fragments. Decode them all to understand the activation mechanism and build the kill switch.',
     intel: '"Four fragments, four different encodings. Identify what each one is, decode them, and combine in exact order 1 through 4. We need the full payload to build the kill switch."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_concerned.png',
@@ -141,7 +141,7 @@ const MISSIONS: MissionMeta[] = [
     storyAct: 'ROUND 3 CRITICAL',
     storyTime: '07:35 AM  Script Defusal Window',
     storyStatus: ' LOGIC BOMB TRIGGER IN 10 MINUTES',
-    situation: 'A logic bomb is embedded in Saif\'s attack script. If it triggers, Operation BLACKOUT goes live immediately — 13 days early. The defusal code is buried under multiple nested encoding layers. One wrong step and 50,000 jobs vanish tonight.',
+    situation: 'A logic bomb is embedded in Saif\'s attack script. If it triggers, Operation BLACKOUT goes live immediately â€” 13 days early. The defusal code is buried under multiple nested encoding layers. One wrong step and 50,000 jobs vanish tonight.',
     intel: '"Multiple encoding layers protecting the defusal code. Strip every layer carefully until you reach the plaintext. The fully decoded output is what you submit."',
     character: 'Vikram Singaravelan',
     characterImage: '/images/characters/vikram_serious.png',
@@ -151,10 +151,10 @@ const MISSIONS: MissionMeta[] = [
     order: 9, round: 3, level: '3.3',
     name: 'The Master Vault',
     type: 'FINAL BOSS', difficulty: 'hard', points: 1000,
-    storyAct: 'EPILOGUE — OPERATION COMPLETE',
+    storyAct: 'EPILOGUE â€” OPERATION COMPLETE',
     storyTime: '08:00 AM  Saravana\'s Encrypted Server',
     storyStatus: ' HOSTAGES FREED  ONE TARGET REMAINS',
-    situation: 'Veera recaptured Farooq and extracted the name of the cyber-mastermind: Saravana "The Phantom". A joint RAW-Police raid seized his server. The MASTER KILL SWITCH for Operation BLACKOUT is inside — protected by every technique you have encountered.',
+    situation: 'Veera recaptured Farooq and extracted the name of the cyber-mastermind: Saravana "The Phantom". A joint RAW-Police raid seized his server. The MASTER KILL SWITCH for Operation BLACKOUT is inside â€” protected by every technique you have encountered.',
     intel: '"This is everything. Every technique, every skill you\'ve learned leads here. The kill switch is buried in that vault. Crack it and this is over. First team wins it all."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_relieved.png',
@@ -464,7 +464,7 @@ function ChallengesInner() {
     <div className="ch-loading-screen">
       <div className="ch-spin-ring" />
       <div className="ch-loading-title">DECRYPTING MISSION DATA</div>
-      <div className="ch-loading-sub">Please stand by…</div>
+      <div className="ch-loading-sub">Please stand byâ€¦</div>
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         .ch-loading-screen{min-height:100vh;background:#070813;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;font-family:'Inter', system-ui, sans-serif;}
@@ -479,7 +479,7 @@ function ChallengesInner() {
   const rescuePct = Math.round((rescued / 1200) * 100);
   const scored = Math.max(currentLevel - 1, 0);
   const teamPoints = apiResponse?.team?.currentPoints ?? 0;
-  const teamName = apiResponse?.team?.name ?? '—';
+  const teamName = apiResponse?.team?.name ?? 'â€”';
   const storyChallenge = Math.min(Math.max(meta?.order ?? currentLevel, 1), 9);
   const storyHref = `/story?challenge=${storyChallenge}`;
   const masterVaultUrl = (() => {
@@ -608,9 +608,9 @@ function ChallengesInner() {
 
               {/* Round groups */}
               {[
-                { act: 'ROUND 1 — THE BREACH',   color: '#fca5a5', rgb: '239,68,68',  orders: [1,2,3] },
-                { act: 'ROUND 2 — INFILTRATION', color: '#fde68a', rgb: '245,158,11', orders: [4,5,6] },
-                { act: 'ROUND 3 — FINAL STRIKE', color: '#6ee7b7', rgb: '16,185,129', orders: [7,8,9] },
+                { act: 'ROUND 1 â€” THE BREACH',   color: '#fca5a5', rgb: '239,68,68',  orders: [1,2,3] },
+                { act: 'ROUND 2 â€” INFILTRATION', color: '#fde68a', rgb: '245,158,11', orders: [4,5,6] },
+                { act: 'ROUND 3 â€” FINAL STRIKE', color: '#6ee7b7', rgb: '16,185,129', orders: [7,8,9] },
               ].map(group => (
                 <div key={group.act} className="ch-round-group">
                   <div className="ch-round-label" style={{ color: group.color }}>
@@ -676,7 +676,7 @@ function ChallengesInner() {
           {apiResponse?.progress?.completedAll && (
             <div className="ch-complete-banner">
               <div className="ch-complete-icon">??</div>
-              <div className="game-title ch-complete-title">OPERATION BLACKOUT — TERMINATED</div>
+              <div className="game-title ch-complete-title">OPERATION BLACKOUT â€” TERMINATED</div>
               <p className="ch-complete-body">All 9 missions complete. Saravana arrested. The malware is destroyed. 50,000 jobs saved. Coimbatore is safe.</p>
               <div className="ch-complete-score">FINAL SCORE: {teamPoints.toLocaleString()} pts</div>
             </div>
@@ -698,14 +698,14 @@ function ChallengesInner() {
 
               {focusMode && (
                 <div className="ch-focus-note">
-                  Focus mode enabled — side intel panels hidden for distraction-free solving.
+                  Focus mode enabled â€” side intel panels hidden for distraction-free solving.
                 </div>
               )}
 
               {/* - Title - */}
               <div className="ch-title-block">
                 <div className="ch-act-label">{meta.storyAct}</div>
-                <h1 className="ch-mission-title">{meta.level} — {meta.name}</h1>
+                <h1 className="ch-mission-title">{meta.level} â€” {meta.name}</h1>
               </div>
 
               {/* - Character Intel Banner - */}
@@ -790,7 +790,7 @@ function ChallengesInner() {
                 )}
                 {state === 'locked' && (
                   <div className="ch-payload-state ch-payload-locked">
-                    <Lock size={16} />Payload encrypted — complete the active mission to unlock.
+                    <Lock size={16} />Payload encrypted â€” complete the active mission to unlock.
                   </div>
                 )}
 
@@ -980,7 +980,7 @@ function ChallengesInner() {
               <h3 className="ch-modal-title">REVEAL INTEL?</h3>
               <button onClick={() => setShowHintConfirm(false)} className="ch-modal-close"><X size={15} /></button>
             </div>
-            <p className="ch-modal-body">Mission intel is classified. Accessing it deducts points from your team score. Once revealed, intel stays visible at no further cost — you can hide/show it freely.</p>
+            <p className="ch-modal-body">Mission intel is classified. Accessing it deducts points from your team score. Once revealed, intel stays visible at no further cost â€” you can hide/show it freely.</p>
             <div className="game-alert-error ch-modal-warning">
               <AlertTriangle size={13} />Penalty for next intel tier: -{nextHintPenalty} points
             </div>
@@ -1105,7 +1105,7 @@ function ChallengesInner() {
                       <span style={{ color: story.accentColor, fontSize: 10, fontWeight: 700, letterSpacing: 3 }}>NEXT OBJECTIVE</span>
                     </div>
                     <div style={{ color: '#e9d5ff', fontSize: 15, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>
-                      {nextMission ? `${nextMission.level} — ${nextMission.name}` : 'All missions complete. Operation terminated.'}
+                      {nextMission ? `${nextMission.level} â€” ${nextMission.name}` : 'All missions complete. Operation terminated.'}
                     </div>
                     <div style={{ color: '#6b7280', fontSize: 12, lineHeight: 1.6 }}>{story.subtext}</div>
                   </div>

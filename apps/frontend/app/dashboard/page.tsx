@@ -73,7 +73,7 @@ export default function DashboardPage() {
   const solvedIds   = new Set(submissions.filter(s => s.correct).map(s => s.challengeId));
   const totalSolved = solvedIds.size;
   const totalScore  = teamStats?.totalPoints ?? 0;
-  const teamName    = user?.team?.name || '—';
+  const teamName    = user?.team?.name || 'â€”';
   const member1     = user?.team?.member1Name || user?.username || '';
   const member2     = user?.team?.member2Name || '';
   const members     = [member1, member2].filter(Boolean);
@@ -163,7 +163,7 @@ export default function DashboardPage() {
         <div className="df" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 32 }}>
           {[
             { icon: Trophy,       label: 'Total Score',  value: totalScore.toLocaleString(), sub: 'points',                          accent: '#f59e0b' },
-            { icon: Star,         label: 'Team Rank',    value: myRank ? `#${myRank}` : '—', sub: `of ${sortedBoard.length} teams`,   accent: '#0ea5e9' },
+            { icon: Star,         label: 'Team Rank',    value: myRank ? `#${myRank}` : 'â€”', sub: `of ${sortedBoard.length} teams`,   accent: '#0ea5e9' },
             { icon: CheckCircle2, label: 'Solved',       value: `${totalSolved}`,            sub: `of ${challenges.length} missions`, accent: '#09cd72' },
             { icon: Flag,         label: 'Active Round', value: `Round ${roundNum}`,         sub: currentRound?.name || 'In Progress', accent: '#a78bfa' },
           ].map(stat => (
@@ -184,7 +184,7 @@ export default function DashboardPage() {
         {/* -- MAIN GRID -- */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
 
-          {/* LEFT — Mission Board */}
+          {/* LEFT â€” Mission Board */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             <div className="df" style={{ background: '#161b22', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '28px 28px' }}>
@@ -222,7 +222,7 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <span style={{ fontSize: 15, fontWeight: 700, color: isDone ? '#09cd72' : isActive ? '#e6edf3' : '#484f58', letterSpacing: '-0.1px' }}>{round.label}</span>
-                          <span style={{ fontSize: 14, color: isDone ? '#09cd7299' : isActive ? '#6e7681' : '#30363d', marginLeft: 6 }}>— {round.sub}</span>
+                          <span style={{ fontSize: 14, color: isDone ? '#09cd7299' : isActive ? '#6e7681' : '#30363d', marginLeft: 6 }}>â€” {round.sub}</span>
                         </div>
                         <div style={{ flex: 1, height: 1, background: `${lc}25`, marginLeft: 4 }} />
                       </div>

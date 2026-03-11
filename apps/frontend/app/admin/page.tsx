@@ -652,7 +652,7 @@ export default function AdminPage() {
                                   setShowAdjustModal(true);
                                 }}
                               >
-                                ± PTS
+                                Â± PTS
                               </Button>
                               {isDisqualified ? (
                                 <Button

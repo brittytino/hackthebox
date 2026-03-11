@@ -213,7 +213,7 @@ export default function TimelinePage() {
   };
 
   return (
-    <div ref={containerRef} style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #080614 0%, #0a0818 40%, #080614 100%)', fontFamily: "'Share Tech Mono', 'Courier New', monospace", overflow: 'auto', position: 'relative' }}>
+    <div ref={containerRef} style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #080614 0%, #0a0818 40%, #080614 100%)', fontFamily: "'Inter', system-ui, sans-serif", overflow: 'auto', position: 'relative' }}>
       {/* Animated radial gradient overlay */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 100%, rgba(6,182,212,0.1) 0%, transparent 50%)', opacity: 0.6 }} />
       {/* Scanlines */}
@@ -239,7 +239,7 @@ export default function TimelinePage() {
           <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Shield size={13} color="#fff" />
           </div>
-          <span style={{ color: '#e2e8f0', fontSize: 14, fontWeight: 800, letterSpacing: 3 }}>CIPHER OPS</span>
+          <span style={{ color: '#e2e8f0', fontSize: 14, fontWeight: 800, letterSpacing: 2 }}>HACK THE BOX</span>
           <span style={{ color: '#4b5563', fontSize: 12, letterSpacing: 2 }}>/ MISSION TIMELINE</span>
         </div>
         <div style={{ flex: 1 }} />

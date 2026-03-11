@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
@@ -77,7 +77,7 @@ export default function LeaderboardPage() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080614', fontFamily: "'Share Tech Mono','Courier New',monospace", position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#080614', fontFamily: "'Inter', system-ui, sans-serif", position: 'relative', overflow: 'hidden' }}>
       {/* Static BG layers */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, backgroundImage: 'repeating-linear-gradient(0deg,rgba(0,0,0,0.22),rgba(0,0,0,0.22) 1px,transparent 1px,transparent 3px)', opacity: 0.28 }} />
       <svg style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', opacity: 0.015, zIndex: 0, pointerEvents: 'none' }}>
@@ -98,7 +98,7 @@ export default function LeaderboardPage() {
           <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Shield size={13} color="#fff" />
           </div>
-          <span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800, letterSpacing: 3 }}>CIPHER OPS</span>
+          <span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800, letterSpacing: 2 }}>HACK THE BOX</span>
           <span style={{ color: '#4b5563', fontSize: 11, letterSpacing: 2 }}>/ RANKINGS</span>
         </div>
         <div style={{ flex: 1 }} />
@@ -281,7 +281,7 @@ export default function LeaderboardPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#374151', fontSize: 11 }}>
             <Lock size={11} />Real-time via SSE + {POLL_INTERVAL / 1000}s polling fallback
           </div>
-          <div style={{ color: '#374151', fontSize: 11, letterSpacing: 2 }}>CIPHER OPS 2026 — COIMBATORE</div>
+          <div style={{ color: '#374151', fontSize: 11, letterSpacing: 2 }}>HACK THE BOX 2026 � COIMBATORE</div>
         </div>
       </div>
 

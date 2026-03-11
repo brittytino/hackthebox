@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -25,21 +25,21 @@ interface MissionMeta {
   roundLabel: string;
 }
 
-/* ─── STORY COMPLETION SCENES ──────────────────────────────────────────── */
+/* --- STORY COMPLETION SCENES -------------------------------------------- */
 const COMPLETION_STORIES: Record<number, {
   title: string; quote: string; subtext: string;
   character: string; characterImage: string;
   bgColor: string; accentColor: string; bgImage: string;
 }> = {
-  1: { title: 'TRANSMISSION DECODED', quote: '"Command center located — east wing, sub-level 3. Vikram, route the team. We move in 5 minutes."', subtext: 'Server Room ER-42 is the next target. The fragmented access codes await.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_determined.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/1.jpg' },
-  2: { title: 'ACCESS CODES ASSEMBLED', quote: '"ER-42 is open. Move, Veera — the patrol returns in 4 minutes. The biometric vault is on sub-level 2."', subtext: 'The time-locked vault holds the complete attack blueprint.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_serious.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/2.jpg' },
-  3: { title: 'VAULT CRACKED — ROUND 1 COMPLETE', quote: '"Attack plans retrieved. The second target is the power grid. Three encrypted databases are our next hurdle."', subtext: 'Round 1 complete. The Infiltration phase begins now.', character: 'Deputy NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/3.jpg' },
+  1: { title: 'TRANSMISSION DECODED', quote: '"Command center located � east wing, sub-level 3. Vikram, route the team. We move in 5 minutes."', subtext: 'Server Room ER-42 is the next target. The fragmented access codes await.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_determined.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/1.jpg' },
+  2: { title: 'ACCESS CODES ASSEMBLED', quote: '"ER-42 is open. Move, Veera � the patrol returns in 4 minutes. The biometric vault is on sub-level 2."', subtext: 'The time-locked vault holds the complete attack blueprint.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_serious.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/2.jpg' },
+  3: { title: 'VAULT CRACKED � ROUND 1 COMPLETE', quote: '"Attack plans retrieved. The second target is the power grid. Three encrypted databases are our next hurdle."', subtext: 'Round 1 complete. The Infiltration phase begins now.', character: 'Deputy NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/3.jpg' },
   4: { title: 'HASH TRAIL BROKEN', quote: '"Databases cracked. Farooq release is blocked. The government has hard evidence. But Saif knows we\'re inside."', subtext: 'The JWT admin token holds the next layer of proof.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_intense.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/4.jpg' },
-  5: { title: 'ADMIN ACCESS SECURED', quote: '"Logs confirmed — the minister\'s wife execution was theater. The government is being blackmailed. This changes everything."', subtext: 'One encrypted database remains. The BLACKOUT payload blueprint is inside.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_urgent.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/5.jpg' },
-  6: { title: 'PATTERN LOCK BROKEN — ROUND 2 COMPLETE', quote: '"Operation BLACKOUT is a worm targeting the city grid. Feb 14. Saravana is the mastermind. We need the kill switch — now."', subtext: 'Round 2 complete. The Final Strike begins.', character: 'Deputy NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/6.jpg' },
+  5: { title: 'ADMIN ACCESS SECURED', quote: '"Logs confirmed � the minister\'s wife execution was theater. The government is being blackmailed. This changes everything."', subtext: 'One encrypted database remains. The BLACKOUT payload blueprint is inside.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_urgent.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/5.jpg' },
+  6: { title: 'PATTERN LOCK BROKEN � ROUND 2 COMPLETE', quote: '"Operation BLACKOUT is a worm targeting the city grid. Feb 14. Saravana is the mastermind. We need the kill switch � now."', subtext: 'Round 2 complete. The Final Strike begins.', character: 'Deputy NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/6.jpg' },
   7: { title: 'PAYLOAD DECODED', quote: '"Now we understand the attack mechanism. Aparna handed us the fragments. The kill switch components are in two final systems."', subtext: 'A logic bomb guards the next layer. One wrong step activates BLACKOUT early.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_concerned.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/7.jpg' },
-  8: { title: 'LOGIC BOMB NEUTRALISED', quote: '"Bomb dead. Mall siege ended. Saif is in custody. One target remains — Saravana, The Phantom. The Master Vault holds everything."', subtext: 'Final challenge: The Master Vault. Use every skill you have learned.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_serious.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/8.jpg' },
-  9: { title: '🎉 OPERATION BLACKOUT — TERMINATED', quote: '"Saravana is arrested. The worm is destroyed. 50,000 jobs saved. Coimbatore is safe. You did it — all of you."', subtext: 'Mission complete. Your team has written history.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_relieved.png', bgColor: 'rgba(16,185,129,0.18)', accentColor: '#10b981', bgImage: '/images/background/9.jpg' },
+  8: { title: 'LOGIC BOMB NEUTRALISED', quote: '"Bomb dead. Mall siege ended. Saif is in custody. One target remains � Saravana, The Phantom. The Master Vault holds everything."', subtext: 'Final challenge: The Master Vault. Use every skill you have learned.', character: 'Vikram Singaravelan', characterImage: '/images/characters/vikram_serious.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/8.jpg' },
+  9: { title: '?? OPERATION BLACKOUT � TERMINATED', quote: '"Saravana is arrested. The worm is destroyed. 50,000 jobs saved. Coimbatore is safe. You did it � all of you."', subtext: 'Mission complete. Your team has written history.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_relieved.png', bgColor: 'rgba(16,185,129,0.18)', accentColor: '#10b981', bgImage: '/images/background/9.jpg' },
 };
 
 const MISSIONS: MissionMeta[] = [
@@ -47,11 +47,11 @@ const MISSIONS: MissionMeta[] = [
     order: 1, round: 1, level: '1.1',
     name: 'The Intercepted Transmission',
     type: 'CRYPTOGRAPHY', difficulty: 'medium', points: 100,
-    storyAct: 'ACT II — THE SIEGE BEGINS',
+    storyAct: 'ACT II � THE SIEGE BEGINS',
     storyTime: '03:47 AM  Basement Server Room',
     storyStatus: ' 1,200 HOSTAGES  NEXT EXECUTION IN 28 MIN',
     situation: 'Veera has gone dark inside the mall and found a backup server room in the basement. He taps the terrorist comms relay and intercepts an encrypted transmission addressed to Saif\'s inner circle. Decode it before they relocate the command center.',
-    intel: '"Intercepted a transmission from their encrypted relay. It\'s been through multiple encoding passes — figure out what they used and reverse it. Every second counts."',
+    intel: '"Intercepted a transmission from their encrypted relay. It\'s been through multiple encoding passes � figure out what they used and reverse it. Every second counts."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_determined.png',
     roundLabel: 'ROUND 1  BREACH',
@@ -60,11 +60,11 @@ const MISSIONS: MissionMeta[] = [
     order: 2, round: 1, level: '1.2',
     name: 'The Fragmented Server Map',
     type: 'FORENSICS', difficulty: 'medium', points: 150,
-    storyAct: 'ACT II — THE SIEGE BEGINS',
+    storyAct: 'ACT II � THE SIEGE BEGINS',
     storyTime: '04:15 AM  Approaching Server Room ER-42',
     storyStatus: ' PATROLS ACTIVE  NEXT EXECUTION IN 15 MIN',
-    situation: 'Vikram\'s cyber unit intercepts three encrypted files from the terrorist relay — the server room access code has been split into fragments. Veera is 50 meters away with armed patrols closing in. He needs the complete code now.',
-    intel: '"Three fragments, three different encodings. Identify each, decode them all, and assemble in order — A then B then C. No room for error. Veera is exposed."',
+    situation: 'Vikram\'s cyber unit intercepts three encrypted files from the terrorist relay � the server room access code has been split into fragments. Veera is 50 meters away with armed patrols closing in. He needs the complete code now.',
+    intel: '"Three fragments, three different encodings. Identify each, decode them all, and assemble in order � A then B then C. No room for error. Veera is exposed."',
     character: 'Vikram Singaravelan',
     characterImage: '/images/characters/vikram_serious.png',
     roundLabel: 'ROUND 1  BREACH',
@@ -76,8 +76,8 @@ const MISSIONS: MissionMeta[] = [
     storyAct: 'ROUND 1 FINALE',
     storyTime: '04:45 AM  Server Room ER-42',
     storyStatus: ' FIRST HOSTAGE EXECUTED ON LIVE TV',
-    situation: 'Veera reaches the biometric vault inside ER-42. The lock uses a team-personalised mathematical formula — every team computes a different answer. Anti-sharing security. Inside is Saif\'s full attack blueprint and proof of a second, larger threat.',
-    intel: '"Personalised vault lock — your code depends on your team\'s registration data. Compute it precisely or we\'re stuck. I cannot wait."',
+    situation: 'Veera reaches the biometric vault inside ER-42. The lock uses a team-personalised mathematical formula � every team computes a different answer. Anti-sharing security. Inside is Saif\'s full attack blueprint and proof of a second, larger threat.',
+    intel: '"Personalised vault lock � your code depends on your team\'s registration data. Compute it precisely or we\'re stuck. I cannot wait."',
     character: 'Deputy NSA Althaf',
     characterImage: '/images/characters/althaf_commanding.png',
     roundLabel: 'ROUND 1  BREACH',
@@ -86,10 +86,10 @@ const MISSIONS: MissionMeta[] = [
     order: 4, round: 2, level: '2.1',
     name: 'The Corrupted Hash Trail',
     type: 'HASH CRACKING', difficulty: 'medium', points: 250,
-    storyAct: 'ACT III — THE COUNTERATTACK',
+    storyAct: 'ACT III � THE COUNTERATTACK',
     storyTime: '05:12 AM  Vault Terminal',
     storyStatus: ' GOVT CAVING  FAROOQ RELEASE PREP STARTED',
-    situation: 'The hard drive from the vault holds three password-protected databases — sleeper cell identities, financial backers, and the BLACKOUT payload. If Veera can crack these before Farooq is released, the transfer can be blocked.',
+    situation: 'The hard drive from the vault holds three password-protected databases � sleeper cell identities, financial backers, and the BLACKOUT payload. If Veera can crack these before Farooq is released, the transfer can be blocked.',
     intel: '"Three locked databases, three hashed passwords. Crack them all and assemble the master key. This is the evidence that stops Farooq\'s release."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_intense.png',
@@ -99,10 +99,10 @@ const MISSIONS: MissionMeta[] = [
     order: 5, round: 2, level: '2.2',
     name: 'The JWT Inception',
     type: 'WEB/TOKEN', difficulty: 'medium', points: 300,
-    storyAct: 'ACT IV — THE BETRAYAL',
+    storyAct: 'ACT IV � THE BETRAYAL',
     storyTime: '05:50 AM  Terrorist Admin Panel',
     storyStatus: ' BREAKING: HOME MINISTER\'S EXECUTION STAGED',
-    situation: 'Veera is inside the admin panel — but the authentication token has been obfuscated to evade scanners. Vikram spotted that the Home Minister\'s "wife execution" was theater staged for compliance. Decode the token to prove the conspiracy.',
+    situation: 'Veera is inside the admin panel � but the authentication token has been obfuscated to evade scanners. Vikram spotted that the Home Minister\'s "wife execution" was theater staged for compliance. Decode the token to prove the conspiracy.',
     intel: '"The token is encoded and buried inside a wrapper. Strip the layers, find the hidden credential, and reverse it. That\'s our proof the Home Minister is a traitor."',
     character: 'Vikram Singaravelan',
     characterImage: '/images/characters/vikram_urgent.png',
@@ -115,7 +115,7 @@ const MISSIONS: MissionMeta[] = [
     storyAct: 'ROUND 2 FINALE',
     storyTime: '06:15 AM  Final Encrypted Database',
     storyStatus: ' FAROOQ BORDER CROSSING IN 3 HOURS',
-    situation: 'The final database — containing the BLACKOUT worm payload and Feb 14 activation details — has a team-specific lock designed to prevent answer sharing. Althaf demands it cracked before Farooq crosses the border.',
+    situation: 'The final database � containing the BLACKOUT worm payload and Feb 14 activation details � has a team-specific lock designed to prevent answer sharing. Althaf demands it cracked before Farooq crosses the border.',
     intel: '"This lock is unique to your team. Compute your personalised code using the formula provided. No shared answers exist. Calculate yours and unlock the BLACKOUT blueprint."',
     character: 'Deputy NSA Althaf',
     characterImage: '/images/characters/althaf_concerned.png',
@@ -125,10 +125,10 @@ const MISSIONS: MissionMeta[] = [
     order: 7, round: 3, level: '3.1',
     name: 'The Payload Hunt',
     type: 'REVERSE ENG', difficulty: 'medium', points: 400,
-    storyAct: 'ACT IV — ESCAPE PHASE',
+    storyAct: 'ACT IV � ESCAPE PHASE',
     storyTime: '07:10 AM  BLACKOUT Payload Analysis',
     storyStatus: ' VEERA INJURED  FAROOQ CROSSED BORDER',
-    situation: 'Veera was captured but escaped with help from Aparna — the Home Minister\'s daughter who chose the right side. The BLACKOUT payload is split across four encrypted fragments. Decode them all to understand the activation mechanism and build the kill switch.',
+    situation: 'Veera was captured but escaped with help from Aparna � the Home Minister\'s daughter who chose the right side. The BLACKOUT payload is split across four encrypted fragments. Decode them all to understand the activation mechanism and build the kill switch.',
     intel: '"Four fragments, four different encodings. Identify what each one is, decode them, and combine in exact order 1 through 4. We need the full payload to build the kill switch."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_concerned.png',
@@ -141,7 +141,7 @@ const MISSIONS: MissionMeta[] = [
     storyAct: 'ROUND 3 CRITICAL',
     storyTime: '07:35 AM  Script Defusal Window',
     storyStatus: ' LOGIC BOMB TRIGGER IN 10 MINUTES',
-    situation: 'A logic bomb is embedded in Saif\'s attack script. If it triggers, Operation BLACKOUT goes live immediately — 13 days early. The defusal code is buried under multiple nested encoding layers. One wrong step and 50,000 jobs vanish tonight.',
+    situation: 'A logic bomb is embedded in Saif\'s attack script. If it triggers, Operation BLACKOUT goes live immediately � 13 days early. The defusal code is buried under multiple nested encoding layers. One wrong step and 50,000 jobs vanish tonight.',
     intel: '"Multiple encoding layers protecting the defusal code. Strip every layer carefully until you reach the plaintext. The fully decoded output is what you submit."',
     character: 'Vikram Singaravelan',
     characterImage: '/images/characters/vikram_serious.png',
@@ -151,10 +151,10 @@ const MISSIONS: MissionMeta[] = [
     order: 9, round: 3, level: '3.3',
     name: 'The Master Vault',
     type: 'FINAL BOSS', difficulty: 'hard', points: 1000,
-    storyAct: 'EPILOGUE — OPERATION COMPLETE',
+    storyAct: 'EPILOGUE � OPERATION COMPLETE',
     storyTime: '08:00 AM  Saravana\'s Encrypted Server',
     storyStatus: ' HOSTAGES FREED  ONE TARGET REMAINS',
-    situation: 'Veera recaptured Farooq and extracted the name of the cyber-mastermind: Saravana "The Phantom". A joint RAW-Police raid seized his server. The MASTER KILL SWITCH for Operation BLACKOUT is inside — protected by every technique you have encountered.',
+    situation: 'Veera recaptured Farooq and extracted the name of the cyber-mastermind: Saravana "The Phantom". A joint RAW-Police raid seized his server. The MASTER KILL SWITCH for Operation BLACKOUT is inside � protected by every technique you have encountered.',
     intel: '"This is everything. Every technique, every skill you\'ve learned leads here. The kill switch is buried in that vault. Crack it and this is over. First team wins it all."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_relieved.png',
@@ -203,7 +203,7 @@ function ChallengesInner() {
   const [rightOpen, setRightOpen] = useState(true);
   const [focusMode, setFocusMode] = useState(false);
   const [compactMode, setCompactMode] = useState(false);
-  // Hint cache: maps challengeId → { texts, shown, revealed, total }
+  // Hint cache: maps challengeId ? { texts, shown, revealed, total }
   const [hintCache, setHintCache] = useState<Record<string, { texts: string[]; shown: boolean; revealed: number; total: number }>>({})
   // Mobile panel overlay: 'missions' | 'intel' | null
   const [mobilePanel, setMobilePanel] = useState<'missions' | 'intel' | null>(null);
@@ -464,10 +464,10 @@ function ChallengesInner() {
     <div className="ch-loading-screen">
       <div className="ch-spin-ring" />
       <div className="ch-loading-title">DECRYPTING MISSION DATA</div>
-      <div className="ch-loading-sub">Please stand by…</div>
+      <div className="ch-loading-sub">Please stand by�</div>
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
-        .ch-loading-screen{min-height:100vh;background:#070813;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;font-family:'Share Tech Mono','Courier New',monospace;}
+        .ch-loading-screen{min-height:100vh;background:#070813;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;font-family:'Inter', system-ui, sans-serif;}
         .ch-spin-ring{width:52px;height:52px;border:3px solid rgba(124,58,237,0.22);border-top-color:#7c3aed;border-radius:50%;animation:spin 0.85s linear infinite;}
         .ch-loading-title{color:#7c3aed;letter-spacing:4px;font-size:12px;font-weight:700;text-transform:uppercase;}
         .ch-loading-sub{color:#374151;font-size:11px;letter-spacing:2px;}
@@ -479,7 +479,7 @@ function ChallengesInner() {
   const rescuePct = Math.round((rescued / 1200) * 100);
   const scored = Math.max(currentLevel - 1, 0);
   const teamPoints = apiResponse?.team?.currentPoints ?? 0;
-  const teamName = apiResponse?.team?.name ?? '—';
+  const teamName = apiResponse?.team?.name ?? '�';
   const storyChallenge = Math.min(Math.max(meta?.order ?? currentLevel, 1), 9);
   const storyHref = `/story?challenge=${storyChallenge}`;
   const masterVaultUrl = (() => {
@@ -495,7 +495,7 @@ function ChallengesInner() {
       {/* Background grid */}
       <div className="ch-bg-grid" aria-hidden />
 
-      {/* ── TOP BAR ── */}
+      {/* -- TOP BAR -- */}
       <header data-g="topbar" className="ch-topbar">
         {/* Brand */}
         <Link href="/dashboard" className="ch-brand">
@@ -550,7 +550,7 @@ function ChallengesInner() {
         </button>
       </header>
 
-      {/* ── 3-COL LAYOUT ── */}
+      {/* -- 3-COL LAYOUT -- */}
       <div className={`ch-body ${focusMode ? 'ch-focus-mode' : ''} ${compactMode ? 'ch-compact' : ''}`}>
 
         {/* LEFT: ZIG-ZAG TIMELINE (collapsible) */}
@@ -608,9 +608,9 @@ function ChallengesInner() {
 
               {/* Round groups */}
               {[
-                { act: 'ROUND 1 — THE BREACH',   color: '#fca5a5', rgb: '239,68,68',  orders: [1,2,3] },
-                { act: 'ROUND 2 — INFILTRATION', color: '#fde68a', rgb: '245,158,11', orders: [4,5,6] },
-                { act: 'ROUND 3 — FINAL STRIKE', color: '#6ee7b7', rgb: '16,185,129', orders: [7,8,9] },
+                { act: 'ROUND 1 � THE BREACH',   color: '#fca5a5', rgb: '239,68,68',  orders: [1,2,3] },
+                { act: 'ROUND 2 � INFILTRATION', color: '#fde68a', rgb: '245,158,11', orders: [4,5,6] },
+                { act: 'ROUND 3 � FINAL STRIKE', color: '#6ee7b7', rgb: '16,185,129', orders: [7,8,9] },
               ].map(group => (
                 <div key={group.act} className="ch-round-group">
                   <div className="ch-round-label" style={{ color: group.color }}>
@@ -675,8 +675,8 @@ function ChallengesInner() {
 
           {apiResponse?.progress?.completedAll && (
             <div className="ch-complete-banner">
-              <div className="ch-complete-icon">🎉</div>
-              <div className="game-title ch-complete-title">OPERATION BLACKOUT — TERMINATED</div>
+              <div className="ch-complete-icon">??</div>
+              <div className="game-title ch-complete-title">OPERATION BLACKOUT � TERMINATED</div>
               <p className="ch-complete-body">All 9 missions complete. Saravana arrested. The malware is destroyed. 50,000 jobs saved. Coimbatore is safe.</p>
               <div className="ch-complete-score">FINAL SCORE: {teamPoints.toLocaleString()} pts</div>
             </div>
@@ -684,7 +684,7 @@ function ChallengesInner() {
 
           {meta ? (
             <>
-              {/* ─ Badges ─ */}
+              {/* - Badges - */}
               <div className="ch-badges-row">
                 <span className={`round-badge ${rc.badge}`}>{meta.roundLabel}</span>
                 <span className={`diff-badge diff-${meta.difficulty}`}>{meta.difficulty}</span>
@@ -698,17 +698,17 @@ function ChallengesInner() {
 
               {focusMode && (
                 <div className="ch-focus-note">
-                  Focus mode enabled — side intel panels hidden for distraction-free solving.
+                  Focus mode enabled � side intel panels hidden for distraction-free solving.
                 </div>
               )}
 
-              {/* ─ Title ─ */}
+              {/* - Title - */}
               <div className="ch-title-block">
                 <div className="ch-act-label">{meta.storyAct}</div>
-                <h1 className="ch-mission-title">{meta.level} — {meta.name}</h1>
+                <h1 className="ch-mission-title">{meta.level} � {meta.name}</h1>
               </div>
 
-              {/* ─ Character Intel Banner ─ */}
+              {/* - Character Intel Banner - */}
               <div className="ch-intel-banner" style={{
                 border: `1px solid ${rc.border}`,
                 boxShadow: `0 0 24px ${rc.glow}, 0 6px 20px rgba(0,0,0,0.45)`,
@@ -751,13 +751,13 @@ function ChallengesInner() {
                 </div>
               </div>
 
-              {/* ─ Situation ─ */}
+              {/* - Situation - */}
               <div className="ch-sitrep">
                 <div className="ch-section-label"><Shield size={11} color="#6b7280" />SITUATION REPORT</div>
                 <p className="ch-sitrep-text">{meta.situation}</p>
               </div>
 
-              {/* ─ Cipher payload ─ */}
+              {/* - Cipher payload - */}
               <div className="ch-payload-panel game-panel-bordered">
                 <div className="ch-payload-header">
                   <Terminal size={12} color="#06b6d4" />
@@ -790,7 +790,7 @@ function ChallengesInner() {
                 )}
                 {state === 'locked' && (
                   <div className="ch-payload-state ch-payload-locked">
-                    <Lock size={16} />Payload encrypted — complete the active mission to unlock.
+                    <Lock size={16} />Payload encrypted � complete the active mission to unlock.
                   </div>
                 )}
 
@@ -804,7 +804,7 @@ function ChallengesInner() {
                           ? 'HIDE INTEL'
                           : (currentHint.revealed < currentHint.total ? 'REVEAL NEXT INTEL' : 'SHOW INTEL'))
                         : 'REVEAL INTEL'}
-                      {(!currentHint || (currentHint.revealed < currentHint.total)) && <span className="ch-hint-cost">−{nextHintPenalty} pts</span>}
+                      {(!currentHint || (currentHint.revealed < currentHint.total)) && <span className="ch-hint-cost">-{nextHintPenalty} pts</span>}
                       {currentHint && <span className="ch-hint-unlocked-tag">{currentHint.revealed}/{currentHint.total} UNLOCKED</span>}
                     </button>
                     {currentHint?.shown && currentHint.texts.length > 0 && (
@@ -980,9 +980,9 @@ function ChallengesInner() {
               <h3 className="ch-modal-title">REVEAL INTEL?</h3>
               <button onClick={() => setShowHintConfirm(false)} className="ch-modal-close"><X size={15} /></button>
             </div>
-            <p className="ch-modal-body">Mission intel is classified. Accessing it deducts points from your team score. Once revealed, intel stays visible at no further cost — you can hide/show it freely.</p>
+            <p className="ch-modal-body">Mission intel is classified. Accessing it deducts points from your team score. Once revealed, intel stays visible at no further cost � you can hide/show it freely.</p>
             <div className="game-alert-error ch-modal-warning">
-              <AlertTriangle size={13} />Penalty for next intel tier: −{nextHintPenalty} points
+              <AlertTriangle size={13} />Penalty for next intel tier: -{nextHintPenalty} points
             </div>
             <div className="ch-modal-actions">
               <button className="btn-game-secondary" onClick={() => setShowHintConfirm(false)}>Abort</button>
@@ -994,7 +994,7 @@ function ChallengesInner() {
         </div>
       )}
 
-      {/* ─── FULL-SCREEN VISUAL NOVEL STORY ─── */}
+      {/* --- FULL-SCREEN VISUAL NOVEL STORY --- */}
       {storyModal && (() => {
         const story = COMPLETION_STORIES[storyModal.level];
         if (!story) return null;
@@ -1004,7 +1004,7 @@ function ChallengesInner() {
         return (
           <div
             onClick={handleStoryAdvance}
-            style={{ position: 'fixed', inset: 0, zIndex: 500, cursor: 'pointer', userSelect: 'none', fontFamily: "'Share Tech Mono','Courier New',monospace", background: '#000' }}
+            style={{ position: 'fixed', inset: 0, zIndex: 500, cursor: 'pointer', userSelect: 'none', fontFamily: "'Inter', system-ui, sans-serif", background: '#000' }}
           >
             {/* Background */}
             <div ref={vnBgRef} style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
@@ -1105,7 +1105,7 @@ function ChallengesInner() {
                       <span style={{ color: story.accentColor, fontSize: 10, fontWeight: 700, letterSpacing: 3 }}>NEXT OBJECTIVE</span>
                     </div>
                     <div style={{ color: '#e9d5ff', fontSize: 15, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>
-                      {nextMission ? `${nextMission.level} — ${nextMission.name}` : 'All missions complete. Operation terminated.'}
+                      {nextMission ? `${nextMission.level} � ${nextMission.name}` : 'All missions complete. Operation terminated.'}
                     </div>
                     <div style={{ color: '#6b7280', fontSize: 12, lineHeight: 1.6 }}>{story.subtext}</div>
                   </div>
@@ -1129,7 +1129,7 @@ function ChallengesInner() {
       })()}
 
       <style>{`
-        /* ─── keyframes ─────────────────────────────────────────── */
+        /* --- keyframes ------------------------------------------- */
         @keyframes spin { to { transform:rotate(360deg) } }
         @keyframes dopulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
@@ -1138,15 +1138,15 @@ function ChallengesInner() {
         @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes scanLine { 0%{transform:translateY(-100%)} 100%{transform:translateY(100%)} }
 
-        /* ─── root / bg ─────────────────────────────────────────── */
-        .ch-root { height:100vh; height:100dvh; background:#070813; display:flex; flex-direction:column; font-family:'Share Tech Mono','Courier New',monospace; position:relative; overflow:hidden; }
+        /* --- root / bg ------------------------------------------- */
+        .ch-root { height:100vh; height:100dvh; background:#070813; display:flex; flex-direction:column; font-family:'Inter', system-ui, sans-serif; position:relative; overflow:hidden; }
         .ch-bg-grid { position:fixed; inset:0; pointer-events:none; z-index:0;
           background-image:
             repeating-linear-gradient(0deg,rgba(109,40,217,0.025) 0,rgba(109,40,217,0.025) 1px,transparent 1px,transparent 52px),
             repeating-linear-gradient(90deg,rgba(109,40,217,0.025) 0,rgba(109,40,217,0.025) 1px,transparent 1px,transparent 52px),
             radial-gradient(ellipse 90% 70% at 50% 0%,rgba(109,40,217,0.07),transparent 72%); }
 
-        /* ─── topbar ─────────────────────────────────────────────── */
+        /* --- topbar ----------------------------------------------- */
         .ch-topbar { position:sticky; top:0; z-index:50; display:flex; align-items:center; padding:0 20px; height:56px; border-bottom:1px solid rgba(109,40,217,0.2); background:rgba(4,2,14,0.97); backdrop-filter:blur(24px); gap:10px; flex-shrink:0; }
         .ch-brand { display:flex; align-items:center; gap:9px; text-decoration:none; }
         .ch-brand-icon { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#7c3aed,#06b6d4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -1170,10 +1170,10 @@ function ChallengesInner() {
         .ch-team-name { color:#94a3b8; font-size:11px; letter-spacing:1px; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .ch-mob-btn { display:none; background:rgba(109,40,217,0.12); border:1px solid rgba(109,40,217,0.3); border-radius:7px; color:#a78bfa; cursor:pointer; padding:7px 9px; align-items:center; justify-content:center; flex-shrink:0; }
 
-        /* ─── 3-col body ─────────────────────────────────────────── */
+        /* --- 3-col body ------------------------------------------- */
         .ch-body { position:relative; z-index:10; flex:1; display:flex; min-height:0; height:calc(100vh - 56px); }
 
-        /* ─── side panels ────────────────────────────────────────── */
+        /* --- side panels ------------------------------------------ */
         .ch-left-panel  { border-right:1px solid rgba(109,40,217,0.18); background:rgba(3,1,14,0.9); backdrop-filter:blur(20px); display:flex; flex-direction:column; transition:width 0.28s ease,min-width 0.28s ease; overflow:hidden; position:relative; height:100%; flex-shrink:0; }
         .ch-right-panel { border-left:1px solid rgba(109,40,217,0.18);  background:rgba(3,1,14,0.9); backdrop-filter:blur(20px); display:flex; flex-direction:column; transition:width 0.28s ease,min-width 0.28s ease; overflow:hidden; position:relative; height:100%; flex-shrink:0; }
         .ch-left-panel.ch-panel-open   { width:clamp(228px, 16.5vw, 270px); min-width:clamp(228px, 16.5vw, 270px); }
@@ -1205,7 +1205,7 @@ function ChallengesInner() {
         .ch-dot-pip { width:10px; height:10px; border-radius:50%; cursor:pointer; transition:transform 0.2s; flex-shrink:0; }
         .ch-dot-pip:hover { transform:scale(1.4); }
 
-        /* ─── left timeline ──────────────────────────────────────── */
+        /* --- left timeline ---------------------------------------- */
         .ch-tl-scroll { overflow-y:auto; flex:1; padding:16px 0 22px; }
         .ch-tl-scroll::-webkit-scrollbar { width:4px; }
         .ch-tl-scroll::-webkit-scrollbar-track { background:transparent; }
@@ -1232,7 +1232,7 @@ function ChallengesInner() {
         .ch-mc-pts { margin-top:5px; display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; }
         .ch-mc-type { color:#6b7280; font-size:10px; letter-spacing:1px; text-transform:uppercase; }
 
-        /* ─── center ─────────────────────────────────────────────── */
+        /* --- center ----------------------------------------------- */
         .ch-center { flex:1; display:flex; flex-direction:column; min-width:0; height:100%; overflow:hidden; }
         .ch-center-scroll { flex:1; overflow-y:auto; overflow-x:hidden; padding:clamp(20px, 2vw, 28px) clamp(18px, 2.4vw, 34px) 22px; display:flex; flex-direction:column; gap:20px; }
         .ch-center-scroll::-webkit-scrollbar { width:5px; }
@@ -1295,7 +1295,7 @@ function ChallengesInner() {
         .ch-vault-link-btn { display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:#e2e8f0; background:rgba(109,40,217,0.3); border:1px solid rgba(167,139,250,0.45); border-radius:8px; padding:8px 12px; font-size:12px; font-weight:800; letter-spacing:1px; text-transform:uppercase; transition:all 0.15s; }
         .ch-vault-link-btn:hover { background:rgba(109,40,217,0.45); box-shadow:0 0 16px rgba(109,40,217,0.4); }
         .ch-vault-link-path { margin-top:8px; color:#94a3b8; font-size:11px; word-break:break-all; }
-        .ch-payload-code { background:rgba(0,0,0,0.52); border:1px solid rgba(109,40,217,0.22); border-radius:10px; padding:18px 20px; font-family:'Share Tech Mono','Courier New',monospace; font-size:14.5px; color:#c4b5fd; line-height:2; white-space:pre-wrap; max-height:360px; overflow-y:auto; letter-spacing:0.3px; }
+        .ch-payload-code { background:rgba(0,0,0,0.52); border:1px solid rgba(109,40,217,0.22); border-radius:10px; padding:18px 20px; font-family:'Inter', system-ui, sans-serif; font-size:14.5px; color:#c4b5fd; line-height:2; white-space:pre-wrap; max-height:360px; overflow-y:auto; letter-spacing:0.3px; }
         .ch-payload-code::-webkit-scrollbar { width:4px; }
         .ch-payload-code::-webkit-scrollbar-thumb { background:rgba(109,40,217,0.4); border-radius:3px; }
         .ch-payload-state { display:flex; align-items:center; gap:10px; border-radius:10px; padding:14px 16px; font-size:14px; }
@@ -1335,7 +1335,7 @@ function ChallengesInner() {
         .ch-msg-success{ background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.3); color:#6ee7b7; }
         .ch-flag-status { display:flex; align-items:center; gap:10px; font-size:14px; }
 
-        /* ─── right panel ────────────────────────────────────────── */
+        /* --- right panel ------------------------------------------ */
         .ch-right-scroll { overflow-y:auto; flex:1; padding:18px 14px; display:flex; flex-direction:column; gap:14px; }
         .ch-right-scroll::-webkit-scrollbar { width:4px; }
         .ch-right-scroll::-webkit-scrollbar-thumb { background:rgba(109,40,217,0.35); border-radius:4px; }
@@ -1382,7 +1382,7 @@ function ChallengesInner() {
         /* mobile backdrop */
         .ch-mobile-backdrop { position:fixed; inset:0; z-index:199; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); }
 
-        /* ─── hint confirm modal ─────────────────────────────────── */
+        /* --- hint confirm modal ----------------------------------- */
         .ch-modal-overlay { position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.82); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; }
         .ch-modal { width:440px; max-width:90vw; padding:24px 24px 20px; animation:fadeIn 0.2s ease; }
         .ch-modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
@@ -1396,10 +1396,10 @@ function ChallengesInner() {
         .ch-modal-actions .btn-game-danger    { padding:9px 16px; font-size:12px; }
 
         /* loading screen */
-        .ch-loading-screen { min-height:100vh; background:#080614; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px; font-family:'Share Tech Mono','Courier New',monospace; }
+        .ch-loading-screen { min-height:100vh; background:#080614; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px; font-family:'Inter', system-ui, sans-serif; }
         .ch-spin-ring { width:44px; height:44px; border-radius:50%; border:2px solid rgba(109,40,217,0.2); border-top-color:#7c3aed; animation:spin 0.8s linear infinite; }
 
-        /* ─── responsive ─────────────────────────────────────────── */
+        /* --- responsive ------------------------------------------- */
         @media (max-width:900px) {
           .ch-mob-btn { display:flex; }
           .ch-brand-name { display:none; }
@@ -1439,7 +1439,7 @@ function ChallengesInner() {
 export default function ChallengesPage() {
   return (
     <Suspense fallback={
-      <div style={{ minHeight: '100vh', background: '#080614', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontFamily: "'Share Tech Mono','Courier New',monospace" }}>
+      <div style={{ minHeight: '100vh', background: '#080614', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontFamily: "'Inter', system-ui, sans-serif" }}>
         Loading mission data...
       </div>
     }>

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -161,7 +161,7 @@ export default function AdminPage() {
   };
 
   const handleResetCompetition = async () => {
-    if (!confirm('⚠️ DANGER: This will DELETE ALL submissions and scores! Are you absolutely sure?')) {
+    if (!confirm('?? DANGER: This will DELETE ALL submissions and scores! Are you absolutely sure?')) {
       return;
     }
     if (!confirm('This action is IRREVERSIBLE. Type "RESET" in the next prompt to confirm.')) {
@@ -567,7 +567,7 @@ export default function AdminPage() {
                           <XCircle className="h-4 w-4 text-red-400" />
                         )}
                         <span className="text-slate-400">{sub.team?.name || sub.user.username}</span>
-                        <span className="text-slate-500">→</span>
+                        <span className="text-slate-500">?</span>
                         <span className="text-cyan-400">{sub.challenge.title}</span>
                       </div>
                       <div className="flex items-center gap-3">
@@ -652,7 +652,7 @@ export default function AdminPage() {
                                   setShowAdjustModal(true);
                                 }}
                               >
-                                ± PTS
+                                � PTS
                               </Button>
                               {isDisqualified ? (
                                 <Button

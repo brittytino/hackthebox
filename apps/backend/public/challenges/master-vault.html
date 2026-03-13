@@ -543,12 +543,23 @@
 
         startCountdown();
 
-        // Correct answers for validation
-        const LAYER1_ANSWER = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2YXVsdF9rZXkiOiI0Mi0xNy04OSIsImRhdGEiOiJrbGxzd2l0Y2gifQ.89d1roG5HmocObazV9vRyQtqHnBFjqFUO7DP8NkKMSav0Zk0MJkRt_';
-        const LAYER2_ANSWER = 'eyJ2YXVsdF9rZXkiOiI0Mi0xNy04OSIsImRhdGEiOiJrbGxzd2l0Y2gifQ';
-        const LAYER3_ANSWER = '42-17-89';
-        const LAYER4_ANSWER = '42-17-89';
-        const LAYER5_ANSWER = 'a1b2c3';
+        // Validation data (intentionally compact to discourage trivial inspection)
+        const _v = [
+            'e', 'y', 'J', 'h', 'b', 'G', 'c', 'i', 'O', 'i', 'J', 'I', 'U', 'z', 'I', '1',
+            'N', 'i', 'I', 's', 'I', 'n', 'R', '5', 'c', 'C', 'I', '6', 'I', 'k', 'p',
+            'X', 'V', 'C', 'J', '9', '.', 'e', 'y', 'J', '2', 'Y', 'X', 'V', 's', 'd',
+            'F', '9', 'r', 'Z', 'X', 'k', 'i', 'O', 'i', 'I', '0', 'M', 'i', '0', 'x',
+            'N', 'y', '0', '4', 'O', 'S', 'I', 's', 'I', 'm', 'R', 'h', 'd', 'G', 'E',
+            'i', 'O', 'i', 'J', 'r', 'b', 'G', 'x', 'z', 'd', '2', 'l', '0', 'Y', '2',
+            'g', 'i', 'f', 'Q', '.', '8', '9', 'd', '1', 'r', 'o', 'G', '5', 'H', 'm',
+            'o', 'c', 'O', 'b', 'a', 'z', 'V', '9', 'v', 'R', 'y', 'Q', 't', 'q', 'H',
+            'n', 'B', 'F', 'j', 'q', 'F', 'U', 'O', '7', 'D', 'P', '8', 'N', 'k', 'K',
+            'M', 'S', 'a', 'v', '0', 'Z', 'k', '0', 'M', 'J', 'k', 'R', 't', '_'
+        ];
+        const _k = '42-17-89';
+        const _c = 'a1b2c3';
+        const _p = 'eyJ2YXVsdF9rZXkiOiI0Mi0xNy04OSIsImRhdGEiOiJrbGxzd2l0Y2gifQ';
+        const _sig = _v.join('');
 
         function updateProgress(percent) {
             document.getElementById('progress').style.width = percent + '%';
@@ -560,7 +571,7 @@
                 return;
             }
             const input = document.getElementById('base64Input').value.trim();
-            if (input === LAYER1_ANSWER) {
+            if (input === _sig) {
                 document.getElementById('status1').classList.add('complete');
                 document.getElementById('status1').textContent = '✓';
                 document.getElementById('result1').innerHTML = '<div class="result-box">✓ Layer 1 Complete - Base64 Revealed</div>';
@@ -578,7 +589,7 @@
                 return;
             }
             const input = document.getElementById('jwtInput').value.trim();
-            if (input.includes('eyJ') || input.toLowerCase().includes(LAYER2_ANSWER.toLowerCase())) {
+            if (input.includes('eyJ') || input.toLowerCase().includes(_p.toLowerCase())) {
                 document.getElementById('status2').classList.add('complete');
                 document.getElementById('status2').textContent = '✓';
                 document.getElementById('result2').innerHTML = '<div class="result-box">✓ Layer 2 Complete - JWT Payload Found</div>';
@@ -596,8 +607,8 @@
                 return;
             }
             const input = document.getElementById('rot13Input').value.trim();
-            // Actually the vault_key in JWT payload is already "42-17-89" not ROT13, but let's accept both
-            if (input === '42-17-89' || input.toLowerCase().includes('42')) {
+            // Accepts either decoded or raw key
+            if (input === _k || input.toLowerCase().includes('42')) {
                 document.getElementById('status3').classList.add('complete');
                 document.getElementById('status3').textContent = '✓';
                 document.getElementById('result3').innerHTML = '<div class="result-box">✓ Layer 3 Complete - Coordinates Extracted</div>';
@@ -615,7 +626,7 @@
                 return;
             }
             const input = document.getElementById('coordInput').value.trim();
-            if (input === LAYER4_ANSWER || input === '42-17-89') {
+            if (input === _k) {
                 document.getElementById('status4').classList.add('complete');
                 document.getElementById('status4').textContent = '✓';
                 document.getElementById('result4').innerHTML = '<div class="result-box">✓ Layer 4 Complete - Final vault sequence can now be derived</div>';
@@ -633,15 +644,16 @@
                 return;
             }
             const input = document.getElementById('md5Input').value.trim().toLowerCase();
-            if (input === LAYER5_ANSWER) {
+            if (input === _c) {
                 document.getElementById('status5').classList.add('complete');
                 document.getElementById('status5').textContent = '✓';
                 document.getElementById('result5').innerHTML = '<div class="result-box">✓ ALL LAYERS COMPLETE!</div>';
                 document.getElementById('result5').style.display = 'block';
                 updateProgress(100);
                 
-                // Show final flag
-                const finalFlag = 'CTF{MASTER_a1b2c3_VAULT}';
+                // Show final flag (assembled to reduce trivial inspection)
+                const finalFlag = ['C', 'T', 'F', '{', 'M', 'A', 'S', 'T', 'E', 'R', '_',
+                    'a', '1', 'b', '2', 'c', '3', '_', 'V', 'A', 'U', 'L', 'T', '}'].join('');
                 document.getElementById('finalFlag').textContent = finalFlag;
                 document.getElementById('successMessage').style.display = 'block';
                 

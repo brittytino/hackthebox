@@ -1,4 +1,4 @@
-﻿import {
+import {
   Injectable,
   NotFoundException,
   ForbiddenException,
@@ -59,17 +59,17 @@ export class ChallengesService {
 
   // Calculate team-specific flag for challenges 1.3 and 2.3
   private calculateTeamSpecificFlag(
-    teamName: string,
+    team: { name: string; member2Name?: string | null },
     absoluteLevel: number,
   ): string {
+    const teamSize = team.member2Name ? 2 : 1;
     if (absoluteLevel === 3) {
-      // Level 1.3: MD5(teamName|2|1|HACKTHEBOX2026)
-      const input = `${teamName}|2|1|HACKTHEBOX2026`;
+      const input = `${team.name}|${teamSize}|1|THEEXTRACTION2026`;
       const hash = crypto.createHash('md5').update(input).digest('hex');
       return `ctf{${hash.substring(0, 8)}}`;
     } else if (absoluteLevel === 6) {
-      // Level 2.3: SHA256(teamName+5+HACKTHEBOX2026)
-      const input = `${teamName}5HACKTHEBOX2026`;
+      // Level 2.3: SHA256(teamName+5+THEEXTRACTION2026)
+      const input = `${team.name}5THEEXTRACTION2026`;
       const hash = crypto.createHash('sha256').update(input).digest('hex');
       return `ctf{${hash.substring(0, 8)}}`;
     }
@@ -80,7 +80,7 @@ export class ChallengesService {
     return (challenge.round.order - 1) * 3 + challenge.order;
   }
 
-  private getAcceptedFlagsForLevel(teamName: string, absoluteLevel: number): string[] {
+  private getAcceptedFlagsForLevel(team: { name: string; member2Name?: string | null }, absoluteLevel: number): string[] {
     const staticFlags: Record<number, string[]> = {
       1: ['ctf{server.room-er42,east-wing}'],
       2: ['ctf#accessgranted'],
@@ -92,7 +92,7 @@ export class ChallengesService {
     };
 
     if (absoluteLevel === 3 || absoluteLevel === 6) {
-      return [this.calculateTeamSpecificFlag(teamName, absoluteLevel).toLowerCase()];
+      return [this.calculateTeamSpecificFlag(team, absoluteLevel).toLowerCase()];
     }
 
     return staticFlags[absoluteLevel] || [];
@@ -307,7 +307,7 @@ export class ChallengesService {
 
     // Verify flag
     const normalizedFlag = flag.trim().toLowerCase();
-    const acceptedFlags = this.getAcceptedFlagsForLevel(team.name, absoluteLevel);
+    const acceptedFlags = this.getAcceptedFlagsForLevel(team, absoluteLevel);
 
     let isCorrect = false;
     if (acceptedFlags.length > 0) {
@@ -603,10 +603,10 @@ export class ChallengesService {
       3: `${teamName} cracked the time-locked vault - Attack plans recovered`,
       4: `${teamName} broke through the corrupted hash trail - Home Minister exposed!`,
       5: `${teamName} infiltrated admin panel via JWT token - Evidence collected`,
-      6: `${teamName} unlocked the pattern lock - Operation BLACKOUT revealed`,
+      6: `${teamName} unlocked the pattern lock - The Hostage Crisis revealed`,
       7: `${teamName} decoded the payload fragments - Attack mechanism understood`,
       8: `${teamName} defused the logic bomb - Mall siege ended`,
-      9: `🎉 ${teamName} CRACKED THE MASTER VAULT! OPERATION BLACKOUT TERMINATED! 🎉`,
+      9: `🎉 ${teamName} CRACKED THE MASTER VAULT! THE HOSTAGE CRISIS TERMINATED! 🎉`,
     };
 
     return messages[level] || `${teamName} completed level ${level}`;

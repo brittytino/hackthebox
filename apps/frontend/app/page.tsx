@@ -141,7 +141,7 @@ export default function LandingPage() {
           >
             <span className="status-dot active" />
             <span style={{ color: '#a78bfa', fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase' }}>
-              HACK THE BOX 2026 — LIVE
+              THE EXTRACTION 2026 — LIVE
             </span>
           </div>
 
@@ -185,7 +185,7 @@ export default function LandingPage() {
                 marginBottom: 20,
               }}
             >
-              CIPHER STRIKE
+              THE EXTRACTION
             </h1>
           </div>
 
@@ -306,11 +306,11 @@ export default function LandingPage() {
           {/* Bottom version */}
           <div style={{ marginTop: 24, textAlign: 'center' }}>
             <div className="game-label" style={{ fontSize: 10, color: '#374151' }}>
-              BUILD 2026.02.18 · CIPHER STRIKE ENGINE v3.0
+              BUILD 2026.02.18 · THE EXTRACTION ENGINE v3.0
             </div>
             <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
               <Zap size={12} color="#7c3aed" />
-              <span style={{ color: '#4b5563', fontSize: 11, letterSpacing: 1 }}>POWERED BY HACKTHEBOX PLATFORM</span>
+              <span style={{ color: '#4b5563', fontSize: 11, letterSpacing: 1 }}>POWERED BY THE EXTRACTION PLATFORM</span>
             </div>
           </div>
         </div>

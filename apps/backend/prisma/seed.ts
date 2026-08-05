@@ -10,10 +10,10 @@ async function main() {
   // Create Admin User
   const adminPassword = await bcrypt.hash('admin123', 10);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@hackthebox.local' },
+    where: { email: 'admin@theextraction.local' },
     update: {},
     create: {
-      email: 'admin@hackthebox.local',
+      email: 'admin@theextraction.local',
       username: 'admin',
       passwordHash: adminPassword,
       role: 'ADMIN',
@@ -21,7 +21,7 @@ async function main() {
     },
   });
   console.log('✅ Admin user created:', admin.username);
-  console.log('   📧 Email: admin@hackthebox.local');
+  console.log('   📧 Email: admin@theextraction.local');
   console.log('   🔑 Password: admin123');
 
   // Create Rounds with Story Context
@@ -33,7 +33,7 @@ async function main() {
       type: 'DECODE_THE_SECRET',
       order: 1,
       status: 'ACTIVE',
-      description: 'Veera infiltrates the mall, discovers the command center. Decode encrypted terrorist communications.',
+      description: 'Veera discovers the mall is hijacked. Tap into CCTV to locate the sleeper cells.',
     },
   });
   console.log('✅ Round 1 created');
@@ -59,7 +59,7 @@ async function main() {
       type: 'CATCH_THE_FLAG',
       order: 3,
       status: 'PENDING',
-      description: 'Race against time to decode the cyber attack payload and defuse Operation BLACKOUT.',
+      description: 'Race against time to decode the cyber attack payload and defuse Operation The Hostage Crisis.',
     },
   });
   console.log('✅ Round 3 created');
@@ -97,7 +97,7 @@ async function main() {
       storyContext: `TIME: 3:47 AM | LOCATION: Hidden server room, basement level
 
 Veera has managed to access the mall's backup server room and intercepted an encrypted transmission from the terrorist comms relay. The message contains the command center coordinates.`,
-      characterMessage: "I've tapped into their relay. This transmission has the command center location — but someone worked hard to hide it. Figure out what they did and undo it. Move fast.",
+      characterMessage: "I've tapped into their CCTV. This transmission has the sleeper cell locations — but someone worked hard to hide it. Figure out what they did and undo it. Move fast.",
       flag: 'CTF{Server.Room-ER42,East-Wing}',
       points: 100,
       order: 1,
@@ -108,7 +108,7 @@ Veera has managed to access the mall's backup server room and intercepted an enc
     },
     {
       title: 'Level 1.2: The Fragmented Server Map',
-      description: `FRAGMENTED ACCESS CODE — SERVER ROOM ER-42
+      description: `FRAGMENTED ACCESS CODE — SECURITY DOORS
 
     Three seized packets from independent relay paths appear to be parts of one authorization phrase.
     Integrity checks show no packet is redundant.
@@ -165,7 +165,7 @@ The vault contains Saif's full attack blueprint. The biometric lock requires a t
       order: 3,
       difficulty: 'hard',
       hintPenalty: 70,
-      hints: 'This challenge is deterministic and team-bound: everyone gets a different answer. Reconstruct one exact input string from your registered team name plus fixed mission constants in strict order.||Use a legacy hash function for the vault lock, then submit only the first 8 lowercase hex characters wrapped as `CTF{........}`.',
+      hints: 'This challenge is deterministic and team-bound: everyone gets a different answer. Reconstruct one exact input string from your registered team name and team size (1 or 2) plus fixed mission constants in strict order.||Use a legacy hash function for the vault lock, then submit only the first 8 lowercase hex characters wrapped as `CTF{........}`.',
 
     },
   ];
@@ -227,8 +227,8 @@ The vault contains Saif's full attack blueprint. The biometric lock requires a t
 
       storyContext: `TIME: 5:12 AM | LOCATION: Inside the vault, analyzing recovered hard drive
 
-The hard drive holds three separate databases — sleeper cell identities, financial backers, and the BLACKOUT payload. Each is secured by a different password hash.`,
-      characterMessage: "Three locked databases. Crack every hash, extract the master key. The government is about to release Farooq — this evidence is the only thing that can stop it.",
+The hard drive holds three separate databases — sleeper cell identities, financial backers, and the The Hostage Crisis payload. Each is secured by a different password hash.`,
+      characterMessage: "Three locked databases. Crack every hash, extract the master key. Wait... what is this? Financial transfers to... the HOME MINISTER? He's IN ON THIS!",
       flag: 'CTF{pas+dra+mon+42}',
       points: 250,
       order: 1,
@@ -255,8 +255,8 @@ The hard drive holds three separate databases — sleeper cell identities, finan
     ,
       storyContext: `TIME: 5:50 AM | LOCATION: Terrorist admin panel
 
-The admin panel uses an obfuscated authentication token. Vikram has spotted evidence the Home Minister's "execution" was staged theater. Decode the token to pull admin logs proving the conspiracy.`,
-      characterMessage: "That token holds proof the Home Minister is working with Saif. Strip away every layer of obfuscation and extract what they buried inside. This changes everything.",
+The admin panel uses an obfuscated authentication token. Preethi has spotted evidence the Home Minister's "execution" was staged theater. Decode the token to pull admin logs proving the conspiracy.`,
+      characterMessage: "The Home Minister just forced the government's hand with that execution. But our analysts think it was FAKE. Decode that JWT—we need proof.",
       flag: 'CTF{RdfnC6oKbAy5cAyziD3g1DCF}',
       points: 300,
       order: 2,
@@ -283,8 +283,8 @@ VALIDATION MODE: STRICT
 Derive your team-valid unlock result and submit the exact flag.`,
       storyContext: `TIME: 6:15 AM | LOCATION: Final encrypted database
 
-The last database containing the BLACKOUT worm payload uses a team-specific pattern lock. Althaf demands it cracked before Farooq crosses the border.`,
-      characterMessage: "This lock changes per team — no shortcuts, no sharing. Compute your unique hash and unlock the full BLACKOUT blueprint. Clock is ticking.",
+The last database containing the The Hostage Crisis worm payload uses a team-specific pattern lock. Althaf demands it cracked before Farooq crosses the border.`,
+      characterMessage: "I'm going to threaten him on a direct line, posing as a foreign militant. Break this pattern lock so I can hijack the negotiation frequency securely.",
       flag: 'TEAM_SPECIFIC',
       points: 350,
       order: 3,
@@ -329,7 +329,7 @@ The last database containing the BLACKOUT worm payload uses a team-specific patt
   const challenges3 = [
     {
       title: 'Level 3.1: The Payload Hunt',
-      description: `OPERATION BLACKOUT — PAYLOAD FRAGMENTS
+      description: `OPERATION The Hostage Crisis — PAYLOAD FRAGMENTS
 
     Four independently captured payload shards were recovered from separate command channels.
     Threat intelligence assesses they belong to a single activation artifact.
@@ -354,8 +354,8 @@ The last database containing the BLACKOUT worm payload uses a team-specific patt
     ,
       storyContext: `TIME: 7:10 AM | LOCATION: Decoding the cyberattack files
 
-Veera escaped capture with Aparna's help. The BLACKOUT payload is fragmented across four encrypted pieces. Understanding the activation mechanism is critical to building the kill switch.`,
-      characterMessage: "Four fragments, four different languages. Study each one carefully. Decode them all and combine in order. We need the full payload to build the kill switch.",
+Veera escaped capture with Preethi's help. The The Hostage Crisis payload is fragmented across four encrypted pieces. Understanding the activation mechanism is critical to building the kill switch.`,
+      characterMessage: "Veera escaped but he's hurt. Decode the fragments to lift the lockdown. Four fragments, four different encodings. Decode and combine in order.",
       flag: 'CTF{Blackout.Feb14.Payload}',
       points: 400,
       order: 1,
@@ -381,8 +381,8 @@ Veera escaped capture with Aparna's help. The BLACKOUT payload is fragmented acr
     Recover the defusal flag from the payload and submit it exactly.`,
       storyContext: `TIME: 7:35 AM | LOCATION: Main attack script analysis
 
-CRITICAL: A logic bomb in Saif's attack script will trigger BLACKOUT immediately if not defused. The defusal code is hidden under multiple nested encoding layers.`,
-      characterMessage: "Logic bomb detected — the defusal code is buried deep. Strip away every barrier carefully. The final revealed output is what you submit. Do NOT get this wrong.",
+CRITICAL: A logic bomb in Saif's attack script will trigger The Hostage Crisis immediately if not defused. The defusal code is hidden under multiple nested encoding layers.`,
+      characterMessage: "Saif armed a fail-deadly bomb. If you don't defuse it perfectly with the right decode pipeline, the mall goes up in flames. Do NOT get this wrong.",
       flag: 'CTF{Defusal.Killswitch.Overrode}',
       points: 450,
       order: 2,
@@ -393,7 +393,7 @@ CRITICAL: A logic bomb in Saif's attack script will trigger BLACKOUT immediately
     },
     {
       title: 'Level 3.3: The Master Vault (FINAL BOSS)',
-      description: `MASTER VAULT — OPERATION BLACKOUT KILL SWITCH
+      description: `MASTER VAULT — OPERATION The Hostage Crisis KILL SWITCH
 
     The final seized server contains the command authority for the citywide blackout chain.
     This vault is the terminal control point: compromise it, and the operation collapses.
@@ -412,10 +412,10 @@ CRITICAL: A logic bomb in Saif's attack script will trigger BLACKOUT immediately
 
     FIRST TEAM TO SOLVE: 2x POINTS
     THE CITY IS COUNTING ON YOU.`,
-      storyContext: `TIME: 8:00 AM (Operation Finale) | LOCATION: Saravana's encrypted server
+      storyContext: `TIME: 8:00 AM (Operation Finale) | LOCATION: Farooq's encrypted server
 
-A joint RAW-Police raid seized the server containing the MASTER KILL SWITCH. The vault is protected by every technique encountered so far. First team to crack it stops Operation BLACKOUT permanently.`,
-      characterMessage: "This is everything. Every technique, every skill. The kill switch is buried in that vault. Crack it and this is over. First team to solve wins it all.",
+A joint RAW-Police raid seized the server containing the MASTER KILL SWITCH. The vault is protected by every technique encountered so far. First team to crack it stops Operation The Hostage Crisis permanently.`,
+      characterMessage: "This is it. Every technique you've mastered. The master vault is exposed. First team to crack it dismantles Farooq's entire network permanently. The clock starts... NOW.",
       flag: 'CTF{MASTER_a1b2c3_VAULT}',
       points: 1000,
       order: 3,
@@ -447,9 +447,9 @@ A joint RAW-Police raid seized the server containing the MASTER KILL SWITCH. The
   }
   console.log(`✅ Created ${challenges3.length} challenges for Round 3`);
 
-  console.log('\n🎉 Operation Cipher Strike - Database Seeded!\n');
+  console.log('\n🎉 The Extraction - Database Seeded!\n');
   console.log('📝 Admin Access:');
-  console.log('   📧 Email: admin@hackthebox.local');
+  console.log('   📧 Email: admin@theextraction.local');
   console.log('   🔑 Password: admin123');
   console.log('\n🎮 Competition Structure:');
   console.log('   🔴 Round 1: The Breach Discovery (3 challenges)');

@@ -1,6 +1,6 @@
 @echo off
 REM ============================================
-REM Operation Cipher Strike CTF Platform
+REM The Extraction CTF Platform
 REM START -- Daily use, preserves all data
 REM Run setup.bat ONCE for initial installation
 REM ============================================
@@ -9,7 +9,7 @@ setlocal enabledelayedexpansion
 
 echo.
 echo ========================================
-echo   Operation Cipher Strike CTF Platform
+echo   The Extraction CTF Platform
 echo   Starting Services (data preserved)
 echo ========================================
 echo.
@@ -98,7 +98,7 @@ echo   Redis:     %HOST_NAME%:%REDIS_HOST_PORT%
 echo   pgAdmin:   http://%HOST_NAME%:%PGADMIN_HOST_PORT%
 echo.
 echo Admin Login:
-echo   Email:     admin@hackthebox.local
+echo   Email:     admin@theextraction.local
 echo   Password:  admin123
 echo.
 echo Useful commands:

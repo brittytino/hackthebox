@@ -24,7 +24,7 @@ const INTRO_SCENES: Scene[] = [
     bg: '/images/background/1.jpg',
     speaker: 'NARRATOR',
     speakerColor: '#9ca3af',
-    text: 'February 1st, 2026. 3:44 AM. Codissia Trade Fair Complex, Coimbatore — Tamil Nadu\'s largest event venue. Tonight it is a warzone. A coordinated terror cell has taken 1,200 civilians hostage across three buildings. What happens next will determine whether 50,000 jobs survive the morning.',
+    text: 'Present Day. 3:44 AM. East Coast Mall, Chennai — Tamil Nadu\'s largest event venue. Tonight it is a warzone. A coordinated terror cell has taken 1,200 civilians hostage across three buildings. What happens next will determine whether 50,000 jobs survive the morning.',
     image: '/images/characters/narrator.png',
     imagePos: 'right',
   },
@@ -40,7 +40,7 @@ const INTRO_SCENES: Scene[] = [
     bg: '/images/background/5.jpg',
     speaker: 'UMAR SAIF',
     speakerColor: '#ef4444',
-    text: '"And when Farooq walks free — Operation BLACKOUT goes live. Your power grids. Your hospitals. Your financial networks. All of it, gone before morning prayer. The people of Coimbatore will curse your government\'s name for a generation. Release him. Now."',
+    text: '"And when Farooq walks free — The Hostage Crisis goes live. Your power grids. Your hospitals. Your financial networks. All of it, gone before morning prayer. The people of Chennai will curse your government\'s name for a generation. Release him. Now."',
     image: '/images/characters/umar_angry.png',
     imagePos: 'left',
   },
@@ -48,15 +48,15 @@ const INTRO_SCENES: Scene[] = [
     bg: '/images/background/2.jpg',
     speaker: 'PREETHI',
     speakerColor: '#f472b6',
-    text: '"Sir Althaf, NSA cyber division has confirmed BLACKOUT is real. It\'s a dormant worm planted months ago inside twelve Tamil Nadu power grids. Activation date: February 14th. If Saif triggers it early, we lose hospitals, banks, emergency services — simultaneously. 50,000 businesses dark overnight."',
-    image: '/images/characters/preethi_worried.png',
+    text: '"Sir Althaf, NSA cyber division has confirmed The Hostage Crisis is real. It\'s a dormant worm planted months ago inside twelve Tamil Nadu power grids. Activation date: February 14th. If Saif triggers it early, we lose hospitals, banks, emergency services — simultaneously. 50,000 businesses dark overnight."',
+    image: '/images/characters/preethi_hopeful.png',
     imagePos: 'right',
   },
   {
     bg: '/images/background/6.jpg',
     speaker: 'ALTHAF',
     speakerColor: '#34d399',
-    text: '"We will not negotiate. Not with terrorists. Not today. Veera — you are already inside that building. I am authorising Level-5 cyber operations. Find Saif\'s command network. We need the BLACKOUT kill switch before dawn or this city burns."',
+    text: '"We will not negotiate. Not with terrorists. Not today. Veera — you are already inside that building. I am authorising Level-5 cyber operations. Find Saif\'s command network. We need the The Hostage Crisis kill switch before dawn or this city burns."',
     image: '/images/characters/althaf_commanding.png',
     imagePos: 'left',
   },
@@ -72,7 +72,7 @@ const INTRO_SCENES: Scene[] = [
     bg: '/images/background/4.jpg',
     speaker: 'VIKRAM',
     speakerColor: '#38bdf8',
-    text: '"Veera sir — Vikram here. NSA relay patched. I\'m pulling your signal now. Listen — every intercepted file is triple-encrypted. We have a 20-minute window before Saif rotates his keys. We need a team that can crack ciphers under pressure. Real field cryptography. No tools — just skill."',
+    text: '"Veera sir — Preethi here. NSA relay patched. I\'m pulling your signal now. Listen — every intercepted file is triple-encrypted. We have a 20-minute window before Saif rotates his keys. We need a team that can crack ciphers under pressure. Real field cryptography. No tools — just skill."',
     image: '/images/characters/vikram_urgent.png',
     imagePos: 'left',
   },
@@ -80,7 +80,7 @@ const INTRO_SCENES: Scene[] = [
     bg: '/images/background/6.jpg',
     speaker: 'ALTHAF',
     speakerColor: '#34d399',
-    text: '"That team is you. Your team. I am authorising you for Level-5 NSA cyber-operations — effective immediately. Nine cipher challenges stand between Coimbatore and catastrophe. Solve them in strict sequence. Each solution advances Veera deeper into the network. No skipping. No shortcuts. Begin."',
+    text: '"That team is you. Your team. I am authorising you for Level-5 NSA cyber-operations — effective immediately. Nine cipher challenges stand between Chennai and catastrophe. Solve them in strict sequence. Each solution advances Veera deeper into the network. No skipping. No shortcuts. Begin."',
     image: '/images/characters/althaf_commanding.png',
     imagePos: 'left',
   },
@@ -109,7 +109,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/1.jpg',
       speaker: 'VEERA',
       speakerColor: '#a78bfa',
-      text: '"Transmission decoded! Server Room ER-42, East Wing, sub-level 3. Vikram — routing now. That transmission was dated 47 minutes ago. Saif\'s command team is already there. I\'m moving, but I need the access codes before the patrol sweeps back. Keep working."',
+      text: '"Transmission decoded! Server Room ER-42, East Wing, sub-level 3. Preethi — routing now. That transmission was dated 47 minutes ago. Saif\'s command team is already there. I\'m moving, but I need the access codes before the patrol sweeps back. Keep working."',
       image: '/images/characters/veera_determined.png',
       imagePos: 'right',
     },
@@ -117,7 +117,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/1.jpg',
       speaker: 'NARRATOR',
       speakerColor: '#9ca3af',
-      text: 'The first cipher falls. Veera has a destination — East Wing, ER-42. But the server room has three layers of access control: a fragmented map, a biometric lock, and a team-specific hash vault. Two more challenges stand between him and the attack blueprint.',
+      text: 'The first cipher falls. Veera has pinpointed the sleeper cells. But to move freely, he needs to override the security doors, and hack a secured device for the full terrorist roster. Two more challenges stand between him and the enemy\'s complete blueprint.',
       image: '/images/characters/narrator.png',
       imagePos: 'right',
     },
@@ -125,7 +125,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/1.jpg',
       speaker: 'VIKRAM',
       speakerColor: '#38bdf8',
-      text: '"Good work. But we are not done. The server room access code has been split into three fragments — three different encodings. Veera reaches a locked door in four minutes. You have three. Decode all three fragments and assemble them in order. Go."',
+      text: '"Good work. But we are not done. The security door access code has been split into three fragments. Veera reaches a locked corridor in four minutes. You have three. Decode all three fragments and assemble them in order. Go."',
       image: '/images/characters/vikram_urgent.png',
       imagePos: 'left',
     },
@@ -161,7 +161,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/3.jpg',
       speaker: 'VEERA',
       speakerColor: '#a78bfa',
-      text: '"Vault is open! I have the attack plans — Saif\'s full blueprint is in my hands. Listen — this is bigger than we thought. There are two targets. The mall is a distraction. The real objective is the city power grid. And there\'s a second operator — someone named Saravana. The Phantom."',
+      text: '"Vault is open! I have the attack plans — Saif\'s full blueprint is in my hands. Listen — this is bigger than we thought. There are two targets. The mall is a distraction. The real objective is the city power grid. And there\'s a second operator — someone named Farooq. The Phantom."',
       image: '/images/characters/veera_intense.png',
       imagePos: 'right',
     },
@@ -169,7 +169,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/3.jpg',
       speaker: 'ALTHAF',
       speakerColor: '#34d399',
-      text: '"Saravana. I know that name. He\'s been off the grid for three years. If he\'s running the tech side of BLACKOUT, this operation has a level of sophistication we underestimated. Veera — the attack is not over. Round Two begins now. Infiltrate the next layer."',
+      text: '"Farooq. I know that name. He\'s been off the grid for three years. If he\'s running the tech side of The Hostage Crisis, this operation has a level of sophistication we underestimated. Veera — the attack is not over. Round Two begins now. Infiltrate the next layer."',
       image: '/images/characters/althaf_concerned.png',
       imagePos: 'left',
     },
@@ -177,7 +177,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/3.jpg',
       speaker: 'NARRATOR',
       speakerColor: '#9ca3af',
-      text: 'Round 1 complete. The Breach is over. Three ciphers cracked, one server room compromised, one attack blueprint extracted. But a second operator — The Phantom — changes everything. Round 2 begins: Infiltration. Three encrypted databases. Crack them all.',
+      text: 'Round 1 complete. The Breach is over. The sleeper cells are exposed. But the Home Minister\'s betrayal changes everything. Round 2 begins: Infiltration. Crack the databases to expose the conspiracy.',
       image: '/images/characters/narrator.png',
       imagePos: 'right',
     },
@@ -187,15 +187,15 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/4.jpg',
       speaker: 'PREETHI',
       speakerColor: '#f472b6',
-      text: '"The hard drive contains three password-protected databases — sleeper cell identities, financial backers, and the BLACKOUT payload code. All three are hashed. MD5, SHA-1, SHA-256. If we crack all three before dawn, we have enough evidence to block Farooq\'s release legally. Move."',
-      image: '/images/characters/preethi_worried.png',
+      text: '"The hard drive contains three password-protected databases — sleeper cell identities, financial backers, and the The Hostage Crisis payload code. All three are hashed. MD5, SHA-1, SHA-256. If we crack all three before dawn, we have enough evidence to block Farooq\'s release legally. Move."',
+      image: '/images/characters/preethi_hopeful.png',
       imagePos: 'right',
     },
     {
       bg: '/images/background/4.jpg',
       speaker: 'NARRATOR',
       speakerColor: '#9ca3af',
-      text: 'Hash trail broken. The sleeper cell database is exposed. Financial backers identified. BLACKOUT\'s payload structure is partially visible. Farooq\'s release is now politically impossible — the evidence is too damning. But Saif knows you are inside his network.',
+      text: 'Hash trail broken. The sleeper cell database is exposed. Financial backers identified. The Hostage Crisis\'s payload structure is partially visible. Farooq\'s release is now politically impossible — the evidence is too damning. But Saif knows you are inside his network.',
       image: '/images/characters/narrator.png',
       imagePos: 'right',
     },
@@ -221,7 +221,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/5.jpg',
       speaker: 'ALTHAF',
       speakerColor: '#34d399',
-      text: '"If the Minister is alive, the government has been coerced into cooperating. That means there are insiders. People we trusted. This information must not leave this channel until we have everyone identified. Keep working — one database remains. The BLACKOUT worm blueprint is inside."',
+      text: '"If the execution is fake, Veera can use this. He\'s going to kidnap them for real and threaten the Minister. Keep working — we need to bypass government lines so Veera can broadcast his threat."',
       image: '/images/characters/althaf_commanding.png',
       imagePos: 'left',
     },
@@ -229,7 +229,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/5.jpg',
       speaker: 'NARRATOR',
       speakerColor: '#9ca3af',
-      text: 'The government conspiracy unravels. The Minister lives. Saif\'s leverage crumbles — if this proof reaches the public. One challenge remains in Round 2: the final pattern-locked database protecting the complete BLACKOUT worm code. Your team\'s identity is the only key.',
+      text: 'The government conspiracy unravels. The Minister is exposed. Saif\'s leverage crumbles — if this proof reaches the public. One challenge remains in Round 2: the final pattern-locked database protecting the complete The Hostage Crisis worm code. Your team\'s identity is the only key.',
       image: '/images/characters/narrator.png',
       imagePos: 'right',
     },
@@ -239,7 +239,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/6.jpg',
       speaker: 'VEERA',
       speakerColor: '#a78bfa',
-      text: '"Pattern lock is cracked. I have the BLACKOUT worm code. It\'s a self-replicating payload — it targets industrial control systems in the power grid, financial sector, and hospital networks simultaneously. But buried inside the code… I see a kill switch. Someone built a way to stop it."',
+      text: '"Pattern lock is cracked. I have the C4 defusal schematic. It\'s a self-replicating payload — it targets industrial control systems in the power grid, financial sector, and hospital networks simultaneously. But buried inside the code… I see a kill switch. Someone built a way to stop it."',
       image: '/images/characters/veera_intense.png',
       imagePos: 'right',
     },
@@ -247,7 +247,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/6.jpg',
       speaker: 'PREETHI',
       speakerColor: '#f472b6',
-      text: '"The kill switch is in a separate encrypted module — three parts. Payload fragment, defusal code, master vault key. Saravana split them across different systems. He did not want anyone finding all three. Veera — we need to run all three down before February 14th. You have 72 hours."',
+      text: '"Veera has escaped with Preethi\'s help! But the mall is on complete lockdown. We need to decode the lockdown payload to open the exits for the hostages. We have no time to lose."',
       image: '/images/characters/preethi_hopeful.png',
       imagePos: 'right',
     },
@@ -255,7 +255,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/6.jpg',
       speaker: 'NARRATOR',
       speakerColor: '#9ca3af',
-      text: 'Round 2 complete. The Infiltration is over. Six missions cracked. The BLACKOUT worm is mapped. A kill switch exists — hidden across three final systems. Round 3 begins: The Final Strike. Veera and Aparna race against time to find all three components before the malware activates at midnight.',
+      text: 'Round 2 complete. Six missions cracked. Veera is free, but the hostages are trapped. Round 3 begins: The Final Strike. Veera and the Cyber Unit race against time to lift the lockdown and stop Saif.',
       image: '/images/characters/narrator.png',
       imagePos: 'right',
     },
@@ -265,7 +265,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/7.jpg',
       speaker: 'VEERA',
       speakerColor: '#a78bfa',
-      text: '"Aparna came through — the payload fragments are decoded. BLACKOUT activates February 14th at 23:59. The kill switch works by flooding the activation endpoint with a specific encoded sequence. But there\'s a logic bomb in the deployment script — a trap Saravana set. If we trigger it wrong, BLACKOUT goes live tonight."',
+      text: '"Preethi came through — the payload fragments are decoded. The Hostage Crisis activates Midnight. The kill switch works by flooding the activation endpoint with a specific encoded sequence. But there\'s a logic bomb in the deployment script — a trap Farooq set. If we trigger it wrong, The Hostage Crisis goes live tonight."',
       image: '/images/characters/veera_concerned.png',
       imagePos: 'right',
     },
@@ -273,7 +273,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/7.jpg',
       speaker: 'NARRATOR',
       speakerColor: '#9ca3af',
-      text: 'The kill switch mechanism is understood. But deploying it is a minefield. Saravana buried a logic bomb five encoding layers deep in the activation script. One wrong decode and the city burns tonight. This is the most dangerous challenge yet — there is no margin for error.',
+      text: 'The lockdown is lifted, but the bomb is armed. Saif buried a fail-deadly logic bomb five encoding layers deep. One wrong decode and the mall burns tonight. This is the most dangerous challenge yet.',
       image: '/images/characters/narrator.png',
       imagePos: 'right',
     },
@@ -281,7 +281,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/7.jpg',
       speaker: 'VIKRAM',
       speakerColor: '#38bdf8',
-      text: '"Logic bomb is armed. The defusal code is buried under multiple nested encoding layers — we counted five. Each layer hides the next. One misstep, one wrong decode, and the trigger fires. Veera is standing by at the kill switch server. He cannot pull it until you give him the correct defusal code. This is on you."',
+      text: '"The explosive is armed. The defusal code is buried under multiple nested encoding layers — we counted five. Each layer hides the next. One misstep, and the trigger fires. Veera is standing by. He cannot defuse it until you give him the correct code. This is on you."',
       image: '/images/characters/vikram_urgent.png',
       imagePos: 'left',
     },
@@ -291,7 +291,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/8.jpg',
       speaker: 'VEERA',
       speakerColor: '#a78bfa',
-      text: '"Logic bomb is dead! Kill switch server is isolated from the grid. The mall siege is collapsing — Saif\'s command and control is gone. Umar Saif is in custody. But Saravana — The Phantom — went dark the moment we breached his server. He has a contingency. The Master Vault. If he reaches that vault, BLACKOUT goes live manually."',
+      text: '"Logic bomb is dead! Kill switch server is isolated from the grid. The mall siege is collapsing — Saif\'s command and control is gone. Umar Saif is in custody. But Farooq — The Phantom — went dark the moment we breached his server. He has a contingency. The Master Vault. If he reaches that vault, The Hostage Crisis goes live manually."',
       image: '/images/characters/veera_determined.png',
       imagePos: 'right',
     },
@@ -299,7 +299,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/8.jpg',
       speaker: 'ALTHAF',
       speakerColor: '#34d399',
-      text: '"Joint RAW-Police raid has seized Saravana\'s secondary server. But the Master Vault — his final failsafe — is still locked. Every encoding technique in this operation converges in that vault. The kill switch code is inside. If your team cracks it before Saravana reaches a backup trigger, this is over."',
+      text: '"Joint RAW-Police raid has seized Farooq\'s secondary server. But the Master Vault — his final failsafe — is still locked. Every encoding technique in this operation converges in that vault. The kill switch code is inside. If your team cracks it before Farooq reaches a backup trigger, this is over."',
       image: '/images/characters/althaf_commanding.png',
       imagePos: 'left',
     },
@@ -307,7 +307,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/8.jpg',
       speaker: 'NARRATOR',
       speakerColor: '#9ca3af',
-      text: 'One mission remains. The Master Vault — Saravana\'s final stronghold. Every cipher, every technique, every skill your team has developed across eight missions converges here. The first team to crack the vault gives Veera the kill switch. Coimbatore is waiting. The city is counting on you.',
+      text: 'One mission remains. The Master Vault — Farooq\'s final stronghold. Every cipher, every technique, every skill your team has developed across eight missions converges here. The first team to crack the vault gives Veera the kill switch. Chennai is waiting. The city is counting on you.',
       image: '/images/characters/narrator.png',
       imagePos: 'right',
     },
@@ -317,7 +317,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/9.jpg',
       speaker: 'VEERA',
       speakerColor: '#a78bfa',
-      text: '"Kill switch is live. BLACKOUT has been terminated. All twelve grid endpoints are clean. Saravana Krishnamurthy — The Phantom — is in custody. The worm is dead. It. Is. Over."',
+      text: '"The Master Vault is breached. Farooq\'s network is dismantled. All sleeper cells exposed. Farooq is in maximum security. It. Is. Over."',
       image: '/images/characters/veera_relieved.png',
       imagePos: 'right',
     },
@@ -325,7 +325,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/9.jpg',
       speaker: 'ALTHAF',
       speakerColor: '#34d399',
-      text: '"Home Minister Kavitha is alive and safe — we extracted her from the safe house forty minutes ago. All 1,200 hostages are released. Umar Saif, Farooq Shah, and Saravana Krishnamurthy are in NSA custody. Operation BLACKOUT is terminated. Operation Cipher Strike — is complete."',
+      text: '"The Home Minister is arrested for treason. All 1,200 hostages are safe. Umar Saif is dead. Farooq is in NSA custody. The terror network is terminated. The Extraction — is complete."',
       image: '/images/characters/althaf_commanding.png',
       imagePos: 'left',
     },
@@ -333,7 +333,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/9.jpg',
       speaker: 'VIKRAM',
       speakerColor: '#38bdf8',
-      text: '"50,000 businesses. 12 power grids. 8 hospital networks. All operational. None of this happens without your team. You cracked nine ciphers under pressure, in the dark, while real people were in danger. That is not a drill. That is field craft. I will remember this team."',
+      text: '"1,200 lives. Countless more saved from Farooq\'s network. All safe. None of this happens without your team. You cracked nine ciphers under pressure, in the dark, while real people were in danger. I will remember this team."',
       image: '/images/characters/vikram_serious.png',
       imagePos: 'left',
     },
@@ -341,7 +341,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
       bg: '/images/background/9.jpg',
       speaker: 'NARRATOR',
       speakerColor: '#9ca3af',
-      text: 'Three terror operatives arrested. 1,200 hostages freed. Operation BLACKOUT permanently neutralised. The city of Coimbatore never knew how close it came to darkness. And the team that stopped it? Their names will never appear in a public report. That is the nature of the work.',
+      text: 'Farooq captured. 1,200 hostages freed. The terror network permanently neutralised. The city never knew how close it came to disaster. And the team that stopped it? Their names will never appear in a public report. That is the nature of the work.',
       image: '/images/characters/narrator.png',
       imagePos: 'right',
     },
@@ -379,7 +379,7 @@ function EndTitleCard({ onClose }: { onClose: () => void }) {
           OPERATION COMPLETE
         </div>
         <h1 style={{ fontSize: 'clamp(24px,5vw,42px)', fontWeight: 900, color: '#e2e8f0', letterSpacing: 2, margin: '0 0 8px', textShadow: '0 0 40px rgba(16,185,129,0.6)' }}>
-          OPERATION CIPHER STRIKE
+          THE EXTRACTION
         </h1>
         <div style={{ fontSize: 16, fontWeight: 700, color: '#10b981', letterSpacing: 3, marginBottom: 32 }}>
           MISSION ACCOMPLISHED
@@ -393,7 +393,7 @@ function EndTitleCard({ onClose }: { onClose: () => void }) {
           {[
             { label: 'MISSIONS CRACKED', value: '9 / 9' },
             { label: 'HOSTAGES FREED', value: '1,200' },
-            { label: 'BLACKOUT STATUS', value: 'TERMINATED' },
+            { label: 'The Hostage Crisis STATUS', value: 'TERMINATED' },
           ].map(s => (
             <div key={s.label} style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 10, padding: '16px 10px' }}>
               <div style={{ fontSize: 22, fontWeight: 900, color: '#6ee7b7', marginBottom: 6 }}>{s.value}</div>
@@ -404,9 +404,9 @@ function EndTitleCard({ onClose }: { onClose: () => void }) {
 
         {/* Credits quote */}
         <p style={{ color: '#9ca3af', fontSize: 15, lineHeight: 1.85, fontStyle: 'italic', marginBottom: 32 }}>
-          "The names of those who stood in the dark to protect the light will never appear in a public report. But Coimbatore remembers."
+          "The names of those who stood in the dark to protect the light will never appear in a public report. But Chennai remembers."
         </p>
-        <p style={{ color: '#6b7280', fontSize: 12, letterSpacing: 2, marginBottom: 36 }}>— OPERATION CIPHER STRIKE, FEBRUARY 2026</p>
+        <p style={{ color: '#6b7280', fontSize: 12, letterSpacing: 2, marginBottom: 36 }}>— THE EXTRACTION, FEBRUARY 2026</p>
 
         {/* CTA */}
         <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -609,7 +609,7 @@ function StoryInner() {
 
         {/* Operation label — centered absolutely so it doesn't affect flex spacing */}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: 700, letterSpacing: 4, textTransform: 'uppercase', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
-          {challengeNum ? `LEVEL ${challengeNum} — DEBRIEF` : 'OPERATION CIPHER STRIKE'}
+          {challengeNum ? `LEVEL ${challengeNum} — DEBRIEF` : 'THE EXTRACTION'}
         </div>
 
         {/* Skip */}

@@ -64,9 +64,9 @@ export default function LeaderboardPage() {
   const podium   = sorted.slice(0, 3);   // [0]=1st [1]=2nd [2]=3rd
   const rest     = sorted.slice(3);
 
-  function getPoints(t: any) { return t?.totalPoints ?? t?.points ?? 0; }
-  function getLevel(t: any)  { return t?.currentLevel ?? t?.challengesSolved ?? 0; }
-  function isMe(t: any)      { return myTeamId && (t?.teamId === myTeamId || t?.id === myTeamId); }
+  function getPoints(t: Record<string, any>) { return t?.totalPoints ?? t?.points ?? 0; }
+  function getLevel(t: Record<string, any>)  { return t?.currentLevel ?? t?.challengesSolved ?? 0; }
+  function isMe(t: Record<string, any>)      { return myTeamId && (t?.teamId === myTeamId || t?.id === myTeamId); }
 
   const PODIUM_ORDER = [1, 0, 2]; // display as: 2nd | 1st | 3rd
   const PODIUM_H     = [160, 210, 130]; // display heights for 2nd | 1st | 3rd
@@ -98,7 +98,7 @@ export default function LeaderboardPage() {
           <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Shield size={13} color="#fff" />
           </div>
-          <span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800, letterSpacing: 2 }}>HACK THE BOX</span>
+          <span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800, letterSpacing: 2 }}>THE EXTRACTION</span>
           <span style={{ color: '#4b5563', fontSize: 11, letterSpacing: 2 }}>/ RANKINGS</span>
         </div>
         <div style={{ flex: 1 }} />
@@ -118,7 +118,7 @@ export default function LeaderboardPage() {
 
         {/*  PAGE HEADER  */}
         <div style={{ textAlign: 'center', marginBottom: 44 }}>
-          <div style={{ color: '#4b5563', fontSize: 12, letterSpacing: 6, fontWeight: 700, marginBottom: 12, textTransform: 'uppercase' }}>Operation Cipher Strike</div>
+          <div style={{ color: '#4b5563', fontSize: 12, letterSpacing: 6, fontWeight: 700, marginBottom: 12, textTransform: 'uppercase' }}>The Extraction</div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 8 }}>
             <Crown size={26} color="#fbbf24" />
             <h1 style={{ margin: 0, fontSize: 36, fontWeight: 900, color: 'transparent', backgroundImage: 'linear-gradient(135deg,#fbbf24,#f59e0b,#fbbf24)', backgroundClip: 'text', WebkitBackgroundClip: 'text', letterSpacing: 6, textTransform: 'uppercase', filter: 'drop-shadow(0 0 40px rgba(251,191,36,0.4))' }}>LEADERBOARD</h1>
@@ -281,7 +281,7 @@ export default function LeaderboardPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#374151', fontSize: 11 }}>
             <Lock size={11} />Real-time via SSE + {POLL_INTERVAL / 1000}s polling fallback
           </div>
-          <div style={{ color: '#374151', fontSize: 11, letterSpacing: 2 }}>HACK THE BOX 2026 — COIMBATORE</div>
+          <div style={{ color: '#374151', fontSize: 11, letterSpacing: 2 }}>THE EXTRACTION 2026 — COIMBATORE</div>
         </div>
       </div>
 

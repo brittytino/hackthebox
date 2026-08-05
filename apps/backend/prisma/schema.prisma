@@ -48,7 +48,7 @@ model Team {
   id            String        @id @default(uuid())
   name          String        @unique
   member1Name   String
-  member2Name   String
+  member2Name   String?
   members       User[]
   submissions   Submission[]
   scores        Score[]

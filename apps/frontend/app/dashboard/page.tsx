@@ -115,7 +115,7 @@ export default function DashboardPage() {
             <Terminal size={18} color="#fff" strokeWidth={2.5} />
           </div>
           <div>
-            <div style={{ color: '#e6edf3', fontSize: 16, fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.3px' }}>Hack The Box</div>
+            <div style={{ color: '#e6edf3', fontSize: 16, fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.3px' }}>The Extraction</div>
             <div style={{ color: '#6e7681', fontSize: 11, lineHeight: 1 }}>Command Center</div>
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function DashboardPage() {
         <div className="df" style={{ marginBottom: 36 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#09cd72', boxShadow: '0 0 10px #09cd72' }} />
-            <span style={{ color: '#6e7681', fontSize: 13, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' as const }}>Operation Cipher Strike</span>
+            <span style={{ color: '#6e7681', fontSize: 13, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' as const }}>The Extraction</span>
           </div>
           <h1 style={{ fontSize: 42, fontWeight: 800, color: '#e6edf3', margin: '0 0 10px', letterSpacing: '-0.5px', lineHeight: 1.15 }}>{teamName}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

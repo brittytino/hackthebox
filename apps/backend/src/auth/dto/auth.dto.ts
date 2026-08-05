@@ -4,6 +4,7 @@ import {
   IsString,
   MinLength,
   MaxLength,
+  IsOptional,
 } from 'class-validator';
 
 export class RegisterDto {
@@ -24,10 +25,9 @@ export class RegisterDto {
   participant1Name: string;
 
   @IsString()
-  @IsNotEmpty()
-  @MinLength(2)
+  @IsOptional()
   @MaxLength(50)
-  participant2Name: string;
+  participant2Name?: string;
 
   @IsString()
   @MinLength(6)

@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Hack The Box — Operation Cipher Strike",
+  title: "The Extraction — The Extraction",
   description: "Interactive Cyber-Thriller Experience",
 };
 

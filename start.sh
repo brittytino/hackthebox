@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# Operation Cipher Strike CTF Platform
+# The Extraction CTF Platform
 # Quick Start Script for Linux/Mac
 # ============================================
 
@@ -8,7 +8,7 @@ set -e
 
 echo ""
 echo "========================================"
-echo "  Operation Cipher Strike CTF Platform"
+echo "  The Extraction CTF Platform"
 echo "  Quick Start Script"
 echo "========================================"
 echo ""
@@ -71,7 +71,7 @@ echo "  Redis:     localhost:46379"
 echo "  pgAdmin:   http://localhost:45050"
 echo ""
 echo "Admin Login:"
-echo "  Email:     admin@hackthebox.local"
+echo "  Email:     admin@theextraction.local"
 echo "  Password:  admin123"
 echo ""
 echo "Useful commands:"

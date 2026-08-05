@@ -41,6 +41,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [teamSize, setTeamSize] = useState<1 | 2>(2);
   const [showMath, setShowMath] = useState(false);
   const [problem, setProblem] = useState<MathProblem | null>(null);
   const [mathInput, setMathInput] = useState('');
@@ -65,8 +66,11 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
     if (!formData.teamName.trim()) { setError('Team designation is required'); return; }
-    if (!formData.participant1Name.trim() || !formData.participant2Name.trim()) {
-      setError('Both agent names are required'); return;
+    if (!formData.participant1Name.trim()) {
+      setError('Agent 1 name is required'); return;
+    }
+    if (teamSize === 2 && !formData.participant2Name.trim()) {
+      setError('Agent 2 name is required for Duo mode'); return;
     }
     if (!formData.email.trim()) { setError('Email is required'); return; }
     if (formData.password.length < 6) { setError('Passphrase must be at least 6 characters'); return; }
@@ -90,7 +94,7 @@ export default function RegisterPage() {
         email: formData.email,
         teamName: formData.teamName,
         participant1Name: formData.participant1Name,
-        participant2Name: formData.participant2Name,
+        participant2Name: teamSize === 2 ? formData.participant2Name : undefined,
         password: formData.password,
       });
       const token = result.access_token || result.token;
@@ -99,9 +103,9 @@ export default function RegisterPage() {
         if (result.user) localStorage.setItem('user', JSON.stringify(result.user));
       }
       router.push('/story');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setShowMath(false);
-      setError(err.message || 'Registration failed. Please try again.');
+      setError((err as Error).message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -187,7 +191,7 @@ export default function RegisterPage() {
               <span className="round-badge round-3">Round 3</span>
             </div>
             <p style={{ color: '#6b7280', fontSize: 12, lineHeight: 1.65, margin: 0 }}>
-              Form your elite cyber unit and join the counter-operation against Operation BLACKOUT.
+              Form your elite cyber unit and join the counter-operation against The Hostage Crisis.
             </p>
           </div>
 
@@ -230,7 +234,39 @@ export default function RegisterPage() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ marginBottom: 12 }}>
+                <label className="game-label" style={{ display: 'block', marginBottom: 7 }}>Team Size</label>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    type="button"
+                    onClick={() => setTeamSize(1)}
+                    style={{
+                      flex: 1, height: 40, borderRadius: 6,
+                      background: teamSize === 1 ? 'rgba(124,58,237,0.2)' : 'rgba(0,0,0,0.3)',
+                      border: teamSize === 1 ? '1px solid #7c3aed' : '1px solid rgba(109,40,217,0.3)',
+                      color: teamSize === 1 ? '#e9d5ff' : '#6b7280',
+                      cursor: 'pointer', fontSize: 13, fontWeight: 600, letterSpacing: 1
+                    }}
+                  >
+                    SOLO (1 Agent)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTeamSize(2)}
+                    style={{
+                      flex: 1, height: 40, borderRadius: 6,
+                      background: teamSize === 2 ? 'rgba(124,58,237,0.2)' : 'rgba(0,0,0,0.3)',
+                      border: teamSize === 2 ? '1px solid #7c3aed' : '1px solid rgba(109,40,217,0.3)',
+                      color: teamSize === 2 ? '#e9d5ff' : '#6b7280',
+                      cursor: 'pointer', fontSize: 13, fontWeight: 600, letterSpacing: 1
+                    }}
+                  >
+                    DUO (2 Agents)
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: teamSize === 2 ? '1fr 1fr' : '1fr', gap: 12 }}>
                 <div>
                   <label className="game-label" style={{ display: 'block', marginBottom: 7 }}>Agent 1 Name</label>
                   <input
@@ -242,17 +278,19 @@ export default function RegisterPage() {
                     required
                   />
                 </div>
-                <div>
-                  <label className="game-label" style={{ display: 'block', marginBottom: 7 }}>Agent 2 Name</label>
-                  <input
-                    className="game-input"
-                    type="text"
-                    placeholder="Second operative"
-                    value={formData.participant2Name}
-                    onChange={e => f('participant2Name', e.target.value)}
-                    required
-                  />
-                </div>
+                {teamSize === 2 && (
+                  <div>
+                    <label className="game-label" style={{ display: 'block', marginBottom: 7 }}>Agent 2 Name</label>
+                    <input
+                      className="game-input"
+                      type="text"
+                      placeholder="Second operative"
+                      value={formData.participant2Name}
+                      onChange={e => f('participant2Name', e.target.value)}
+                      required
+                    />
+                  </div>
+                )}
               </div>
 
               <div>

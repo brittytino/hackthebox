@@ -4,6 +4,6 @@ import { Controller, Get } from '@nestjs/common';
 export class AppController {
   @Get()
   getHello(): string {
-    return 'Operation Cipher Strike Backend is Running!';
+    return 'The Extraction Backend is Running!';
   }
 }

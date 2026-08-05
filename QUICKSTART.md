@@ -36,7 +36,7 @@ Once running:
 
 Default admin credentials (change after login!):
 ```
-Email:    admin@hackthebox.local
+Email:    admin@theextraction.local
 Password: admin123
 ```
 

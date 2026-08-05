@@ -1,6 +1,6 @@
 @echo off
 REM ============================================
-REM Operation Cipher Strike CTF Platform
+REM The Extraction CTF Platform
 REM INITIAL SETUP — Run ONCE before the event
 REM This will WIPE and re-seed the database.
 REM ============================================
@@ -9,7 +9,7 @@ setlocal enabledelayedexpansion
 
 echo.
 echo ========================================
-echo   Operation Cipher Strike — SETUP
+echo   The Extraction — SETUP
 echo   Initial Installation ^& Database Seed
 echo   WARNING: This RESETS all data!
 echo ========================================
@@ -146,7 +146,7 @@ echo   Frontend:  %FRONTEND_URL%
 echo   Backend:   %BACKEND_URL%
 echo.
 echo Admin Login:
-echo   Email:     admin@hackthebox.local
+echo   Email:     admin@theextraction.local
 echo   Password:  admin123
 echo.
 echo To START the platform on event day (without resetting data):

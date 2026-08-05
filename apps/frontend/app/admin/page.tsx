@@ -119,8 +119,8 @@ export default function AdminPage() {
       await api.admin.createRound(newRound);
       await loadData();
       setNewRound({ name: '', type: 'DECODE_THE_SECRET', order: 1, description: '' });
-    } catch (error: any) {
-      alert(error.message || 'Failed to create round');
+    } catch (error: unknown) {
+      alert((error as Error).message || 'Failed to create round');
     }
   };
 
@@ -128,8 +128,8 @@ export default function AdminPage() {
     try {
       await api.admin.updateRoundStatus(roundId, { status });
       await loadData();
-    } catch (error: any) {
-      alert(error.message || 'Failed to update round status');
+    } catch (error: unknown) {
+      alert((error as Error).message || 'Failed to update round status');
     }
   };
 
@@ -155,8 +155,8 @@ export default function AdminPage() {
         maxAttempts: 0,
         hints: '',
       });
-    } catch (error: any) {
-      alert(error.message || 'Failed to create challenge');
+    } catch (error: unknown) {
+      alert((error as Error).message || 'Failed to create challenge');
     }
   };
 
@@ -170,8 +170,8 @@ export default function AdminPage() {
     try {
       await api.admin.resetCompetition();
       await loadData();
-    } catch (error: any) {
-      alert(error.message || 'Failed to reset competition');
+    } catch (error: unknown) {
+      alert((error as Error).message || 'Failed to reset competition');
     }
   };
 
@@ -188,8 +188,8 @@ export default function AdminPage() {
       setSelectedTeam(null);
       setAdjustPoints(0);
       setAdjustReason('');
-    } catch (error: any) {
-      alert(error.message || 'Failed to adjust score');
+    } catch (error: unknown) {
+      alert((error as Error).message || 'Failed to adjust score');
     }
   };
 
@@ -205,8 +205,8 @@ export default function AdminPage() {
       setShowDisqualifyModal(false);
       setSelectedTeam(null);
       setDisqualifyReason('');
-    } catch (error: any) {
-      alert(error.message || 'Failed to disqualify team');
+    } catch (error: unknown) {
+      alert((error as Error).message || 'Failed to disqualify team');
     }
   };
 
@@ -214,8 +214,8 @@ export default function AdminPage() {
     try {
       await api.admin.qualifyTeam(teamId);
       await loadData();
-    } catch (error: any) {
-      alert(error.message || 'Failed to qualify team');
+    } catch (error: unknown) {
+      alert((error as Error).message || 'Failed to qualify team');
     }
   };
 
@@ -223,8 +223,8 @@ export default function AdminPage() {
     try {
       await api.admin.freezeScoreboard({ freeze: !scoreboardFrozen });
       setScoreboardFrozen(!scoreboardFrozen);
-    } catch (error: any) {
-      alert(error.message || 'Failed to toggle scoreboard freeze');
+    } catch (error: unknown) {
+      alert((error as Error).message || 'Failed to toggle scoreboard freeze');
     }
   };
 
@@ -240,8 +240,8 @@ export default function AdminPage() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch (error: any) {
-      alert(error.message || 'Failed to export results');
+    } catch (error: unknown) {
+      alert((error as Error).message || 'Failed to export results');
     }
   };
 
@@ -257,8 +257,8 @@ export default function AdminPage() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch (error: any) {
-      alert(error.message || 'Failed to export CSV');
+    } catch (error: unknown) {
+      alert((error as Error).message || 'Failed to export CSV');
     }
   };
 
@@ -277,7 +277,7 @@ export default function AdminPage() {
 
   // Calculate live stats
   const activeTeams = teams.filter(t => t.members?.length > 0).length;
-  const disqualifiedTeams = teams.filter(t => t.members?.some((m: any) => m.role === 'JUDGE')).length;
+  const disqualifiedTeams = teams.filter(t => t.members?.some((m: Record<string, any>) => m.role === 'JUDGE')).length;
   const recentSubmissions = submissions.slice(0, 50);
   const lastHourSubmissions = submissions.filter(s => 
     new Date(s.createdAt).getTime() > Date.now() - 3600000
@@ -618,7 +618,7 @@ export default function AdminPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredTeams.map((team, index) => {
-                      const isDisqualified = team.members?.some((m: any) => m.role === 'JUDGE');
+                      const isDisqualified = team.members?.some((m: Record<string, any>) => m.role === 'JUDGE');
                       return (
                         <TableRow key={team.id} className="border-slate-800">
                           <TableCell className="font-mono text-slate-400">{index + 1}</TableCell>

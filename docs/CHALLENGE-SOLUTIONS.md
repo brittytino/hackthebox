@@ -1,4 +1,4 @@
-# OPERATION CIPHER STRIKE - ORGANIZER SOLUTION SHEET
+# THE EXTRACTION - ORGANIZER SOLUTION SHEET
 
 Confidential internal reference for event operators.
 This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and validation logic in `apps/backend/src/challenges/challenges.service.ts`.
@@ -53,12 +53,12 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
   - CyberChef (MD5)
   - Hashcalc / MD5 Online (any MD5 calculator)
 - Steps:
-  1) Build the exact input string: `teamName|2|1|HACKTHEBOX2026`.
+  1) Build the exact input string: `teamName|teamSize|1|THEEXTRACTION2026` (teamSize is 1 for Solo, 2 for Duo).
   2) Hash with MD5.
   3) Take the first 8 lowercase hex characters.
   4) Submit as `CTF{xxxxxxxx}`.
-- Player hint (non-spoiler): Team name is part of a deterministic hash input; separators and order must be exact.
-- Operator tip: Most failures come from team name mismatch (spacing/case) or wrong delimiter placement; nudge teams to verify the exact input string before hashing.
+- Player hint (non-spoiler): Team name and team size (1 or 2) are part of a deterministic hash input; separators and order must be exact.
+- Operator tip: Most failures come from team name mismatch (spacing/case) or wrong team size; nudge teams to verify the exact input string before hashing.
 
 ## Round 2 - Infiltration
 
@@ -102,7 +102,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
   - CyberChef (SHA-256)
   - Any SHA-256 calculator
 - Steps:
-  1) Build the exact input string: `teamName5HACKTHEBOX2026` (no separators).
+  1) Build the exact input string: `teamName5THEEXTRACTION2026` (no separators).
   2) Hash with SHA-256.
   3) Take the first 8 lowercase hex characters.
   4) Submit as `CTF{xxxxxxxx}`.

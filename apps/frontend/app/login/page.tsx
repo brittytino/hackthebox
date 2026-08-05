@@ -28,8 +28,8 @@ export default function LoginPage() {
       } else {
         router.push('/dashboard');
       }
-    } catch (err: any) {
-      setError(err.message || 'ACCESS DENIED: Invalid credentials');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }

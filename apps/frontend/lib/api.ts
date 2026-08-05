@@ -38,7 +38,7 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
 
 export const api = {
   // Auth
-  register: (data: { email: string; teamName: string; participant1Name: string; participant2Name: string; password: string }) =>
+  register: (data: { email: string; teamName: string; participant1Name: string; participant2Name?: string; password: string }) =>
     apiRequest('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   
   login: (data: { email: string; password: string }) =>

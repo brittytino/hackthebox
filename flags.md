@@ -1,4 +1,4 @@
-# OPERATION CIPHER STRIKE - CANONICAL FLAGS
+# THE EXTRACTION - CANONICAL FLAGS
 
 Source of truth for seeded flags and backend validation.
 
@@ -12,8 +12,8 @@ Source of truth for seeded flags and backend validation.
 - Level 3.3: `CTF{MASTER_a1b2c3_VAULT}`
 
 ## Team-Specific Flags
-- Level 1.3: `CTF{<first8(md5(teamName|2|1|HACKTHEBOX2026))>}`
-- Level 2.3: `CTF{<first8(sha256(teamName5HACKTHEBOX2026))>}`
+- Level 1.3: `CTF{<first8(md5(teamName|teamSize|1|THEEXTRACTION2026))>}`
+- Level 2.3: `CTF{<first8(sha256(teamName5THEEXTRACTION2026))>}`
 
 ## Backend Acceptance Notes
 - Validation compares lowercase normalized values.

@@ -1,4 +1,4 @@
-﻿import {
+import {
   Injectable,
   UnauthorizedException,
   ConflictException,
@@ -55,7 +55,7 @@ export class AuthService {
       data: {
         name: teamName,
         member1Name: participant1Name,
-        member2Name: participant2Name,
+        member2Name: participant2Name || null,
       },
     });
 
@@ -89,7 +89,7 @@ export class AuthService {
 
     return {
       success: true,
-      message: 'Team registered successfully. Welcome to Operation Cipher Strike!',
+      message: 'Team registered successfully. Welcome to The Extraction!',
       access_token: token,
       user: {
         id: user.id,
@@ -101,7 +101,7 @@ export class AuthService {
         id: team.id,
         name: team.name,
         member1Name: participant1Name,
-        member2Name: participant2Name,
+        member2Name: participant2Name || null,
       },
     };
   }

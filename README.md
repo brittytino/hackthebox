@@ -1,4 +1,4 @@
-# Operation Cipher Strike - CTF Platform
+# The Extraction - CTF Platform
 
 A complete Capture The Flag (CTF) platform with Docker support for Windows, Linux, and macOS.
 
@@ -65,7 +65,7 @@ Once running, access these URLs:
 ### Default Admin Credentials
 
 ```
-Email:    admin@hackthebox.local
+Email:    admin@theextraction.local
 Password: admin123
 ```
 
@@ -173,7 +173,7 @@ docker-compose logs backend
 ## 📁 Project Structure
 
 ```
-hackthebox/
+the-extraction/
 ├── apps/
 │   ├── backend/          # NestJS backend API
 │   │   ├── src/          # Source code

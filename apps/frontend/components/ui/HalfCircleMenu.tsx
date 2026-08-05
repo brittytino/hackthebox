@@ -158,7 +158,7 @@ export default function HalfCircleMenu({ isAdmin }: HalfCircleMenuProps) {
               OPERATION
             </div>
             <div style={{ color: '#c4b5fd', fontSize: 13, letterSpacing: 2, fontWeight: 900, textTransform: 'uppercase' }}>
-              CIPHER STRIKE
+              THE EXTRACTION
             </div>
           </div>
         </div>

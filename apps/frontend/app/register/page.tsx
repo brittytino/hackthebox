@@ -191,7 +191,7 @@ export default function RegisterPage() {
               <span className="round-badge round-3">Round 3</span>
             </div>
             <p style={{ color: '#6b7280', fontSize: 12, lineHeight: 1.65, margin: 0 }}>
-              Form your elite cyber unit and join the counter-operation against The Hostage Crisis.
+              Form your elite cyber unit and join the counter-operation against The Extraction.
             </p>
           </div>
 

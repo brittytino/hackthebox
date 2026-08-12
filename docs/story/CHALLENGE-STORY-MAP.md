@@ -124,7 +124,7 @@ BREAKING: Home Minister's wife and daughter "executed" on live TV
 To bypass the government negotiation lines and broadcast Veera's fake 
 militant identity, you must break the pattern lock. Calculate
 your unique SHA-256 hash using your team name, progress data, and the
-secret salt "THEEXTRACTION2026". First 8 characters = your unlock code.
+secret salt "THEEXTRACTION". First 8 characters = your unlock code.
 
 HOSTAGE STATUS: 520 trapped | 680 rescued
 TERRORISTS: 5 active (10 eliminated)

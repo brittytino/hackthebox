@@ -12,8 +12,8 @@ Source of truth for seeded flags and backend validation.
 - Level 3.3: `CTF{MASTER_a1b2c3_VAULT}`
 
 ## Team-Specific Flags
-- Level 1.3: `CTF{<first8(md5(teamName|teamSize|1|THEEXTRACTION2026))>}`
-- Level 2.3: `CTF{<first8(sha256(teamName5THEEXTRACTION2026))>}`
+- Level 1.3: `CTF{<first8(md5(teamName|teamSize|1|THEEXTRACTION))>}`
+- Level 2.3: `CTF{<first8(sha256(teamName5THEEXTRACTION))>}`
 
 ## Backend Acceptance Notes
 - Validation compares lowercase normalized values.

@@ -64,12 +64,12 @@ export class ChallengesService {
   ): string {
     const teamSize = team.member2Name ? 2 : 1;
     if (absoluteLevel === 3) {
-      const input = `${team.name}|${teamSize}|1|THEEXTRACTION2026`;
+      const input = `${team.name}|${teamSize}|1|THEEXTRACTION`;
       const hash = crypto.createHash('md5').update(input).digest('hex');
       return `ctf{${hash.substring(0, 8)}}`;
     } else if (absoluteLevel === 6) {
-      // Level 2.3: SHA256(teamName+5+THEEXTRACTION2026)
-      const input = `${team.name}5THEEXTRACTION2026`;
+      // Level 2.3: SHA256(teamName+5+THEEXTRACTION)
+      const input = `${team.name}5THEEXTRACTION`;
       const hash = crypto.createHash('sha256').update(input).digest('hex');
       return `ctf{${hash.substring(0, 8)}}`;
     }
@@ -603,7 +603,7 @@ export class ChallengesService {
       3: `${teamName} cracked the time-locked vault - Attack plans recovered`,
       4: `${teamName} broke through the corrupted hash trail - Home Minister exposed!`,
       5: `${teamName} infiltrated admin panel via JWT token - Evidence collected`,
-      6: `${teamName} unlocked the pattern lock - The Hostage Crisis revealed`,
+      6: `${teamName} unlocked the pattern lock - The Extraction revealed`,
       7: `${teamName} decoded the payload fragments - Attack mechanism understood`,
       8: `${teamName} defused the logic bomb - Mall siege ended`,
       9: `🎉 ${teamName} CRACKED THE MASTER VAULT! THE HOSTAGE CRISIS TERMINATED! 🎉`,

@@ -59,7 +59,7 @@ async function main() {
       type: 'CATCH_THE_FLAG',
       order: 3,
       status: 'PENDING',
-      description: 'Race against time to decode the cyber attack payload and defuse Operation The Hostage Crisis.',
+      description: 'Race against time to decode the cyber attack payload and defuse Operation The Extraction.',
     },
   });
   console.log('✅ Round 3 created');
@@ -227,7 +227,7 @@ The vault contains Saif's full attack blueprint. The biometric lock requires a t
 
       storyContext: `TIME: 5:12 AM | LOCATION: Inside the vault, analyzing recovered hard drive
 
-The hard drive holds three separate databases — sleeper cell identities, financial backers, and the The Hostage Crisis payload. Each is secured by a different password hash.`,
+The hard drive holds three separate databases — sleeper cell identities, financial backers, and the The Extraction payload. Each is secured by a different password hash.`,
       characterMessage: "Three locked databases. Crack every hash, extract the master key. Wait... what is this? Financial transfers to... the HOME MINISTER? He's IN ON THIS!",
       flag: 'CTF{pas+dra+mon+42}',
       points: 250,
@@ -283,7 +283,7 @@ VALIDATION MODE: STRICT
 Derive your team-valid unlock result and submit the exact flag.`,
       storyContext: `TIME: 6:15 AM | LOCATION: Final encrypted database
 
-The last database containing the The Hostage Crisis worm payload uses a team-specific pattern lock. Althaf demands it cracked before Farooq crosses the border.`,
+The last database containing the The Extraction worm payload uses a team-specific pattern lock. Althaf demands it cracked before Farooq crosses the border.`,
       characterMessage: "I'm going to threaten him on a direct line, posing as a foreign militant. Break this pattern lock so I can hijack the negotiation frequency securely.",
       flag: 'TEAM_SPECIFIC',
       points: 350,
@@ -329,7 +329,7 @@ The last database containing the The Hostage Crisis worm payload uses a team-spe
   const challenges3 = [
     {
       title: 'Level 3.1: The Payload Hunt',
-      description: `OPERATION The Hostage Crisis — PAYLOAD FRAGMENTS
+      description: `OPERATION The Extraction — PAYLOAD FRAGMENTS
 
     Four independently captured payload shards were recovered from separate command channels.
     Threat intelligence assesses they belong to a single activation artifact.
@@ -354,7 +354,7 @@ The last database containing the The Hostage Crisis worm payload uses a team-spe
     ,
       storyContext: `TIME: 7:10 AM | LOCATION: Decoding the cyberattack files
 
-Veera escaped capture with Preethi's help. The The Hostage Crisis payload is fragmented across four encrypted pieces. Understanding the activation mechanism is critical to building the kill switch.`,
+Veera escaped capture with Preethi's help. The The Extraction payload is fragmented across four encrypted pieces. Understanding the activation mechanism is critical to building the kill switch.`,
       characterMessage: "Veera escaped but he's hurt. Decode the fragments to lift the lockdown. Four fragments, four different encodings. Decode and combine in order.",
       flag: 'CTF{Blackout.Feb14.Payload}',
       points: 400,
@@ -381,7 +381,7 @@ Veera escaped capture with Preethi's help. The The Hostage Crisis payload is fra
     Recover the defusal flag from the payload and submit it exactly.`,
       storyContext: `TIME: 7:35 AM | LOCATION: Main attack script analysis
 
-CRITICAL: A logic bomb in Saif's attack script will trigger The Hostage Crisis immediately if not defused. The defusal code is hidden under multiple nested encoding layers.`,
+CRITICAL: A logic bomb in Saif's attack script will trigger The Extraction immediately if not defused. The defusal code is hidden under multiple nested encoding layers.`,
       characterMessage: "Saif armed a fail-deadly bomb. If you don't defuse it perfectly with the right decode pipeline, the mall goes up in flames. Do NOT get this wrong.",
       flag: 'CTF{Defusal.Killswitch.Overrode}',
       points: 450,
@@ -393,7 +393,7 @@ CRITICAL: A logic bomb in Saif's attack script will trigger The Hostage Crisis i
     },
     {
       title: 'Level 3.3: The Master Vault (FINAL BOSS)',
-      description: `MASTER VAULT — OPERATION The Hostage Crisis KILL SWITCH
+      description: `MASTER VAULT — OPERATION The Extraction KILL SWITCH
 
     The final seized server contains the command authority for the citywide blackout chain.
     This vault is the terminal control point: compromise it, and the operation collapses.
@@ -414,7 +414,7 @@ CRITICAL: A logic bomb in Saif's attack script will trigger The Hostage Crisis i
     THE CITY IS COUNTING ON YOU.`,
       storyContext: `TIME: 8:00 AM (Operation Finale) | LOCATION: Farooq's encrypted server
 
-A joint RAW-Police raid seized the server containing the MASTER KILL SWITCH. The vault is protected by every technique encountered so far. First team to crack it stops Operation The Hostage Crisis permanently.`,
+A joint RAW-Police raid seized the server containing the MASTER KILL SWITCH. The vault is protected by every technique encountered so far. First team to crack it stops Operation The Extraction permanently.`,
       characterMessage: "This is it. Every technique you've mastered. The master vault is exposed. First team to crack it dismantles Farooq's entire network permanently. The clock starts... NOW.",
       flag: 'CTF{MASTER_a1b2c3_VAULT}',
       points: 1000,

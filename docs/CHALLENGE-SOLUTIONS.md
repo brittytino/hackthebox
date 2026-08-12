@@ -16,6 +16,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
 ## Round 1 - The Breach Discovery
 
 ### Level 1.1 - The Intercepted Transmission
+- Story Context: Veera intercepts a message containing sleeper cell locations.
 - Difficulty: Medium
 - Points: 100
 - Flag: `CTF{Server.Room-ER42,East-Wing}`
@@ -31,6 +32,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
 - Operator tip: If teams stall, prompt them to look for a final string reversal after readable words begin to appear.
 
 ### Level 1.2 - The Fragmented Server Map
+- Story Context: Veera needs to bypass security doors with fragmented codes.
 - Difficulty: Medium
 - Points: 150
 - Flag: `CTF#AccessGranted`
@@ -46,6 +48,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
 - Operator tip: Remind teams to preserve fragment order A -> B -> C.
 
 ### Level 1.3 - The Time-Locked Vault (Team-Specific)
+- Story Context: Veera finds a biometric vault holding Saif's master plan.
 - Difficulty: Hard
 - Points: 200
 - Flag pattern: `CTF{xxxxxxxx}`
@@ -53,7 +56,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
   - CyberChef (MD5)
   - Hashcalc / MD5 Online (any MD5 calculator)
 - Steps:
-  1) Build the exact input string: `teamName|teamSize|1|THEEXTRACTION2026` (teamSize is 1 for Solo, 2 for Duo).
+  1) Build the exact input string: `teamName|teamSize|1|THEEXTRACTION` (teamSize is 1 for Solo, 2 for Duo).
   2) Hash with MD5.
   3) Take the first 8 lowercase hex characters.
   4) Submit as `CTF{xxxxxxxx}`.
@@ -63,6 +66,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
 ## Round 2 - Infiltration
 
 ### Level 2.1 - The Corrupted Hash Trail
+- Story Context: The breached vault reveals three password hashes for sleeper cells, finances, and the payload.
 - Difficulty: Medium
 - Points: 250
 - Flag: `CTF{pas+dra+mon+42}`
@@ -79,6 +83,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
 - Operator tip: If needed, suggest focusing on common-word passwords before custom brute-force.
 
 ### Level 2.2 - The JWT Inception
+- Story Context: Veera discovers the Home Minister's execution was staged.
 - Difficulty: Medium
 - Points: 300
 - Flag: `CTF{RdfnC6oKbAy5cAyziD3g1DCF}`
@@ -95,6 +100,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
 - Operator tip: If teams reach readable token fields but no flag, hint one additional transformation on the credential value.
 
 ### Level 2.3 - The Pattern Lock (Team-Specific)
+- Story Context: Veera needs to bypass government lines to broadcast a fake threat to the Home Minister.
 - Difficulty: Hard
 - Points: 350
 - Flag pattern: `CTF{xxxxxxxx}`
@@ -102,7 +108,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
   - CyberChef (SHA-256)
   - Any SHA-256 calculator
 - Steps:
-  1) Build the exact input string: `teamName5THEEXTRACTION2026` (no separators).
+  1) Build the exact input string: `teamName5THEEXTRACTION` (no separators).
   2) Hash with SHA-256.
   3) Take the first 8 lowercase hex characters.
   4) Submit as `CTF{xxxxxxxx}`.
@@ -112,6 +118,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
 ## Round 3 - The Final Strike
 
 ### Level 3.1 - The Payload Hunt
+- Story Context: The mall is locked down. Decode the fragments to find how to lift the lockdown.
 - Difficulty: Medium
 - Points: 400
 - Flag: `CTF{Blackout.Feb14.Payload}`
@@ -127,6 +134,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
 - Operator tip: Encourage teams to verify each fragment yields meaningful partial text before combining.
 
 ### Level 3.2 - The Logic Bomb Defusal
+- Story Context: Saif arms a logic bomb that must be defused precisely to prevent the mall from being destroyed.
 - Difficulty: Hard
 - Points: 450
 - Flag: `CTF{Defusal.Killswitch.Overrode}`
@@ -140,6 +148,7 @@ This file is aligned with seeded data in `apps/backend/prisma/seed.ts` and valid
 - Operator tip: If they are guessing randomly, redirect them to pattern-based decoding order and intermediate validation.
 
 ### Level 3.3 - The Master Vault (Final Boss)
+- Story Context: A joint raid secures Farooq's server. Crack the master vault to permanently stop Operation The Extraction.
 - Difficulty: Hard
 - Points: 1000 (first solve can be treated as bonus in app logic/UI)
 - Flag: `CTF{MASTER_a1b2c3_VAULT}`

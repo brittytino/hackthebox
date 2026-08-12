@@ -95,49 +95,52 @@ export class SubmissionsService {
       this.round3Mutex.set(mutexKey, true);
     }
 
-    // Validate flag (case-insensitive)
-    const normalizedFlag = flag.trim().toLowerCase();
-    const isCorrect = await bcrypt.compare(normalizedFlag, challenge.flagHash);
+    let isWinner = false;
+    try {
+      // Validate flag (case-insensitive)
+      const normalizedFlag = flag.trim().toLowerCase();
+      const isCorrect = await bcrypt.compare(normalizedFlag, challenge.flagHash);
 
-    const submission = await this.prisma.submission.create({
-      data: {
-        userId,
-        teamId: user.teamId,
-        challengeId,
-        submittedFlag: flag,
-        isCorrect,
-        points: isCorrect ? challenge.points : 0,
-      },
-      include: {
-        challenge: {
-          select: {
-            title: true,
-            points: true,
+      const submission = await this.prisma.submission.create({
+        data: {
+          userId,
+          teamId: user.teamId,
+          challengeId,
+          submittedFlag: flag,
+          isCorrect,
+          points: isCorrect ? challenge.points : 0,
+        },
+        include: {
+          challenge: {
+            select: {
+              title: true,
+              points: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    // Update team score if correct
-    if (isCorrect) {
-      await this.updateTeamScore(user.teamId);
+      // Update team score if correct
+      if (isCorrect) {
+        isWinner = true;
+        await this.updateTeamScore(user.teamId);
 
-      // Lock Round 3 immediately after first win
-      if (challenge.round.type === RoundType.CATCH_THE_FLAG) {
-        await this.lockRound(challenge.roundId);
+        // Lock Round 3 immediately after first win
+        if (challenge.round.type === RoundType.CATCH_THE_FLAG) {
+          await this.lockRound(challenge.roundId);
+        }
       }
-    } else {
-      // Release mutex if incorrect
-      if (challenge.round.type === RoundType.CATCH_THE_FLAG) {
+
+      return {
+        ...submission,
+        message: isCorrect ? 'Correct! Points awarded.' : 'Incorrect flag.',
+      };
+    } finally {
+      if (!isWinner && challenge.round.type === RoundType.CATCH_THE_FLAG) {
         const mutexKey = `round3_${challenge.roundId}`;
         this.round3Mutex.delete(mutexKey);
       }
     }
-
-    return {
-      ...submission,
-      message: isCorrect ? 'Correct! Points awarded.' : 'Incorrect flag.',
-    };
   }
 
   private async updateTeamScore(teamId: string) {

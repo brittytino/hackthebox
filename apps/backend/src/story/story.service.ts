@@ -16,17 +16,17 @@ interface Round2Artifacts {
 @Injectable()
 export class StoryService {
   private readonly ROUND1_SOLUTIONS = {
-    systemTarget: 'UKKADAM_WATER_TREATMENT',
-    darkweaveCode: 'DARKWEAVE_2026_COIMB',
+    systemTarget: 'EAST_COAST_MALL',
+    darkweaveCode: 'MALL_SIEGE_CHENNAI',
     credentialHash: 'a1b2c3d4e5f6',
   };
 
   private readonly ROUND2_SOLUTIONS = {
-    masterKey: 'SCCC_MASTER_KEY_7F8E9D0A',
-    backdoorLocation: 'SCCC_VPN_NODE_47',
+    masterKey: 'TERRORIST_MASTER_KEY_7F8E9D0A',
+    backdoorLocation: 'SAIF_NETWORK_NODE_47',
   };
 
-  private readonly ROUND3_FLAG = 'CTF{COIMBATORE_DARKWEAVE_DEACTIVATED_2026}';
+  private readonly ROUND3_FLAG = 'CTF{CHENNAI_SIEGE_DEFEATED}';
 
   constructor(private prisma: PrismaService) {}
 
@@ -195,7 +195,7 @@ export class StoryService {
     if (storyState.round3Winner) {
       return {
         success: false,
-        message: `The kill switch has already been disabled by ${storyState.winnerTeamName}. Coimbatore is safe.`,
+        message: `The fail-deadly trigger has already been disabled by ${storyState.winnerTeamName}. Chennai is safe.`,
         alreadyWon: true,
       };
     }
@@ -243,7 +243,7 @@ export class StoryService {
     return {
       success: true,
       winner: true,
-      message: `🎉 MISSION COMPLETE! ${team.name} has successfully disabled the kill switch. Coimbatore is saved!`,
+      message: `🎉 MISSION COMPLETE! ${team.name} has successfully disabled the fail-deadly trigger. Chennai is saved!`,
       finalOutcome: 'CITY_SAVED',
     };
   }
@@ -279,7 +279,7 @@ export class StoryService {
       },
     });
 
-    return { message: 'Story has begun. Operation DARKWEAVE is active.' };
+    return { message: 'Story has begun. Operation THE EXTRACTION is active.' };
   }
 
   async triggerStoryEnding(outcome: 'CITY_SAVED' | 'BREACH_EXECUTED') {
@@ -299,8 +299,8 @@ export class StoryService {
 
     return {
       message: outcome === 'CITY_SAVED' 
-        ? 'Story ended: Coimbatore saved!' 
-        : 'Story ended: Breach executed. Coimbatore in chaos.',
+        ? 'Story ended: Chennai saved!' 
+        : 'Story ended: Detonation executed. Chennai in chaos.',
       outcome,
     };
   }
@@ -329,9 +329,9 @@ export class StoryService {
   async getRoundChallengeContent(roundNumber: number) {
     const challenges = {
       1: {
-        title: 'ROUND 1: THE LEAK',
+        title: 'ROUND 1: BREACH DISCOVERY',
         description: 'Decode intercepted communications to discover the breach',
-        story: `Coimbatore Police cybercrime division has intercepted encrypted chat logs between a Municipal Corporation engineer and an unknown handler. The messages were encrypted using a home-grown cipher. Your task: Decode these messages to uncover critical information about the compromised infrastructure.`,
+        story: `Veera has tapped into the hijacked CCTV network of the East Coast Mall. He intercepted encrypted communications between Saif's sleeper cells. Your task: Decode these messages to uncover critical information about their locations.`,
         encryptedMessages: [
           {
             id: 1,
@@ -340,7 +340,7 @@ export class StoryService {
           },
           {
             id: 2,
-            content: 'EBVNXGBXG_2026_EQKZO',
+            content: 'ZNYY_FVRTR_PURAANV',
             hint: 'Same cipher as message 1',
           },
           {
@@ -352,9 +352,9 @@ export class StoryService {
         requiredOutputs: ['systemTarget', 'darkweaveCode', 'credentialHash'],
       },
       2: {
-        title: 'ROUND 2: THE BREACH',
+        title: 'ROUND 2: INFILTRATION',
         description: 'Crack the access codes and expose the backdoor',
-        story: `Using the decoded intelligence, you've traced the breach to Ukkadam Water Treatment Plant's maintenance VPN. The attackers left password hashes and encrypted tokens in system logs. You must crack these to obtain the SCCC Master Key and locate the backdoor.`,
+        story: `Using the decoded intelligence, you've traced the breach to the terrorist network controlling the mall. The attackers left password hashes and encrypted tokens in system logs. You must crack these to obtain the Master Key and locate Saif's node.`,
         hashedCredentials: [
           {
             id: 1,
@@ -363,24 +363,24 @@ export class StoryService {
           },
           {
             id: 2,
-            encryptedToken: 'U0NDQ19NQVNURVJfS0VZXzdGOEU5RDBB',
+            encryptedToken: 'VEVSUk9SSVNUX01BU1RFUl9LRVlfN0Y4RTlEMEE=',
             hint: 'Base64 encoding',
           },
           {
             id: 3,
-            logFragment: 'U0NDQ19WUE5fTk9ERV80Nw==',
+            logFragment: 'U0FJRl9ORVRXT1JLX05PREVfNDc=',
             hint: 'Base64 encoding',
           },
         ],
         requiredOutputs: ['masterKey', 'backdoorLocation'],
       },
       3: {
-        title: 'ROUND 3: THE COUNTDOWN',
-        description: 'Disable the kill switch before midnight',
-        story: `You've breached the SCCC network. Ransomware is scheduled to trigger at midnight, causing city-wide chaos. The kill switch can only be disabled once. Only ONE team can prevent disaster. Find the deactivation code.`,
+        title: 'ROUND 3: THE FINAL STRIKE',
+        description: 'Disable the fail-deadly trigger before detonation',
+        story: `Saif has armed a fail-deadly bomb. If not defused correctly, it will destroy the mall and everyone left inside. Only ONE team can prevent disaster. Find the deactivation code.`,
         finalChallenge: {
           systemAccess: true,
-          timeLimit: 'Before midnight',
+          timeLimit: 'Before detonation',
           hint: 'The flag format follows standard HTB convention',
         },
         requiredOutput: 'flag',

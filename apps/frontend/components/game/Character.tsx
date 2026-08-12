@@ -3,10 +3,10 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 
-type CharacterName = 'veera' | 'vikram' | 'althaf' | 'preethi' | 'umar';
+type CharacterName = 'veera' | 'althaf' | 'preethi' | 'umar';
 type CharacterExpression = 
   | 'neutral' | 'intense' | 'determined' | 'concerned' | 'relieved'  // Veera
-  | 'serious' | 'urgent'                                              // Vikram
+
   | 'commanding'                                                      // Althaf
   | 'worried' | 'hopeful'                                            // Preethi
   | 'threatening' | 'angry';                                         // Umar
@@ -23,7 +23,7 @@ interface CharacterProps {
 
 const CHARACTER_COLORS: Record<CharacterName, string> = {
   veera: '#a78bfa',     // Purple
-  vikram: '#67e8f9',    // Cyan
+
   althaf: '#fbbf24',    // Gold
   preethi: '#f9a8d4',   // Pink
   umar: '#ef4444',      // Red

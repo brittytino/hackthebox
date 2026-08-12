@@ -281,7 +281,7 @@ export default function LeaderboardPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#374151', fontSize: 11 }}>
             <Lock size={11} />Real-time via SSE + {POLL_INTERVAL / 1000}s polling fallback
           </div>
-          <div style={{ color: '#374151', fontSize: 11, letterSpacing: 2 }}>THE EXTRACTION 2026 — COIMBATORE</div>
+          <div style={{ color: '#374151', fontSize: 11, letterSpacing: 2 }}>THE EXTRACTION — CHENNAI</div>
         </div>
       </div>
 

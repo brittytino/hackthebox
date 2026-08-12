@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import CharacterDialogue from './CharacterDialogue';
 
 interface DialogueLine {
-  character: 'veera' | 'vikram' | 'althaf' | 'preethi' | 'umar';
+  character: 'veera' | 'althaf' | 'preethi' | 'umar';
   expression: string;
   dialogue: string;
   position?: 'left' | 'right' | 'center';

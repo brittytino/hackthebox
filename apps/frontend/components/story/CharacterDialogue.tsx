@@ -3,16 +3,16 @@
 import React from 'react';
 import Image from 'next/image';
 
-type CharacterName = 'veera' | 'vikram' | 'althaf' | 'preethi' | 'umar';
+type CharacterName = 'veera' | 'althaf' | 'preethi' | 'umar';
 type VeeraExpression = 'neutral' | 'intense' | 'determined' | 'concerned' | 'relieved';
-type VikramExpression = 'neutral' | 'serious' | 'urgent';
+
 type AlthafExpression = 'neutral' | 'commanding' | 'concerned';
 type PreethiExpression = 'worried' | 'hopeful';
 type UmarExpression = 'threatening' | 'angry';
 
 type CharacterExpression = 
   | VeeraExpression 
-  | VikramExpression 
+
   | AlthafExpression 
   | PreethiExpression 
   | UmarExpression;
@@ -33,11 +33,7 @@ const characterInfo: Record<CharacterName, { name: string; title: string; color:
     title: 'Ex-RAW Agent',
     color: 'cyan',
   },
-  vikram: {
-    name: 'Vikram',
-    title: 'RAW Director',
-    color: 'blue',
-  },
+
   althaf: {
     name: 'Althaf',
     title: 'NSA Commander',

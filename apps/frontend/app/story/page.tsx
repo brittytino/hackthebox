@@ -70,10 +70,10 @@ const INTRO_SCENES: Scene[] = [
   },
   {
     bg: '/images/background/4.jpg',
-    speaker: 'VIKRAM',
-    speakerColor: '#38bdf8',
+    speaker: 'PREETHI',
+    speakerColor: '#f472b6',
     text: '"Veera sir — Preethi here. NSA relay patched. I\'m pulling your signal now. Listen — every intercepted file is triple-encrypted. We have a 20-minute window before Saif rotates his keys. We need a team that can crack ciphers under pressure. Real field cryptography. No tools — just skill."',
-    image: '/images/characters/vikram_urgent.png',
+    image: '/images/characters/preethi_worried.png',
     imagePos: 'left',
   },
   {
@@ -123,10 +123,10 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
     },
     {
       bg: '/images/background/1.jpg',
-      speaker: 'VIKRAM',
+      speaker: 'ALTHAF',
       speakerColor: '#38bdf8',
       text: '"Good work. But we are not done. The security door access code has been split into three fragments. Veera reaches a locked corridor in four minutes. You have three. Decode all three fragments and assemble them in order. Go."',
-      image: '/images/characters/vikram_urgent.png',
+      image: '/images/characters/althaf_concerned.png',
       imagePos: 'left',
     },
   ],
@@ -201,10 +201,10 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
     },
     {
       bg: '/images/background/4.jpg',
-      speaker: 'VIKRAM',
+      speaker: 'ALTHAF',
       speakerColor: '#38bdf8',
       text: '"Veera — Saif has changed tactics. He\'s got a token — a JWT admin token — that gives him direct access to the government\'s emergency broadcast system. If he gets in, he triggers a mass panic before we can respond. We need to decode and invalidate that token. Now."',
-      image: '/images/characters/vikram_serious.png',
+      image: '/images/characters/althaf_commanding.png',
       imagePos: 'left',
     },
   ],
@@ -279,10 +279,10 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
     },
     {
       bg: '/images/background/7.jpg',
-      speaker: 'VIKRAM',
+      speaker: 'ALTHAF',
       speakerColor: '#38bdf8',
       text: '"The explosive is armed. The defusal code is buried under multiple nested encoding layers — we counted five. Each layer hides the next. One misstep, and the trigger fires. Veera is standing by. He cannot defuse it until you give him the correct code. This is on you."',
-      image: '/images/characters/vikram_urgent.png',
+      image: '/images/characters/althaf_concerned.png',
       imagePos: 'left',
     },
   ],
@@ -331,10 +331,10 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = {
     },
     {
       bg: '/images/background/9.jpg',
-      speaker: 'VIKRAM',
+      speaker: 'ALTHAF',
       speakerColor: '#38bdf8',
       text: '"1,200 lives. Countless more saved from Farooq\'s network. All safe. None of this happens without your team. You cracked nine ciphers under pressure, in the dark, while real people were in danger. I will remember this team."',
-      image: '/images/characters/vikram_serious.png',
+      image: '/images/characters/althaf_commanding.png',
       imagePos: 'left',
     },
     {
@@ -406,7 +406,7 @@ function EndTitleCard({ onClose }: { onClose: () => void }) {
         <p style={{ color: '#9ca3af', fontSize: 15, lineHeight: 1.85, fontStyle: 'italic', marginBottom: 32 }}>
           "The names of those who stood in the dark to protect the light will never appear in a public report. But Chennai remembers."
         </p>
-        <p style={{ color: '#6b7280', fontSize: 12, letterSpacing: 2, marginBottom: 36 }}>— THE EXTRACTION, FEBRUARY 2026</p>
+        <p style={{ color: '#6b7280', fontSize: 12, letterSpacing: 2, marginBottom: 36 }}>— THE EXTRACTION, PRESENT DAY</p>
 
         {/* CTA */}
         <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>

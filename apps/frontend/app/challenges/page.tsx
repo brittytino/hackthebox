@@ -32,13 +32,13 @@ const COMPLETION_STORIES: Record<number, {
   bgColor: string; accentColor: string; bgImage: string;
 }> = {
   1: { title: 'TRANSMISSION DECODED', quote: '"Command center located — east wing, sub-level 3. Preethi, route the team. We move in 5 minutes."', subtext: 'Server Room ER-42 is the next target. The fragmented access codes await.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_determined.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/1.jpg' },
-  2: { title: 'ACCESS CODES ASSEMBLED', quote: '"ER-42 is open. Move, Veera — the patrol returns in 4 minutes. The biometric vault is on sub-level 2."', subtext: 'The time-locked vault holds the complete attack blueprint.', character: 'Preethi', characterImage: '/images/characters/vikram_serious.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/2.jpg' },
+  2: { title: 'ACCESS CODES ASSEMBLED', quote: '"ER-42 is open. Move, Veera — the patrol returns in 4 minutes. The biometric vault is on sub-level 2."', subtext: 'The time-locked vault holds the complete attack blueprint.', character: 'Preethi', characterImage: '/images/characters/preethi_worried.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/2.jpg' },
   3: { title: 'VAULT CRACKED — ROUND 1 COMPLETE', quote: '"Attack plans retrieved. They are preparing to execute hostages. Three encrypted databases are our next hurdle."', subtext: 'Round 1 complete. The Infiltration phase begins now.', character: 'NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/3.jpg' },
   4: { title: 'HASH TRAIL BROKEN', quote: '"Databases cracked. Farooq release is blocked. The government has hard evidence. But Saif knows we\'re inside."', subtext: 'The JWT admin token holds the next layer of proof.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_intense.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/4.jpg' },
-  5: { title: 'ADMIN ACCESS SECURED', quote: '"Logs confirmed — the minister\'s wife execution was theater. The government is being blackmailed. This changes everything."', subtext: 'One encrypted database remains. The hostage execution protocol is inside.', character: 'Preethi', characterImage: '/images/characters/vikram_urgent.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/5.jpg' },
+  5: { title: 'ADMIN ACCESS SECURED', quote: '"Logs confirmed — the minister\'s wife execution was theater. The government is being blackmailed. This changes everything."', subtext: 'One encrypted database remains. The hostage execution protocol is inside.', character: 'Preethi', characterImage: '/images/characters/preethi_hopeful.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/5.jpg' },
   6: { title: 'PATTERN LOCK BROKEN — ROUND 2 COMPLETE', quote: '"Veera has spoofed his identity. The Home Minister is cornered. But Veera has been captured! We need to help him."', subtext: 'Round 2 complete. The Final Strike begins.', character: 'NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/6.jpg' },
   7: { title: 'PAYLOAD DECODED', quote: '"Now we understand the attack mechanism. Preethi handed us the fragments. The kill switch components are in two final systems."', subtext: 'A logic bomb guards the next layer. One wrong step detonates the C4 early.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_concerned.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/7.jpg' },
-  8: { title: 'LOGIC BOMB NEUTRALISED', quote: '"Bomb dead. Mall siege ended. Saif is in custody. One target remains — Umar Farooq. The Master Vault holds everything."', subtext: 'Final challenge: The Master Vault. Use every skill you have learned.', character: 'Preethi', characterImage: '/images/characters/vikram_serious.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/8.jpg' },
+  8: { title: 'LOGIC BOMB NEUTRALISED', quote: '"Bomb dead. Mall siege ended. Saif is in custody. One target remains — Umar Farooq. The Master Vault holds everything."', subtext: 'Final challenge: The Master Vault. Use every skill you have learned.', character: 'Preethi', characterImage: '/images/characters/preethi_worried.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/8.jpg' },
   9: { title: '?? TERRORIST NETWORK — TERMINATED', quote: '"Farooq\'s network is dismantled. The hostages are safe. You did it — all of you."', subtext: 'Mission complete. Your team has written history.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_relieved.png', bgColor: 'rgba(16,185,129,0.18)', accentColor: '#10b981', bgImage: '/images/background/9.jpg' },
 };
 
@@ -66,7 +66,7 @@ const MISSIONS: MissionMeta[] = [
     situation: 'Preethi\'s cyber unit intercepts three encrypted files from the terrorist relay — the server room access code has been split into fragments. Veera is 50 meters away with armed patrols closing in. He needs the complete code now.',
     intel: '"Three fragments, three different encodings. Identify each, decode them all, and assemble in order — A then B then C. No room for error. Veera is exposed."',
     character: 'Preethi',
-    characterImage: '/images/characters/vikram_serious.png',
+    characterImage: '/images/characters/preethi_worried.png',
     roundLabel: 'ROUND 1  BREACH',
   },
   {
@@ -89,7 +89,7 @@ const MISSIONS: MissionMeta[] = [
     storyAct: 'ACT III — THE COUNTERATTACK',
     storyTime: '05:12 AM  Vault Terminal',
     storyStatus: ' GOVT CAVING  FAROOQ RELEASE PREP STARTED',
-    situation: 'The hard drive from the vault holds three password-protected databases — sleeper cell identities, financial backers, and the The Hostage Crisis payload. If Veera can crack these before Farooq is released, the transfer can be blocked.',
+    situation: 'The hard drive from the vault holds three password-protected databases — sleeper cell identities, financial backers, and the The Extraction payload. If Veera can crack these before Farooq is released, the transfer can be blocked.',
     intel: '"Three locked databases, three hashed passwords. Crack them all and assemble the master key. This is the evidence that stops Farooq\'s release."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_intense.png',
@@ -105,7 +105,7 @@ const MISSIONS: MissionMeta[] = [
     situation: 'Veera is inside the admin panel — but the authentication token has been obfuscated to evade scanners. Preethi spotted that the Home Minister\'s "wife execution" was theater staged for compliance. Decode the token to prove the conspiracy.',
     intel: '"The token is encoded and buried inside a wrapper. Strip the layers, find the hidden credential, and reverse it. That\'s our proof the Home Minister is a traitor."',
     character: 'Preethi',
-    characterImage: '/images/characters/vikram_urgent.png',
+    characterImage: '/images/characters/preethi_hopeful.png',
     roundLabel: 'ROUND 2  INFILTRATION',
   },
   {
@@ -115,8 +115,8 @@ const MISSIONS: MissionMeta[] = [
     storyAct: 'ROUND 2 FINALE',
     storyTime: '06:15 AM  Final Encrypted Database',
     storyStatus: ' FAROOQ BORDER CROSSING IN 3 HOURS',
-    situation: 'The final database — containing the The Hostage Crisis worm payload and Feb 14 activation details — has a team-specific lock designed to prevent answer sharing. Althaf demands it cracked before Farooq crosses the border.',
-    intel: '"This lock is unique to your team. Compute your personalised code using the formula provided. No shared answers exist. Calculate yours and unlock the The Hostage Crisis blueprint."',
+    situation: 'The final database — containing the The Extraction worm payload and Feb 14 activation details — has a team-specific lock designed to prevent answer sharing. Althaf demands it cracked before Farooq crosses the border.',
+    intel: '"This lock is unique to your team. Compute your personalised code using the formula provided. No shared answers exist. Calculate yours and unlock the The Extraction blueprint."',
     character: 'NSA Althaf',
     characterImage: '/images/characters/althaf_concerned.png',
     roundLabel: 'ROUND 2  INFILTRATION',
@@ -126,9 +126,9 @@ const MISSIONS: MissionMeta[] = [
     name: 'The Payload Hunt',
     type: 'REVERSE ENG', difficulty: 'medium', points: 400,
     storyAct: 'ACT IV — ESCAPE PHASE',
-    storyTime: '07:10 AM  The Hostage Crisis Payload Analysis',
+    storyTime: '07:10 AM  The Extraction Payload Analysis',
     storyStatus: ' VEERA INJURED  FAROOQ CROSSED BORDER',
-    situation: 'Veera was captured but escaped with help from Preethi — the Home Minister\'s daughter who chose the right side. The The Hostage Crisis payload is split across four encrypted fragments. Decode them all to understand the activation mechanism and build the kill switch.',
+    situation: 'Veera was captured but escaped with help from Preethi — the Home Minister\'s daughter who chose the right side. The The Extraction payload is split across four encrypted fragments. Decode them all to understand the activation mechanism and build the kill switch.',
     intel: '"Four fragments, four different encodings. Identify what each one is, decode them, and combine in exact order 1 through 4. We need the full payload to build the kill switch."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_concerned.png',
@@ -141,10 +141,10 @@ const MISSIONS: MissionMeta[] = [
     storyAct: 'ROUND 3 CRITICAL',
     storyTime: '07:35 AM  Script Defusal Window',
     storyStatus: ' LOGIC BOMB TRIGGER IN 10 MINUTES',
-    situation: 'A logic bomb is embedded in Saif\'s attack script. If it triggers, The Hostage Crisis goes live immediately — 13 days early. The defusal code is buried under multiple nested encoding layers. One wrong step and 50,000 jobs vanish tonight.',
+    situation: 'A logic bomb is embedded in Saif\'s attack script. If it triggers, The Extraction goes live immediately — 13 days early. The defusal code is buried under multiple nested encoding layers. One wrong step and 50,000 jobs vanish tonight.',
     intel: '"Multiple encoding layers protecting the defusal code. Strip every layer carefully until you reach the plaintext. The fully decoded output is what you submit."',
     character: 'Preethi',
-    characterImage: '/images/characters/vikram_serious.png',
+    characterImage: '/images/characters/preethi_worried.png',
     roundLabel: 'ROUND 3  FINAL STRIKE',
   },
   {
@@ -926,7 +926,7 @@ function ChallengesInner() {
                 <div className="ch-section-label" style={{ marginBottom: 12 }}>OPERATION STATUS</div>
                 {[
                   { label: 'CODISSIA MALL', val: currentLevel >= 9 ? 'SECURED'    : 'ACTIVE SIEGE',  ok: currentLevel >= 9 },
-                  { label: 'OP The Hostage Crisis',  val: currentLevel >= 9 ? 'TERMINATED' : 'ARMED FEB 14',  ok: currentLevel >= 9 },
+                  { label: 'OP The Extraction',  val: currentLevel >= 9 ? 'TERMINATED' : 'ARMED FEB 14',  ok: currentLevel >= 9 },
                   { label: 'UMAR SAIF',   val: currentLevel >= 8 ? 'NEUTRALIZED': 'HOSTILE',        ok: currentLevel >= 8 },
                   { label: 'FAROOQ',      val: currentLevel >= 7 ? 'RECAPTURED' : 'AT LARGE',       ok: currentLevel >= 7 },
                 ].map(x => (

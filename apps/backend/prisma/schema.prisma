@@ -90,7 +90,7 @@ model Challenge {
   title         String
   description   String
   storyContext  String?       // Story narrative for this challenge
-  characterMessage String?     // Message from Veera/Vikram/etc
+  characterMessage String?     // Message from Veera/Althaf/etc
   points        Int
   flagHash      String
   maxAttempts   Int?

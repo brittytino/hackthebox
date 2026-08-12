@@ -107,22 +107,12 @@ export default function LandingPage() {
 
       {/* Main container - centered layout */}
       <div
-        style={{
-          position: 'relative',
-          zIndex: 10,
-          display: 'flex',
-          height: '100vh',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '80px',
-          padding: '0 60px',
-        }}
+        className="flex flex-col lg:flex-row items-center justify-center min-h-screen relative z-10 px-6 md:px-16 gap-12 lg:gap-20 py-16 lg:py-0"
       >
         {/* LEFT: Title block */}
         <div
+          className="w-full lg:flex-1 max-w-[520px]"
           style={{
-            flex: 1,
-            maxWidth: 520,
             opacity: mounted ? 1 : 0,
             transform: mounted ? 'translateX(0)' : 'translateX(-40px)',
             transition: 'all 0.8s cubic-bezier(0.34,1.56,0.64,1)',
@@ -141,7 +131,7 @@ export default function LandingPage() {
           >
             <span className="status-dot active" />
             <span style={{ color: '#a78bfa', fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase' }}>
-              THE EXTRACTION 2026 — LIVE
+              THE EXTRACTION — LIVE
             </span>
           </div>
 
@@ -160,9 +150,8 @@ export default function LandingPage() {
               ██ CLASSIFIED OPERATION ██
             </div>
             <h1
-              className="game-title"
+              className="game-title text-6xl md:text-7xl"
               style={{
-                fontSize: 68,
                 lineHeight: 0.92,
                 background: 'linear-gradient(135deg, #c4b5fd 0%, #a78bfa 40%, #7c3aed 70%, #4c1d95 100%)',
                 WebkitBackgroundClip: 'text',
@@ -174,9 +163,8 @@ export default function LandingPage() {
               OPERATION
             </h1>
             <h1
-              className="game-title"
+              className="game-title text-5xl md:text-6xl"
               style={{
-                fontSize: 56,
                 lineHeight: 1,
                 background: 'linear-gradient(135deg, #67e8f9 0%, #06b6d4 50%, #0891b2 100%)',
                 WebkitBackgroundClip: 'text',
@@ -223,8 +211,8 @@ export default function LandingPage() {
 
         {/* RIGHT: Menu panel */}
         <div
+          className="w-full max-w-[440px]"
           style={{
-            width: 440,
             opacity: mounted ? 1 : 0,
             transform: mounted ? 'translateX(0)' : 'translateX(40px)',
             transition: 'all 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.15s',
@@ -306,7 +294,7 @@ export default function LandingPage() {
           {/* Bottom version */}
           <div style={{ marginTop: 24, textAlign: 'center' }}>
             <div className="game-label" style={{ fontSize: 10, color: '#374151' }}>
-              BUILD 2026.02.18 · THE EXTRACTION ENGINE v3.0
+              BUILD 2024.11.01 · THE EXTRACTION ENGINE v3.0
             </div>
             <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
               <Zap size={12} color="#7c3aed" />

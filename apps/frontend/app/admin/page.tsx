@@ -2,21 +2,17 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableRow, TableHeader } from '@/components/ui/table';
+import { gsap } from 'gsap';
+import Link from 'next/link';
 import { api } from '@/lib/api';
 import { 
-  Users, Trophy, Flag, FileText, LogOut, AlertTriangle, Download, 
-  Lock, Unlock, Ban, Shield, Activity, RefreshCw, Search, 
-  CheckCircle, XCircle, Eye, Clock, Zap, Crown, UserX, UserCheck,
-  TrendingUp, BarChart2, Terminal, Radio
+  Users, Trophy, Flag, FileText, LogOut, Download, 
+  Lock, Unlock, Shield, Activity, RefreshCw, Search, 
+  CheckCircle2, XCircle, Eye, Clock, Zap, Crown, UserX, UserCheck,
+  TrendingUp, BarChart2, Terminal, Radio, Settings, Map
 } from 'lucide-react';
 
-type TabType = 'overview' | 'teams' | 'rounds' | 'activity' | 'settings';
+type TabType = 'overview' | 'teams' | 'rounds';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -32,6 +28,7 @@ export default function AdminPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Team modal states
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
@@ -41,25 +38,9 @@ export default function AdminPage() {
   const [adjustReason, setAdjustReason] = useState('');
   const [disqualifyReason, setDisqualifyReason] = useState('');
   
-  // Round creation
-  const [newRound, setNewRound] = useState({
-    name: '',
-    type: 'DECODE_THE_SECRET',
-    order: 1,
-    description: '',
-  });
-  
-  // Challenge creation
-  const [newChallenge, setNewChallenge] = useState({
-    roundId: '',
-    title: '',
-    description: '',
-    points: 100,
-    flag: '',
-    order: 1,
-    maxAttempts: 0,
-    hints: '',
-  });
+  // Creation states
+  const [newRound, setNewRound] = useState({ name: '', type: 'DECODE_THE_SECRET', order: 1, description: '' });
+  const [newChallenge, setNewChallenge] = useState({ roundId: '', title: '', description: '', points: 100, flag: '', order: 1, maxAttempts: 0, hints: '' });
 
   const loadData = useCallback(async () => {
     try {
@@ -99,7 +80,18 @@ export default function AdminPage() {
     loadData();
   }, [router, loadData]);
 
-  // Auto-refresh every 10 seconds
+  // GSAP Animation when loading finishes or tab changes
+  useEffect(() => {
+    if (!loading && containerRef.current) {
+      gsap.fromTo(
+        containerRef.current.querySelectorAll('.df'),
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, stagger: 0.05, duration: 0.4, ease: 'power3.out' }
+      );
+    }
+  }, [loading, activeTab]);
+
+  // Auto-refresh
   useEffect(() => {
     if (autoRefresh) {
       refreshIntervalRef.current = setInterval(() => {
@@ -107,9 +99,7 @@ export default function AdminPage() {
       }, 10000);
     }
     return () => {
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current);
-      }
+      if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
     };
   }, [autoRefresh, loadData]);
 
@@ -119,113 +109,58 @@ export default function AdminPage() {
       await api.admin.createRound(newRound);
       await loadData();
       setNewRound({ name: '', type: 'DECODE_THE_SECRET', order: 1, description: '' });
-    } catch (error: unknown) {
-      alert((error as Error).message || 'Failed to create round');
-    }
+    } catch (error: any) { alert(error.message || 'Failed to create round'); }
   };
 
   const handleUpdateRoundStatus = async (roundId: string, status: string) => {
     try {
       await api.admin.updateRoundStatus(roundId, { status });
       await loadData();
-    } catch (error: unknown) {
-      alert((error as Error).message || 'Failed to update round status');
-    }
+    } catch (error: any) { alert(error.message || 'Failed to update round status'); }
   };
 
   const handleCreateChallenge = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newChallenge.roundId) {
-      alert('Please select a round');
-      return;
-    }
+    if (!newChallenge.roundId) return alert('Please select a round');
     try {
-      await api.admin.createChallenge({
-        ...newChallenge,
-        maxAttempts: newChallenge.maxAttempts || undefined,
-      });
+      await api.admin.createChallenge({ ...newChallenge, maxAttempts: newChallenge.maxAttempts || undefined });
       await loadData();
-      setNewChallenge({
-        roundId: '',
-        title: '',
-        description: '',
-        points: 100,
-        flag: '',
-        order: 1,
-        maxAttempts: 0,
-        hints: '',
-      });
-    } catch (error: unknown) {
-      alert((error as Error).message || 'Failed to create challenge');
-    }
-  };
-
-  const handleResetCompetition = async () => {
-    if (!confirm('?? DANGER: This will DELETE ALL submissions and scores! Are you absolutely sure?')) {
-      return;
-    }
-    if (!confirm('This action is IRREVERSIBLE. Type "RESET" in the next prompt to confirm.')) {
-      return;
-    }
-    try {
-      await api.admin.resetCompetition();
-      await loadData();
-    } catch (error: unknown) {
-      alert((error as Error).message || 'Failed to reset competition');
-    }
+      setNewChallenge({ roundId: '', title: '', description: '', points: 100, flag: '', order: 1, maxAttempts: 0, hints: '' });
+    } catch (error: any) { alert(error.message || 'Failed to create challenge'); }
   };
 
   const handleAdjustScore = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTeam || !adjustReason) {
-      alert('Please provide a reason');
-      return;
-    }
+    if (!selectedTeam || !adjustReason) return alert('Please provide a reason');
     try {
       await api.admin.adjustTeamScore(selectedTeam.id, { points: adjustPoints, reason: adjustReason });
       await loadData();
-      setShowAdjustModal(false);
-      setSelectedTeam(null);
-      setAdjustPoints(0);
-      setAdjustReason('');
-    } catch (error: unknown) {
-      alert((error as Error).message || 'Failed to adjust score');
-    }
+      setShowAdjustModal(false); setSelectedTeam(null); setAdjustPoints(0); setAdjustReason('');
+    } catch (error: any) { alert(error.message || 'Failed to adjust score'); }
   };
 
   const handleDisqualifyTeam = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTeam || !disqualifyReason) {
-      alert('Please provide a reason');
-      return;
-    }
+    if (!selectedTeam || !disqualifyReason) return alert('Please provide a reason');
     try {
       await api.admin.disqualifyTeam(selectedTeam.id, { reason: disqualifyReason });
       await loadData();
-      setShowDisqualifyModal(false);
-      setSelectedTeam(null);
-      setDisqualifyReason('');
-    } catch (error: unknown) {
-      alert((error as Error).message || 'Failed to disqualify team');
-    }
+      setShowDisqualifyModal(false); setSelectedTeam(null); setDisqualifyReason('');
+    } catch (error: any) { alert(error.message || 'Failed to disqualify team'); }
   };
 
   const handleQualifyTeam = async (teamId: string) => {
     try {
       await api.admin.qualifyTeam(teamId);
       await loadData();
-    } catch (error: unknown) {
-      alert((error as Error).message || 'Failed to qualify team');
-    }
+    } catch (error: any) { alert(error.message || 'Failed to qualify team'); }
   };
 
   const handleToggleFreezeScoreboard = async () => {
     try {
       await api.admin.freezeScoreboard({ freeze: !scoreboardFrozen });
       setScoreboardFrozen(!scoreboardFrozen);
-    } catch (error: unknown) {
-      alert((error as Error).message || 'Failed to toggle scoreboard freeze');
-    }
+    } catch (error: any) { alert(error.message || 'Failed to toggle scoreboard freeze'); }
   };
 
   const handleExportResults = async () => {
@@ -233,16 +168,9 @@ export default function AdminPage() {
       const results = await api.admin.exportResults();
       const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ctf-results-${new Date().toISOString()}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error: unknown) {
-      alert((error as Error).message || 'Failed to export results');
-    }
+      const a = document.createElement('a'); a.href = url; a.download = `ctf-results-${new Date().toISOString()}.json`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    } catch (error: any) { alert(error.message || 'Failed to export results'); }
   };
 
   const handleExportCSV = async () => {
@@ -250,16 +178,9 @@ export default function AdminPage() {
       const csv = await api.admin.exportResultsCSV();
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ctf-results-${new Date().toISOString()}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error: unknown) {
-      alert((error as Error).message || 'Failed to export CSV');
-    }
+      const a = document.createElement('a'); a.href = url; a.download = `ctf-results-${new Date().toISOString()}.csv`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    } catch (error: any) { alert(error.message || 'Failed to export CSV'); }
   };
 
   const handleLogout = () => {
@@ -268,817 +189,377 @@ export default function AdminPage() {
     router.push('/login');
   };
 
-  // Filter teams based on search
-  const filteredTeams = teams
-    .filter(team => 
-      team.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+  const filteredTeams = teams.filter(team => team.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => (b.scores?.[0]?.totalPoints || 0) - (a.scores?.[0]?.totalPoints || 0));
 
-  // Calculate live stats
   const activeTeams = teams.filter(t => t.members?.length > 0).length;
-  const disqualifiedTeams = teams.filter(t => t.members?.some((m: Record<string, any>) => m.role === 'JUDGE')).length;
+  const disqualifiedTeams = teams.filter(t => t.members?.some((m: any) => m.role === 'JUDGE')).length;
+  const lastHourSubmissions = submissions.filter(s => new Date(s.createdAt).getTime() > Date.now() - 3600000).length;
   const recentSubmissions = submissions.slice(0, 50);
-  const lastHourSubmissions = submissions.filter(s => 
-    new Date(s.createdAt).getTime() > Date.now() - 3600000
-  ).length;
+
+  const F = "'Inter','Segoe UI',system-ui,-apple-system,sans-serif";
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950">
-        <div className="text-center">
-          <Terminal className="h-12 w-12 text-cyan-400 animate-pulse mx-auto mb-4" />
-          <p className="text-cyan-400 font-mono">INITIALIZING COMMAND CENTER...</p>
-        </div>
+      <div style={{ minHeight: '100vh', background: '#0d1117', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, fontFamily: F, flexDirection: 'column' }}>
+        <div style={{ width: 40, height: 40, border: '3px solid rgba(9,205,114,0.2)', borderTopColor: '#09cd72', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ color: '#09cd72', letterSpacing: 2, fontSize: 14, fontWeight: 600 }}>Loading Admin Data...</div>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     );
   }
 
-  const tabClasses = (tab: TabType) => 
-    `px-4 py-2 font-mono text-sm transition-all border-b-2 ${
-      activeTab === tab 
-        ? 'border-cyan-400 text-cyan-400 bg-cyan-400/10' 
-        : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-600'
-    }`;
+  // Common styles
+  const inputStyle = { width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#e6edf3', fontSize: 14, outline: 'none', transition: 'border-color 0.2s' };
+  const labelStyle = { display: 'block', fontSize: 12, color: '#6e7681', fontWeight: 600, marginBottom: 6, textTransform: 'uppercase' as const };
+  const cardStyle = { background: '#161b22', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '24px' };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      {/* Header - Command Center style */}
-      <header className="border-b border-cyan-900/50 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Shield className="h-8 w-8 text-cyan-400" />
-            <div>
-              <h1 className="text-xl font-bold font-mono text-cyan-400">COMMAND CENTER</h1>
-              <p className="text-xs text-slate-500 font-mono">CTF ADMIN CONTROL PANEL</p>
-            </div>
+    <div style={{ minHeight: '100vh', background: '#0d1117', fontFamily: F, position: 'relative', overflowX: 'hidden', color: '#e6edf3' }}>
+      {/* Subtle radial glow */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse 80% 40% at 50% -10%, rgba(14,165,233,0.07) 0%, transparent 60%)' }} />
+
+      {/* -- NAV -- */}
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '0 32px', height: 64, borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(13,17,23,0.96)', backdropFilter: 'blur(20px)', gap: 8 }}>
+        {/* Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 24 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#0ea5e9,#a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(14,165,233,0.3)' }}>
+            <Shield size={18} color="#fff" strokeWidth={2.5} />
           </div>
-          
-          <div className="flex items-center gap-4">
-            {/* Live Status */}
-            <div className="flex items-center gap-2 px-3 py-1 rounded bg-emerald-500/20 border border-emerald-500/30">
-              <Radio className="h-4 w-4 text-emerald-400 animate-pulse" />
-              <span className="text-xs font-mono text-emerald-400">LIVE</span>
-            </div>
-            
-            <div className="text-right">
-              <p className="text-xs text-slate-500 font-mono">OPERATOR</p>
-              <p className="text-sm font-mono text-cyan-400">{user?.username}</p>
-            </div>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleLogout}
-              className="border-red-600 text-red-400 hover:bg-red-600/20"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              LOGOUT
-            </Button>
+          <div>
+            <div style={{ color: '#e6edf3', fontSize: 16, fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.3px' }}>The Extraction</div>
+            <div style={{ color: '#6e7681', fontSize: 11, lineHeight: 1 }}>Admin Control</div>
           </div>
         </div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          {[
+            { id: 'overview', icon: BarChart2, label: 'Overview' },
+            { id: 'teams', icon: Users, label: `Teams (${teams.length})` },
+            { id: 'rounds', icon: Flag, label: 'Manage Rounds' },
+          ].map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as TabType)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
+                  background: isActive ? 'rgba(255,255,255,0.07)' : 'transparent',
+                  border: '1px solid', borderColor: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  borderRadius: 8, color: isActive ? '#e6edf3' : '#6e7681',
+                  fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              >
+                <tab.icon size={15} color={isActive ? '#0ea5e9' : 'inherit'} />
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        {/* Live badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'rgba(9,205,114,0.08)', border: '1px solid rgba(9,205,114,0.2)', borderRadius: 8, marginRight: 8 }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#09cd72', boxShadow: '0 0 8px #09cd72', animation: 'dpulse 2s infinite' }} />
+          <span style={{ color: '#09cd72', fontSize: 13, fontWeight: 600 }}>Live Data</span>
+        </div>
+
+        <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 16px', background: 'rgba(248,81,73,0.07)', border: '1px solid rgba(248,81,73,0.2)', borderRadius: 8, color: '#f85149', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' }}>
+          <LogOut size={15} /> Logout
+        </button>
+      </nav>
+
+      {/* -- MAIN -- */}
+      <div ref={containerRef} style={{ position: 'relative', zIndex: 5, maxWidth: 1280, margin: '0 auto', padding: '32px 32px 80px' }}>
         
-        {/* Tab Navigation */}
-        <div className="max-w-7xl mx-auto px-4 flex gap-0 border-t border-slate-800">
-          <button onClick={() => setActiveTab('overview')} className={tabClasses('overview')}>
-            <BarChart2 className="h-4 w-4 inline mr-2" />OVERVIEW
-          </button>
-          <button onClick={() => setActiveTab('teams')} className={tabClasses('teams')}>
-            <Users className="h-4 w-4 inline mr-2" />TEAMS ({teams.length})
-          </button>
-          <button onClick={() => setActiveTab('rounds')} className={tabClasses('rounds')}>
-            <Flag className="h-4 w-4 inline mr-2" />ROUNDS
-          </button>
-          <button onClick={() => setActiveTab('activity')} className={tabClasses('activity')}>
-            <Activity className="h-4 w-4 inline mr-2" />ACTIVITY
-          </button>
-          <button onClick={() => setActiveTab('settings')} className={tabClasses('settings')}>
-            <AlertTriangle className="h-4 w-4 inline mr-2" />SETTINGS
-          </button>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Auto-refresh controls */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loadData()}
-              className="border-slate-700 hover:border-cyan-500"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              REFRESH
-            </Button>
-            <button
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`flex items-center gap-2 text-xs font-mono px-3 py-1.5 rounded ${
-                autoRefresh 
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                  : 'bg-slate-800 text-slate-400 border border-slate-700'
-              }`}
-            >
-              {autoRefresh ? <Eye className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-              AUTO-REFRESH {autoRefresh ? 'ON' : 'OFF'}
+        {/* Top Controls */}
+        <div className="df" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button onClick={() => loadData()} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#c9d1d9', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <RefreshCw size={14} /> Refresh
             </button>
-            <span className="text-xs text-slate-500 font-mono">
-              Last update: {lastRefresh.toLocaleTimeString()}
-            </span>
+            <button onClick={() => setAutoRefresh(!autoRefresh)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: autoRefresh ? 'rgba(9,205,114,0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${autoRefresh ? 'rgba(9,205,114,0.25)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 6, color: autoRefresh ? '#09cd72' : '#c9d1d9', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              {autoRefresh ? <Eye size={14} /> : <XCircle size={14} />} Auto-Refresh: {autoRefresh ? 'ON' : 'OFF'}
+            </button>
+            <span style={{ fontSize: 12, color: '#6e7681' }}>Last sync: {lastRefresh.toLocaleTimeString()}</span>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportResults}
-              className="border-slate-700 hover:border-cyan-500"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              JSON
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCSV}
-              className="border-slate-700 hover:border-cyan-500"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              CSV
-            </Button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={handleExportResults} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#c9d1d9', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}><Download size={14} /> JSON</button>
+            <button onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#c9d1d9', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}><Download size={14} /> CSV</button>
           </div>
         </div>
 
-        {/* OVERVIEW TAB */}
+        {/* -- OVERVIEW TAB -- */}
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-slate-500 font-mono">TEAMS</p>
-                      <p className="text-2xl font-bold text-cyan-400">{stats?.totalTeams || 0}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* Stat Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
+              {[
+                { icon: Users, label: 'Total Teams', value: stats?.totalTeams || 0, color: '#0ea5e9' },
+                { icon: Activity, label: 'Active Teams', value: activeTeams, color: '#09cd72' },
+                { icon: UserX, label: 'Disqualified', value: disqualifiedTeams, color: '#f85149' },
+                { icon: FileText, label: 'Submissions', value: stats?.totalSubmissions || 0, color: '#a78bfa' },
+                { icon: Clock, label: 'Last Hour Subs', value: lastHourSubmissions, color: '#f59e0b' }
+              ].map(s => (
+                <div key={s.label} className="df" style={{ ...cardStyle, padding: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: `${s.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <s.icon size={16} color={s.color} />
                     </div>
-                    <Users className="h-8 w-8 text-slate-700" />
+                    <span style={{ fontSize: 13, color: '#6e7681', fontWeight: 600 }}>{s.label}</span>
                   </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-slate-500 font-mono">ACTIVE</p>
-                      <p className="text-2xl font-bold text-emerald-400">{activeTeams}</p>
-                    </div>
-                    <Activity className="h-8 w-8 text-slate-700" />
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-slate-500 font-mono">DISQUALIFIED</p>
-                      <p className="text-2xl font-bold text-red-400">{disqualifiedTeams}</p>
-                    </div>
-                    <Ban className="h-8 w-8 text-slate-700" />
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-slate-500 font-mono">SUBMISSIONS</p>
-                      <p className="text-2xl font-bold text-purple-400">{stats?.totalSubmissions || 0}</p>
-                    </div>
-                    <FileText className="h-8 w-8 text-slate-700" />
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-slate-500 font-mono">SUCCESS RATE</p>
-                      <p className="text-2xl font-bold text-amber-400">{stats?.successRate?.toFixed(1) || 0}%</p>
-                    </div>
-                    <TrendingUp className="h-8 w-8 text-slate-700" />
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-slate-500 font-mono">LAST HOUR</p>
-                      <p className="text-2xl font-bold text-orange-400">{lastHourSubmissions}</p>
-                    </div>
-                    <Clock className="h-8 w-8 text-slate-700" />
-                  </div>
-                </CardContent>
-              </Card>
+                  <div style={{ fontSize: 32, fontWeight: 800, color: '#e6edf3', letterSpacing: '-0.5px' }}>{s.value}</div>
+                </div>
+              ))}
             </div>
 
-            {/* Scoreboard Control + Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className={`border-2 ${scoreboardFrozen ? 'border-red-500 bg-red-950/20' : 'border-emerald-500 bg-emerald-950/20'}`}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-4">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+              {/* Scoreboard Control & Active Rounds */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <div className="df" style={{ ...cardStyle, border: scoreboardFrozen ? '1px solid rgba(248,81,73,0.3)' : '1px solid rgba(9,205,114,0.3)', background: scoreboardFrozen ? 'rgba(248,81,73,0.05)' : 'rgba(9,205,114,0.05)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                     <div>
-                      <p className="text-sm font-mono text-slate-400">SCOREBOARD STATUS</p>
-                      <p className={`text-xl font-bold ${scoreboardFrozen ? 'text-red-400' : 'text-emerald-400'}`}>
-                        {scoreboardFrozen ? 'FROZEN' : 'LIVE'}
-                      </p>
+                      <div style={{ fontSize: 13, color: '#6e7681', fontWeight: 600, marginBottom: 4 }}>SCOREBOARD STATUS</div>
+                      <div style={{ fontSize: 22, fontWeight: 800, color: scoreboardFrozen ? '#f85149' : '#09cd72' }}>{scoreboardFrozen ? 'FROZEN' : 'LIVE'}</div>
                     </div>
-                    {scoreboardFrozen ? <Lock className="h-8 w-8 text-red-400" /> : <Unlock className="h-8 w-8 text-emerald-400" />}
+                    {scoreboardFrozen ? <Lock size={32} color="#f85149" /> : <Unlock size={32} color="#09cd72" />}
                   </div>
-                  <Button 
-                    onClick={handleToggleFreezeScoreboard}
-                    className={`w-full ${scoreboardFrozen ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'}`}
-                  >
-                    {scoreboardFrozen ? 'UNFREEZE' : 'FREEZE'} SCOREBOARD
-                  </Button>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-4">
-                  <p className="text-sm font-mono text-slate-400 mb-2">ACTIVE ROUNDS</p>
-                  <div className="space-y-2">
-                    {rounds.filter(r => r.status === 'ACTIVE').map(round => (
-                      <div key={round.id} className="flex items-center justify-between text-sm">
-                        <span className="text-cyan-400">{round.name}</span>
-                        <span className="text-emerald-400 text-xs font-mono px-2 py-0.5 bg-emerald-500/20 rounded">
-                          ACTIVE
-                        </span>
-                      </div>
-                    ))}
-                    {rounds.filter(r => r.status === 'ACTIVE').length === 0 && (
-                      <p className="text-slate-500 text-sm">No active rounds</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-4">
-                  <p className="text-sm font-mono text-slate-400 mb-2">TOP 3 TEAMS</p>
-                  <div className="space-y-2">
-                    {filteredTeams.slice(0, 3).map((team, i) => (
-                      <div key={team.id} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          {i === 0 && <Crown className="h-4 w-4 text-amber-400" />}
-                          {i === 1 && <Crown className="h-4 w-4 text-slate-400" />}
-                          {i === 2 && <Crown className="h-4 w-4 text-orange-700" />}
-                          <span className="text-slate-200">{team.name}</span>
+                  <button onClick={handleToggleFreezeScoreboard} style={{ width: '100%', padding: '12px', background: scoreboardFrozen ? '#f85149' : '#09cd72', borderRadius: 8, color: '#0d1117', fontSize: 14, fontWeight: 700, cursor: 'pointer', border: 'none', transition: 'opacity 0.2s' }}>
+                    {scoreboardFrozen ? 'UNFREEZE SCOREBOARD' : 'FREEZE SCOREBOARD'}
+                  </button>
+                </div>
+
+                <div className="df" style={cardStyle}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: '#e6edf3', marginBottom: 16 }}>Top 5 Teams</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {filteredTeams.slice(0, 5).map((team, i) => (
+                      <div key={team.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', borderRadius: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: i===0 ? '#f59e0b' : i===1 ? '#c9d1d9' : i===2 ? '#b45309' : '#6e7681' }}>#{i+1}</span>
+                          <span style={{ fontSize: 14, color: '#e6edf3', fontWeight: 500 }}>{team.name}</span>
                         </div>
-                        <span className="text-cyan-400 font-mono">{team.scores?.[0]?.totalPoints || 0}</span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: '#0ea5e9' }}>{team.scores?.[0]?.totalPoints || 0} pts</span>
                       </div>
                     ))}
+                    {filteredTeams.length === 0 && <div style={{ fontSize: 13, color: '#6e7681' }}>No teams found.</div>}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </div>
 
-            {/* Live Activity Feed */}
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-mono text-slate-400 flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-amber-400" />
-                  LIVE ACTIVITY FEED
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="max-h-64 overflow-y-auto">
-                <div className="space-y-2">
-                  {recentSubmissions.slice(0, 10).map((sub) => (
-                    <div key={sub.id} className="flex items-center justify-between text-sm py-2 border-b border-slate-800 last:border-0">
-                      <div className="flex items-center gap-3">
-                        {sub.isCorrect ? (
-                          <CheckCircle className="h-4 w-4 text-emerald-400" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-red-400" />
-                        )}
-                        <span className="text-slate-400">{sub.team?.name || sub.user.username}</span>
-                        <span className="text-slate-500">?</span>
-                        <span className="text-cyan-400">{sub.challenge.title}</span>
+              {/* Activity Feed */}
+              <div className="df" style={{ ...cardStyle, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <Zap size={16} color="#f59e0b" />
+                  <span style={{ fontSize: 15, fontWeight: 700, color: '#e6edf3' }}>Live Activity Feed</span>
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto', maxHeight: 420, display: 'flex', flexDirection: 'column', gap: 8, paddingRight: 8 }}>
+                  {recentSubmissions.length === 0 ? <div style={{ fontSize: 13, color: '#6e7681' }}>No submissions yet.</div> : null}
+                  {recentSubmissions.map(sub => (
+                    <div key={sub.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'rgba(255,255,255,0.02)', borderLeft: `3px solid ${sub.isCorrect ? '#09cd72' : '#f85149'}`, borderRadius: '0 8px 8px 0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {sub.isCorrect ? <CheckCircle2 size={16} color="#09cd72" /> : <XCircle size={16} color="#f85149" />}
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: '#e6edf3' }}>{sub.team?.name || sub.user.username}</div>
+                          <div style={{ fontSize: 12, color: '#6e7681', marginTop: 2 }}>{sub.challenge.title}</div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        {sub.isCorrect && <span className="text-emerald-400 font-mono">+{sub.points}</span>}
-                        <span className="text-xs text-slate-500">{new Date(sub.createdAt).toLocaleTimeString()}</span>
+                      <div style={{ textAlign: 'right' }}>
+                        {sub.isCorrect && <div style={{ fontSize: 13, fontWeight: 700, color: '#09cd72' }}>+{sub.points}</div>}
+                        <div style={{ fontSize: 11, color: '#6e7681' }}>{new Date(sub.createdAt).toLocaleTimeString()}</div>
                       </div>
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* TEAMS TAB */}
+        {/* -- TEAMS TAB -- */}
         {activeTab === 'teams' && (
-          <div className="space-y-4">
-            {/* Search */}
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                <Input
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div className="df" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ position: 'relative', flex: 1, maxWidth: 400 }}>
+                <Search size={16} color="#6e7681" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+                <input
+                  type="text"
                   placeholder="Search teams..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-slate-900 border-slate-700 text-slate-100"
+                  style={{ ...inputStyle, paddingLeft: 38 }}
                 />
               </div>
-              <span className="text-sm text-slate-500 font-mono">
-                {filteredTeams.length} teams
-              </span>
             </div>
 
-            {/* Teams Table */}
-            <Card className="bg-slate-900/50 border-slate-800 overflow-hidden">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-slate-800 hover:bg-transparent">
-                      <TableHead className="text-cyan-400 font-mono">#</TableHead>
-                      <TableHead className="text-cyan-400 font-mono">TEAM</TableHead>
-                      <TableHead className="text-cyan-400 font-mono">MEMBERS</TableHead>
-                      <TableHead className="text-cyan-400 font-mono text-right">POINTS</TableHead>
-                      <TableHead className="text-cyan-400 font-mono text-right">SOLVES</TableHead>
-                      <TableHead className="text-cyan-400 font-mono">STATUS</TableHead>
-                      <TableHead className="text-cyan-400 font-mono text-right">ACTIONS</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredTeams.map((team, index) => {
-                      const isDisqualified = team.members?.some((m: Record<string, any>) => m.role === 'JUDGE');
-                      return (
-                        <TableRow key={team.id} className="border-slate-800">
-                          <TableCell className="font-mono text-slate-400">{index + 1}</TableCell>
-                          <TableCell className="font-semibold text-slate-100">{team.name}</TableCell>
-                          <TableCell className="text-slate-400">{team.members?.length || 0}</TableCell>
-                          <TableCell className="text-right font-mono text-cyan-400">
-                            {team.scores?.[0]?.totalPoints || 0}
-                          </TableCell>
-                          <TableCell className="text-right text-slate-400">
-                            {team.scores?.[0]?.challengesSolved || 0}
-                          </TableCell>
-                          <TableCell>
+            <div className="df" style={{ ...cardStyle, padding: 0, overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                    {['Rank', 'Team Name', 'Members', 'Points', 'Solves', 'Status', 'Actions'].map((h, i) => (
+                      <th key={h} style={{ padding: '14px 20px', fontSize: 12, color: '#6e7681', fontWeight: 600, textTransform: 'uppercase', textAlign: i >= 3 && i < 5 ? 'right' : i === 6 ? 'right' : 'left' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTeams.map((team, index) => {
+                    const isDisqualified = team.members?.some((m: any) => m.role === 'JUDGE');
+                    return (
+                      <tr key={team.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <td style={{ padding: '14px 20px', fontSize: 14, fontWeight: 700, color: '#6e7681' }}>#{index + 1}</td>
+                        <td style={{ padding: '14px 20px', fontSize: 14, fontWeight: 600, color: '#e6edf3' }}>{team.name}</td>
+                        <td style={{ padding: '14px 20px', fontSize: 14, color: '#c9d1d9' }}>{team.members?.length || 0}</td>
+                        <td style={{ padding: '14px 20px', fontSize: 14, fontWeight: 700, color: '#0ea5e9', textAlign: 'right' }}>{team.scores?.[0]?.totalPoints || 0}</td>
+                        <td style={{ padding: '14px 20px', fontSize: 14, color: '#c9d1d9', textAlign: 'right' }}>{team.scores?.[0]?.challengesSolved || 0}</td>
+                        <td style={{ padding: '14px 20px' }}>
+                          <span style={{ display: 'inline-block', padding: '4px 10px', background: isDisqualified ? 'rgba(248,81,73,0.1)' : 'rgba(9,205,114,0.1)', color: isDisqualified ? '#f85149' : '#09cd72', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: 0.5 }}>
+                            {isDisqualified ? 'DISQUALIFIED' : 'ACTIVE'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '14px 20px', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+                            <button onClick={() => { setSelectedTeam(team); setShowAdjustModal(true); }} style={{ padding: '6px 12px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 6, color: '#f59e0b', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                              ± Points
+                            </button>
                             {isDisqualified ? (
-                              <span className="px-2 py-1 text-xs font-mono bg-red-500/20 text-red-400 rounded">
-                                DISQUALIFIED
-                              </span>
+                              <button onClick={() => handleQualifyTeam(team.id)} style={{ padding: '6px 12px', background: 'rgba(9,205,114,0.1)', border: '1px solid rgba(9,205,114,0.2)', borderRadius: 6, color: '#09cd72', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <UserCheck size={14} /> Qualify
+                              </button>
                             ) : (
-                              <span className="px-2 py-1 text-xs font-mono bg-emerald-500/20 text-emerald-400 rounded">
-                                ACTIVE
-                              </span>
+                              <button onClick={() => { setSelectedTeam(team); setShowDisqualifyModal(true); }} style={{ padding: '6px 12px', background: 'rgba(248,81,73,0.1)', border: '1px solid rgba(248,81,73,0.2)', borderRadius: 6, color: '#f85149', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <UserX size={14} /> DQ
+                              </button>
                             )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-xs border-amber-600 text-amber-400 hover:bg-amber-600/20"
-                                onClick={() => {
-                                  setSelectedTeam(team);
-                                  setShowAdjustModal(true);
-                                }}
-                              >
-                                ± PTS
-                              </Button>
-                              {isDisqualified ? (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-7 text-xs border-emerald-600 text-emerald-400 hover:bg-emerald-600/20"
-                                  onClick={() => handleQualifyTeam(team.id)}
-                                >
-                                  <UserCheck className="h-3 w-3 mr-1" />
-                                  QUALIFY
-                                </Button>
-                              ) : (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-7 text-xs border-red-600 text-red-400 hover:bg-red-600/20"
-                                  onClick={() => {
-                                    setSelectedTeam(team);
-                                    setShowDisqualifyModal(true);
-                                  }}
-                                >
-                                  <UserX className="h-3 w-3 mr-1" />
-                                  DQ
-                                </Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            </Card>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
-        {/* ROUNDS TAB */}
+        {/* -- ROUNDS TAB -- */}
         {activeTab === 'rounds' && (
-          <div className="space-y-6">
-            {/* Rounds Management */}
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-sm font-mono text-slate-400">MANAGE ROUNDS</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-slate-800 hover:bg-transparent">
-                      <TableHead className="text-cyan-400 font-mono">NAME</TableHead>
-                      <TableHead className="text-cyan-400 font-mono">TYPE</TableHead>
-                      <TableHead className="text-cyan-400 font-mono">ORDER</TableHead>
-                      <TableHead className="text-cyan-400 font-mono">STATUS</TableHead>
-                      <TableHead className="text-cyan-400 font-mono">CHALLENGES</TableHead>
-                      <TableHead className="text-cyan-400 font-mono text-right">ACTIONS</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {rounds.map((round) => (
-                      <TableRow key={round.id} className="border-slate-800">
-                        <TableCell className="font-semibold text-slate-100">{round.name}</TableCell>
-                        <TableCell className="text-slate-400 text-sm">{round.type}</TableCell>
-                        <TableCell className="font-mono text-slate-400">{round.order}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 text-xs font-mono rounded ${
-                            round.status === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400' :
-                            round.status === 'COMPLETED' ? 'bg-slate-500/20 text-slate-400' :
-                            'bg-amber-500/20 text-amber-400'
-                          }`}>
-                            {round.status}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-slate-400">{round.challenges?.length || 0}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-end gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              className="h-7 text-xs border-emerald-600 text-emerald-400 hover:bg-emerald-600/20"
-                              onClick={() => handleUpdateRoundStatus(round.id, 'ACTIVE')}
-                            >
-                              ACTIVATE
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              className="h-7 text-xs border-slate-600 text-slate-400 hover:bg-slate-600/20"
-                              onClick={() => handleUpdateRoundStatus(round.id, 'COMPLETED')}
-                            >
-                              COMPLETE
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            {/* Create Round */}
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-sm font-mono text-slate-400">CREATE ROUND</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleCreateRound} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <Label className="text-slate-400 text-xs">NAME</Label>
-                    <Input
-                      value={newRound.name}
-                      onChange={(e) => setNewRound({ ...newRound, name: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-slate-100"
-                      required
-                    />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            
+            <div className="df" style={cardStyle}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#e6edf3', marginBottom: 20 }}>Existing Rounds</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                {rounds.map(round => (
+                  <div key={round.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: '#e6edf3', marginBottom: 4 }}>{round.name}</div>
+                        <div style={{ fontSize: 12, color: '#6e7681' }}>Type: {round.type} | Order: {round.order}</div>
+                      </div>
+                      <span style={{ display: 'inline-block', padding: '4px 8px', background: round.status === 'ACTIVE' ? 'rgba(9,205,114,0.1)' : 'rgba(255,255,255,0.05)', color: round.status === 'ACTIVE' ? '#09cd72' : '#6e7681', borderRadius: 4, fontSize: 11, fontWeight: 700 }}>
+                        {round.status}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                      <button onClick={() => handleUpdateRoundStatus(round.id, 'ACTIVE')} style={{ flex: 1, padding: '8px', background: 'rgba(9,205,114,0.1)', border: '1px solid rgba(9,205,114,0.2)', borderRadius: 6, color: '#09cd72', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Activate</button>
+                      <button onClick={() => handleUpdateRoundStatus(round.id, 'COMPLETED')} style={{ flex: 1, padding: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#c9d1d9', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Complete</button>
+                    </div>
                   </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+              {/* Create Round */}
+              <div className="df" style={cardStyle}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#e6edf3', marginBottom: 20 }}>Create New Round</div>
+                <form onSubmit={handleCreateRound} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div><label style={labelStyle}>Name</label><input type="text" value={newRound.name} onChange={e => setNewRound({...newRound, name: e.target.value})} style={inputStyle} required /></div>
                   <div>
-                    <Label className="text-slate-400 text-xs">TYPE</Label>
-                    <select
-                      className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
-                      value={newRound.type}
-                      onChange={(e) => setNewRound({ ...newRound, type: e.target.value })}
-                    >
+                    <label style={labelStyle}>Type</label>
+                    <select value={newRound.type} onChange={e => setNewRound({...newRound, type: e.target.value})} style={inputStyle}>
                       <option value="DECODE_THE_SECRET">Decode the Secret</option>
                       <option value="FIND_AND_CRACK">Find & Crack</option>
                       <option value="CATCH_THE_FLAG">Catch the Flag</option>
                     </select>
                   </div>
-                  <div>
-                    <Label className="text-slate-400 text-xs">ORDER</Label>
-                    <Input
-                      type="number"
-                      value={newRound.order}
-                      onChange={(e) => setNewRound({ ...newRound, order: parseInt(e.target.value) })}
-                      className="bg-slate-800 border-slate-700 text-slate-100"
-                      required
-                    />
-                  </div>
-                  <div className="flex items-end">
-                    <Button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-700">
-                      CREATE ROUND
-                    </Button>
-                  </div>
+                  <div><label style={labelStyle}>Order</label><input type="number" value={newRound.order} onChange={e => setNewRound({...newRound, order: parseInt(e.target.value)})} style={inputStyle} required /></div>
+                  <button type="submit" style={{ padding: '12px', background: 'linear-gradient(135deg,#0ea5e9,#a78bfa)', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 8 }}>Create Round</button>
                 </form>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* Create Challenge */}
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-sm font-mono text-slate-400">CREATE CHALLENGE</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleCreateChallenge} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Create Challenge */}
+              <div className="df" style={cardStyle}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#e6edf3', marginBottom: 20 }}>Create New Challenge</div>
+                <form onSubmit={handleCreateChallenge} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                     <div>
-                      <Label className="text-slate-400 text-xs">ROUND</Label>
-                      <select
-                        className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100"
-                        value={newChallenge.roundId}
-                        onChange={(e) => setNewChallenge({ ...newChallenge, roundId: e.target.value })}
-                        required
-                      >
-                        <option value="">Select a round</option>
-                        {rounds.map((round) => (
-                          <option key={round.id} value={round.id}>{round.name}</option>
-                        ))}
+                      <label style={labelStyle}>Round</label>
+                      <select value={newChallenge.roundId} onChange={e => setNewChallenge({...newChallenge, roundId: e.target.value})} style={inputStyle} required>
+                        <option value="">Select Round...</option>
+                        {rounds.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                       </select>
                     </div>
-                    <div>
-                      <Label className="text-slate-400 text-xs">TITLE</Label>
-                      <Input
-                        value={newChallenge.title}
-                        onChange={(e) => setNewChallenge({ ...newChallenge, title: e.target.value })}
-                        className="bg-slate-800 border-slate-700 text-slate-100"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-slate-400 text-xs">POINTS</Label>
-                      <Input
-                        type="number"
-                        value={newChallenge.points}
-                        onChange={(e) => setNewChallenge({ ...newChallenge, points: parseInt(e.target.value) })}
-                        className="bg-slate-800 border-slate-700 text-slate-100"
-                        required
-                      />
-                    </div>
+                    <div><label style={labelStyle}>Title</label><input type="text" value={newChallenge.title} onChange={e => setNewChallenge({...newChallenge, title: e.target.value})} style={inputStyle} required /></div>
                   </div>
-                  <div>
-                    <Label className="text-slate-400 text-xs">DESCRIPTION</Label>
-                    <Input
-                      value={newChallenge.description}
-                      onChange={(e) => setNewChallenge({ ...newChallenge, description: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-slate-100"
-                      required
-                    />
+                  <div><label style={labelStyle}>Description</label><input type="text" value={newChallenge.description} onChange={e => setNewChallenge({...newChallenge, description: e.target.value})} style={inputStyle} required /></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div><label style={labelStyle}>Flag</label><input type="password" value={newChallenge.flag} onChange={e => setNewChallenge({...newChallenge, flag: e.target.value})} style={inputStyle} required /></div>
+                    <div><label style={labelStyle}>Points</label><input type="number" value={newChallenge.points} onChange={e => setNewChallenge({...newChallenge, points: parseInt(e.target.value)})} style={inputStyle} required /></div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label className="text-slate-400 text-xs">FLAG (will be hashed)</Label>
-                      <Input
-                        type="password"
-                        value={newChallenge.flag}
-                        onChange={(e) => setNewChallenge({ ...newChallenge, flag: e.target.value })}
-                        className="bg-slate-800 border-slate-700 text-slate-100"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-slate-400 text-xs">ORDER</Label>
-                      <Input
-                        type="number"
-                        value={newChallenge.order}
-                        onChange={(e) => setNewChallenge({ ...newChallenge, order: parseInt(e.target.value) })}
-                        className="bg-slate-800 border-slate-700 text-slate-100"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-slate-400 text-xs">MAX ATTEMPTS (0 = unlimited)</Label>
-                      <Input
-                        type="number"
-                        value={newChallenge.maxAttempts}
-                        onChange={(e) => setNewChallenge({ ...newChallenge, maxAttempts: parseInt(e.target.value) })}
-                        className="bg-slate-800 border-slate-700 text-slate-100"
-                      />
-                    </div>
-                  </div>
-                  <Button type="submit" className="bg-cyan-600 hover:bg-cyan-700">
-                    CREATE CHALLENGE
-                  </Button>
+                  <button type="submit" style={{ padding: '12px', background: 'linear-gradient(135deg,#09cd72,#0ea5e9)', borderRadius: 8, color: '#0d1117', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 8 }}>Create Challenge</button>
                 </form>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* ACTIVITY TAB */}
-        {activeTab === 'activity' && (
-          <Card className="bg-slate-900/50 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-sm font-mono text-slate-400 flex items-center gap-2">
-                <Activity className="h-4 w-4 text-cyan-400" />
-                ALL SUBMISSIONS
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-slate-800 hover:bg-transparent">
-                    <TableHead className="text-cyan-400 font-mono">TIME</TableHead>
-                    <TableHead className="text-cyan-400 font-mono">USER</TableHead>
-                    <TableHead className="text-cyan-400 font-mono">TEAM</TableHead>
-                    <TableHead className="text-cyan-400 font-mono">CHALLENGE</TableHead>
-                    <TableHead className="text-cyan-400 font-mono">STATUS</TableHead>
-                    <TableHead className="text-cyan-400 font-mono text-right">POINTS</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {submissions.slice(0, 100).map((sub) => (
-                    <TableRow key={sub.id} className="border-slate-800">
-                      <TableCell className="text-sm text-slate-400">
-                        {new Date(sub.createdAt).toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-slate-100">{sub.user.username}</TableCell>
-                      <TableCell className="text-slate-400">{sub.team?.name || 'No Team'}</TableCell>
-                      <TableCell className="text-cyan-400">{sub.challenge.title}</TableCell>
-                      <TableCell>
-                        {sub.isCorrect ? (
-                          <span className="flex items-center gap-1 text-emerald-400">
-                            <CheckCircle className="h-4 w-4" />
-                            CORRECT
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1 text-red-400">
-                            <XCircle className="h-4 w-4" />
-                            INCORRECT
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-cyan-400">{sub.points}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
+      </div>
 
-        {/* SETTINGS TAB */}
-        {activeTab === 'settings' && (
-          <div className="space-y-6">
-            <Card className="bg-red-950/30 border-red-900">
-              <CardHeader>
-                <CardTitle className="text-red-400 flex items-center gap-2 font-mono">
-                  <AlertTriangle className="h-5 w-5" />
-                  DANGER ZONE
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-slate-400">
-                  These actions are <strong className="text-red-400">IRREVERSIBLE</strong>. Proceed with extreme caution.
-                </p>
-                <Button 
-                  variant="destructive" 
-                  onClick={handleResetCompetition}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  RESET ENTIRE COMPETITION
-                </Button>
-                <p className="text-xs text-slate-500">
-                  This will delete all submissions and reset all scores. Rounds and challenges will remain.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </main>
-
-      {/* Adjust Score Modal */}
+      {/* Modals */}
       {showAdjustModal && selectedTeam && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <Card className="w-full max-w-md bg-slate-900 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-cyan-400 font-mono">ADJUST SCORE</CardTitle>
-              <p className="text-slate-400 text-sm">Team: {selectedTeam.name}</p>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleAdjustScore} className="space-y-4">
-                <div>
-                  <Label className="text-slate-400 text-xs">POINTS (negative to deduct)</Label>
-                  <Input
-                    type="number"
-                    value={adjustPoints}
-                    onChange={(e) => setAdjustPoints(parseInt(e.target.value))}
-                    className="bg-slate-800 border-slate-700 text-slate-100"
-                    placeholder="e.g., 100 or -50"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label className="text-slate-400 text-xs">REASON</Label>
-                  <Textarea
-                    value={adjustReason}
-                    onChange={(e) => setAdjustReason(e.target.value)}
-                    className="bg-slate-800 border-slate-700 text-slate-100 resize-none"
-                    placeholder="e.g., Bonus for creativity"
-                    required
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button type="submit" className="flex-1 bg-cyan-600 hover:bg-cyan-700">
-                    APPLY
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="flex-1 border-slate-600"
-                    onClick={() => {
-                      setShowAdjustModal(false);
-                      setSelectedTeam(null);
-                      setAdjustPoints(0);
-                      setAdjustReason('');
-                    }}
-                  >
-                    CANCEL
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)' }}>
+          <div style={{ width: 400, ...cardStyle }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#e6edf3', marginBottom: 4 }}>Adjust Score</div>
+            <div style={{ fontSize: 13, color: '#6e7681', marginBottom: 20 }}>Team: {selectedTeam.name}</div>
+            <form onSubmit={handleAdjustScore} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div><label style={labelStyle}>Points (Negative to deduct)</label><input type="number" value={adjustPoints} onChange={e => setAdjustPoints(parseInt(e.target.value))} style={inputStyle} required /></div>
+              <div><label style={labelStyle}>Reason</label><input type="text" value={adjustReason} onChange={e => setAdjustReason(e.target.value)} style={inputStyle} required /></div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                <button type="submit" style={{ flex: 1, padding: '10px', background: '#0ea5e9', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>Apply</button>
+                <button type="button" onClick={() => setShowAdjustModal(false)} style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: 8, color: '#c9d1d9', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>Cancel</button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
-      {/* Disqualify Modal */}
       {showDisqualifyModal && selectedTeam && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <Card className="w-full max-w-md bg-slate-900 border-red-900">
-            <CardHeader>
-              <CardTitle className="text-red-400 font-mono flex items-center gap-2">
-                <Ban className="h-5 w-5" />
-                DISQUALIFY TEAM
-              </CardTitle>
-              <p className="text-slate-400 text-sm">Team: {selectedTeam.name}</p>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleDisqualifyTeam} className="space-y-4">
-                <p className="text-sm text-red-400/80">
-                  This will set the team's score to 0 and mark all members as JUDGE (disqualified).
-                </p>
-                <div>
-                  <Label className="text-slate-400 text-xs">REASON FOR DISQUALIFICATION</Label>
-                  <Textarea
-                    value={disqualifyReason}
-                    onChange={(e) => setDisqualifyReason(e.target.value)}
-                    className="bg-slate-800 border-slate-700 text-slate-100 resize-none"
-                    placeholder="e.g., Code of conduct violation"
-                    required
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button type="submit" className="flex-1 bg-red-600 hover:bg-red-700">
-                    DISQUALIFY
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="flex-1 border-slate-600"
-                    onClick={() => {
-                      setShowDisqualifyModal(false);
-                      setSelectedTeam(null);
-                      setDisqualifyReason('');
-                    }}
-                  >
-                    CANCEL
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)' }}>
+          <div style={{ width: 400, ...cardStyle, border: '1px solid rgba(248,81,73,0.3)' }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#f85149', marginBottom: 4 }}>Disqualify Team</div>
+            <div style={{ fontSize: 13, color: '#6e7681', marginBottom: 16 }}>Team: {selectedTeam.name}</div>
+            <p style={{ fontSize: 13, color: '#f85149', marginBottom: 20 }}>This sets the team's score to 0 and blocks them from playing.</p>
+            <form onSubmit={handleDisqualifyTeam} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div><label style={labelStyle}>Reason</label><input type="text" value={disqualifyReason} onChange={e => setDisqualifyReason(e.target.value)} style={inputStyle} required /></div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                <button type="submit" style={{ flex: 1, padding: '10px', background: '#f85149', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>Disqualify</button>
+                <button type="button" onClick={() => setShowDisqualifyModal(false)} style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: 8, color: '#c9d1d9', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>Cancel</button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes dpulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+        .df { opacity: 0; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+      `}</style>
     </div>
   );
 }
-
-

@@ -8,8 +8,9 @@ import { api } from '@/lib/api';
 import {
   Users, Trophy, Flag, Target, Shield, ChevronRight,
   CheckCircle2, Lock, Zap, LogOut, BookOpen, LayoutList,
-  Activity, Star, Map, Terminal,
+  Activity, Star, Map, Terminal, Crosshair, Skull, ShieldAlert,
 } from 'lucide-react';
+import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
 
 interface Challenge {
   id: string; title: string; points: number; order: number; roundId: string;
@@ -73,7 +74,7 @@ export default function DashboardPage() {
   const solvedIds   = new Set(submissions.filter(s => s.correct).map(s => s.challengeId));
   const totalSolved = solvedIds.size;
   const totalScore  = teamStats?.totalPoints ?? 0;
-  const teamName    = user?.team?.name || '—';
+  const teamName    = user?.team?.name || 'SHADOW_OPERATIVE';
   const member1     = user?.team?.member1Name || user?.username || '';
   const member2     = user?.team?.member2Name || '';
   const members     = [member1, member2].filter(Boolean);
@@ -87,146 +88,150 @@ export default function DashboardPage() {
   const rounds  = [
     { label: 'Round 1', sub: 'The Breach',    missions: sorted.slice(0, 3), rc: '#ef4444', rn: 1 },
     { label: 'Round 2', sub: 'Infiltration',  missions: sorted.slice(3, 6), rc: '#f59e0b', rn: 2 },
-    { label: 'Round 3', sub: 'Final Strike',  missions: sorted.slice(6, 9), rc: '#10b981', rn: 3 },
+    { label: 'Round 3', sub: 'Final Strike',  missions: sorted.slice(6, 9), rc: '#dc2626', rn: 3 },
   ];
-
-  const F = "'Inter','Segoe UI',system-ui,-apple-system,sans-serif";
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0d1117', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, fontFamily: F, flexDirection: 'column' }}>
-        <div style={{ width: 40, height: 40, border: '3px solid rgba(9,205,114,0.2)', borderTopColor: '#09cd72', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-        <div style={{ color: '#09cd72', letterSpacing: 2, fontSize: 14, fontWeight: 600 }}>Loading...</div>
+      <div style={{ minHeight: '100vh', background: '#050508', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexDirection: 'column' }}>
+        <div style={{ width: 44, height: 44, border: '3px solid rgba(220,38,38,0.2)', borderTopColor: '#ef4444', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ color: '#ef4444', letterSpacing: 3, fontSize: 13, fontWeight: 700, fontFamily: 'monospace' }}>INITIALIZING TACTICAL HQ...</div>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0d1117', fontFamily: F, position: 'relative', overflowX: 'hidden', color: '#e6edf3' }}>
-      {/* Subtle radial glow */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse 80% 40% at 50% -10%, rgba(9,205,114,0.07) 0%, transparent 60%)' }} />
+    <div style={{ minHeight: '100vh', background: '#050508', position: 'relative', overflowX: 'hidden', color: '#f1f5f9' }}>
+      <HalfCircleMenu />
+      {/* Background blood splatter textures */}
+      <div className="blood-splatter-bg" />
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse 80% 40% at 50% -10%, rgba(220,38,38,0.12) 0%, transparent 60%), radial-gradient(ellipse at bottom right, rgba(138,3,3,0.15) 0%, transparent 50%)' }} />
 
-      {/* -- NAV -- */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '0 32px', height: 64, borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(13,17,23,0.96)', backdropFilter: 'blur(20px)', gap: 8 }}>
+      {/* -- TOP NAV -- */}
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '0 28px', height: 64, borderBottom: '1px solid rgba(220,38,38,0.3)', background: 'rgba(10,4,6,0.95)', backdropFilter: 'blur(20px)', gap: 10 }}>
         {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 16 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#09cd72,#0ea5e9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(9,205,114,0.35)' }}>
-            <Terminal size={18} color="#fff" strokeWidth={2.5} />
+          <div style={{ width: 36, height: 36, borderRadius: 6, background: 'linear-gradient(135deg,#7f1d1d,#dc2626)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(220,38,38,0.4)', border: '1px solid rgba(248,113,113,0.5)' }}>
+            <Crosshair size={18} color="#fff" strokeWidth={2.5} />
           </div>
           <div>
-            <div style={{ color: '#e6edf3', fontSize: 16, fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.3px' }}>The Extraction</div>
-            <div style={{ color: '#6e7681', fontSize: 11, lineHeight: 1 }}>Command Center</div>
+            <div style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 900, lineHeight: 1.1, letterSpacing: '1px', textTransform: 'uppercase' }}>OPERATION THE EXTRACTION</div>
+            <div style={{ color: '#ef4444', fontSize: 10, lineHeight: 1, fontFamily: 'monospace', letterSpacing: '2px' }}>TACTICAL COMMAND HQ</div>
           </div>
         </div>
 
         <div style={{ flex: 1 }} />
 
         {/* Live badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'rgba(9,205,114,0.08)', border: '1px solid rgba(9,205,114,0.2)', borderRadius: 8 }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#09cd72', boxShadow: '0 0 8px #09cd72', animation: 'dpulse 2s infinite' }} />
-          <span style={{ color: '#09cd72', fontSize: 13, fontWeight: 600 }}>Live</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: 6 }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444', animation: 'dpulse 2s infinite' }} />
+          <span style={{ color: '#f87171', fontSize: 11, fontWeight: 700, fontFamily: 'monospace', letterSpacing: '1px' }}>OPERATION LIVE</span>
         </div>
 
-        <Link href="/story" style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#c9d1d9', fontSize: 14, fontWeight: 600, textDecoration: 'none', transition: 'all 0.15s' }}>
-          <Map size={15} /> Story
+        <Link href="/challenges" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, color: '#fee2e2', fontSize: 13, fontWeight: 700, textDecoration: 'none', transition: 'all 0.15s' }}>
+          <Target size={14} className="text-red-500" /> Missions
         </Link>
-        <Link href="/leaderboard" style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#c9d1d9', fontSize: 14, fontWeight: 600, textDecoration: 'none', transition: 'all 0.15s' }}>
-          <Trophy size={15} /> Rankings
+        <Link href="/story" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, color: '#f1f5f9', fontSize: 13, fontWeight: 600, textDecoration: 'none', transition: 'all 0.15s' }}>
+          <Map size={14} className="text-red-500" /> Story
         </Link>
-        <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 16px', background: 'rgba(248,81,73,0.07)', border: '1px solid rgba(248,81,73,0.2)', borderRadius: 8, color: '#f85149', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' }}>
-          <LogOut size={15} /> Logout
+        <Link href="/leaderboard" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, color: '#f1f5f9', fontSize: 13, fontWeight: 600, textDecoration: 'none', transition: 'all 0.15s' }}>
+          <Trophy size={14} className="text-red-500" /> Rankings
+        </Link>
+        <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 6, color: '#fca5a5', fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}>
+          <LogOut size={14} /> Extract
         </button>
       </nav>
 
-      {/* -- MAIN -- */}
-      <div ref={containerRef} style={{ position: 'relative', zIndex: 5, maxWidth: 1280, margin: '0 auto', padding: '40px 32px 80px' }}>
+      {/* -- MAIN CONTAINER -- */}
+      <div ref={containerRef} style={{ position: 'relative', zIndex: 5, maxWidth: 1320, margin: '0 auto', padding: '36px 28px 80px' }}>
 
         {/* -- TEAM HERO -- */}
-        <div className="df" style={{ marginBottom: 36 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#09cd72', boxShadow: '0 0 10px #09cd72' }} />
-            <span style={{ color: '#6e7681', fontSize: 13, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' as const }}>The Extraction</span>
+        <div className="df" style={{ marginBottom: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <span className="status-dot active" />
+            <span style={{ color: '#ef4444', fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'monospace' }}>// ACTIVE STRIKE TEAM //</span>
           </div>
-          <h1 style={{ fontSize: 42, fontWeight: 800, color: '#e6edf3', margin: '0 0 10px', letterSpacing: '-0.5px', lineHeight: 1.15 }}>{teamName}</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h1 className="font-heading-tactical" style={{ fontSize: 38, fontWeight: 900, color: '#f1f5f9', margin: '0 0 10px', letterSpacing: '1px', lineHeight: 1.15 }}>
+            {teamName}
+          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             {members.map((m, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20 }}>
-                <div style={{ width: 22, height: 22, borderRadius: '50%', background: i === 0 ? 'linear-gradient(135deg,#09cd72,#0ea5e9)' : 'linear-gradient(135deg,#f59e0b,#ef4444)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>{m[0]?.toUpperCase()}</div>
-                <span style={{ fontSize: 14, color: '#c9d1d9', fontWeight: 500 }}>{m}</span>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 14px', background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6 }}>
+                <div style={{ width: 22, height: 22, borderRadius: 4, background: 'linear-gradient(135deg,#7f1d1d,#dc2626)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, color: '#fff', fontFamily: 'monospace' }}>{m[0]?.toUpperCase()}</div>
+                <span style={{ fontSize: 13, color: '#fee2e2', fontWeight: 600, fontFamily: 'monospace' }}>OPERATIVE: {m}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* -- STAT CARDS -- */}
-        <div className="df" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 32 }}>
+        <div className="df" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 28 }}>
           {[
-            { icon: Trophy,       label: 'Total Score',  value: totalScore.toLocaleString(), sub: 'points',                          accent: '#f59e0b' },
-            { icon: Star,         label: 'Team Rank',    value: myRank ? `#${myRank}` : '—', sub: `of ${sortedBoard.length} teams`,   accent: '#0ea5e9' },
-            { icon: CheckCircle2, label: 'Solved',       value: `${totalSolved}`,            sub: `of ${challenges.length} missions`, accent: '#09cd72' },
-            { icon: Flag,         label: 'Active Round', value: `Round ${roundNum}`,         sub: currentRound?.name || 'In Progress', accent: '#a78bfa' },
+            { icon: Trophy,       label: 'TOTAL SCORE',  value: totalScore.toLocaleString(), sub: 'POINTS SECURED',                          accent: '#dc2626' },
+            { icon: Star,         label: 'CURRENT RANK',    value: myRank ? `#${myRank}` : '—', sub: `OUT OF ${sortedBoard.length} SQUADS`,   accent: '#ef4444' },
+            { icon: CheckCircle2, label: 'CIPHERS BROKEN',       value: `${totalSolved}`,            sub: `OF ${challenges.length} TARGETS SOLVED`, accent: '#f87171' },
+            { icon: Flag,         label: 'ACTIVE OPERATION', value: `ROUND ${roundNum}`,         sub: currentRound?.name || 'IN PROGRESS', accent: '#fca5a5' },
           ].map(stat => (
-            <div key={stat.label} style={{ background: '#161b22', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '22px 24px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${stat.accent},transparent)` }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${stat.accent}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <stat.icon size={16} color={stat.accent} />
+            <div key={stat.label} className="tactical-box corner-brackets p-5 rounded-md">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <div className="reticle-icon-box" style={{ width: 30, height: 30 }}>
+                  <stat.icon size={15} color="#ef4444" />
                 </div>
-                <span style={{ fontSize: 13, color: '#6e7681', fontWeight: 600 }}>{stat.label}</span>
+                <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700, letterSpacing: 2, fontFamily: 'monospace' }}>{stat.label}</span>
               </div>
-              <div style={{ fontSize: 36, fontWeight: 800, color: '#e6edf3', lineHeight: 1, marginBottom: 4, letterSpacing: '-0.5px' }}>{stat.value}</div>
-              <div style={{ fontSize: 13, color: '#6e7681' }}>{stat.sub}</div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: '#f1f5f9', lineHeight: 1, marginBottom: 4, letterSpacing: '1px', fontFamily: 'var(--font-rajdhani), sans-serif' }}>{stat.value}</div>
+              <div style={{ fontSize: 11, color: '#ef4444', fontFamily: 'monospace', letterSpacing: 1 }}>{stat.sub}</div>
             </div>
           ))}
         </div>
 
-        {/* -- MAIN GRID -- */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
+        {/* -- MAIN GRID: Mission Board & Quick Actions -- */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20 }} className="grid-cols-1 lg:grid-cols-[1fr_340px]">
 
-          {/* LEFT — Mission Board */}
+          {/* LEFT — Tactical Mission Board */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-            <div className="df" style={{ background: '#161b22', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '28px 28px' }}>
+            <div className="df tactical-box p-6 sm:p-7 rounded-md">
               {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(167,139,250,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <LayoutList size={18} color="#a78bfa" />
+                  <div className="reticle-icon-box" style={{ width: 36, height: 36 }}>
+                    <LayoutList size={18} color="#ef4444" />
                   </div>
                   <div>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: '#e6edf3', letterSpacing: '-0.2px' }}>Mission Board</div>
-                    <div style={{ fontSize: 13, color: '#6e7681' }}>{totalSolved} of {challenges.length} completed</div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: '#f1f5f9', letterSpacing: '1px', textTransform: 'uppercase' }}>MISSION OPERATION BOARD</div>
+                    <div style={{ fontSize: 12, color: '#94a3b8', fontFamily: 'monospace' }}>{totalSolved} of {challenges.length} security layers dismantled</div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 18 }}>
-                  {[{ c: '#09cd72', l: 'Solved' }, { c: '#a78bfa', l: 'Available' }, { c: '#30363d', l: 'Locked' }].map(x => (
-                    <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: x.c, display: 'inline-block' }} />
-                      <span style={{ fontSize: 13, color: '#6e7681' }}>{x.l}</span>
+                <div style={{ display: 'flex', gap: 14 }}>
+                  {[{ c: '#10b981', l: 'SOLVED' }, { c: '#ef4444', l: 'AVAILABLE' }, { c: '#450a0a', l: 'LOCKED' }].map(x => (
+                    <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <span style={{ width: 7, height: 7, borderRadius: 2, background: x.c, display: 'inline-block', boxShadow: x.c === '#10b981' ? '0 0 6px #10b981' : x.c === '#ef4444' ? '0 0 6px #ef4444' : 'none' }} />
+                      <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700, fontFamily: 'monospace' }}>{x.l}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 {rounds.map((round, ri) => {
                   const isActive = roundNum === round.rn;
                   const isDone   = roundNum > round.rn;
-                  const lc = isDone ? '#09cd72' : isActive ? round.rc : '#30363d';
+                  const lc = isDone ? '#10b981' : isActive ? '#ef4444' : '#3a1014';
                   return (
                     <div key={ri}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: 7, background: `${lc}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          {isDone ? <CheckCircle2 size={14} color="#09cd72" /> : isActive ? <Zap size={14} color={round.rc} /> : <Lock size={14} color="#30363d" />}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                        <div style={{ width: 26, height: 26, borderRadius: 4, background: `${lc}22`, border: `1px solid ${lc}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          {isDone ? <CheckCircle2 size={13} color="#10b981" /> : isActive ? <Zap size={13} color="#ef4444" /> : <Lock size={13} color="#6b7280" />}
                         </div>
                         <div>
-                          <span style={{ fontSize: 15, fontWeight: 700, color: isDone ? '#09cd72' : isActive ? '#e6edf3' : '#484f58', letterSpacing: '-0.1px' }}>{round.label}</span>
-                          <span style={{ fontSize: 14, color: isDone ? '#09cd7299' : isActive ? '#6e7681' : '#30363d', marginLeft: 6 }}>— {round.sub}</span>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: isDone ? '#10b981' : isActive ? '#f1f5f9' : '#64748b', letterSpacing: '1px', textTransform: 'uppercase' }}>{round.label}</span>
+                          <span style={{ fontSize: 13, color: isDone ? '#6ee7b7' : isActive ? '#f87171' : '#475569', marginLeft: 6, fontFamily: 'monospace' }}>— {round.sub}</span>
                         </div>
-                        <div style={{ flex: 1, height: 1, background: `${lc}25`, marginLeft: 4 }} />
+                        <div style={{ flex: 1, height: 1, background: `${lc}33`, marginLeft: 4 }} />
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
                         {round.missions.map(ch => {
                           const solved    = solvedIds.has(ch.id);
                           const available = isActive || isDone;
@@ -234,33 +239,34 @@ export default function DashboardPage() {
                             <div
                               key={ch.id}
                               onClick={() => available && router.push(`/challenges?level=${ch.order}`)}
-                              style={{
-                                padding: '16px 18px',
-                                borderRadius: 12,
-                                border: solved ? '1px solid rgba(9,205,114,0.3)' : available ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(48,54,61,0.5)',
-                                background: solved ? 'rgba(9,205,114,0.07)' : available ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.2)',
-                                cursor: available ? 'pointer' : 'default',
-                                opacity: available ? 1 : 0.4,
-                                position: 'relative',
-                                transition: 'border-color 0.15s, background 0.15s',
-                              }}
+                              className={`p-4 rounded-md transition-all duration-200 ${
+                                solved
+                                  ? 'bg-emerald-950/20 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                                  : available
+                                  ? 'bg-[#0e0508]/90 border border-red-900/50 hover:border-red-600 hover:shadow-[0_0_20px_rgba(220,38,38,0.25)] cursor-pointer'
+                                  : 'bg-black/40 border border-red-950/20 opacity-40 cursor-default'
+                              } relative`}
                             >
                               {solved && (
-                                <div style={{ position: 'absolute', top: 12, right: 12, width: 20, height: 20, borderRadius: '50%', background: 'rgba(9,205,114,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <CheckCircle2 size={12} color="#09cd72" />
+                                <div style={{ position: 'absolute', top: 12, right: 12, width: 20, height: 20, borderRadius: '50%', background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <CheckCircle2 size={13} color="#10b981" />
                                 </div>
                               )}
-                              <div style={{ fontSize: 12, color: solved ? '#09cd72' : available ? '#6e7681' : '#30363d', fontWeight: 600, marginBottom: 6 }}>
-                                Mission {ch.order}
+                              <div style={{ fontSize: 10, color: '#ef4444', fontWeight: 700, letterSpacing: 2, marginBottom: 4, fontFamily: 'monospace' }}>
+                                LEVEL {ch.order}
                               </div>
-                              <div style={{ fontSize: 15, fontWeight: 700, color: solved ? '#aff5c5' : available ? '#e6edf3' : '#484f58', lineHeight: 1.35, marginBottom: 8 }}>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8, lineHeight: 1.3 }}>
                                 {ch.title}
                               </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                <div style={{ width: 16, height: 16, borderRadius: 4, background: solved ? 'rgba(9,205,114,0.15)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <Star size={9} color={solved ? '#09cd72' : '#6e7681'} />
-                                </div>
-                                <span style={{ fontSize: 13, color: solved ? '#09cd72' : '#6e7681', fontWeight: 600 }}>{ch.points} pts</span>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <span style={{ fontSize: 12, fontWeight: 900, color: '#ef4444', fontFamily: 'monospace' }}>
+                                  {ch.points} PTS
+                                </span>
+                                {available && !solved && (
+                                  <span style={{ fontSize: 10, color: '#f87171', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    ENGAGE <ChevronRight size={12} />
+                                  </span>
+                                )}
                               </div>
                             </div>
                           );
@@ -271,100 +277,50 @@ export default function DashboardPage() {
                 })}
               </div>
             </div>
-
-            {/* CTA */}
-            <Link
-              href="/timeline"
-              className="df"
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-                padding: '20px', background: 'linear-gradient(135deg,#09cd72,#0ea5e9)',
-                borderRadius: 14, color: '#0d1117', fontSize: 16, fontWeight: 800,
-                textDecoration: 'none', boxShadow: '0 0 40px rgba(9,205,114,0.25)',
-                transition: 'all 0.2s', letterSpacing: '-0.2px',
-              }}
-            >
-              <Terminal size={20} />
-              Enter Operations Terminal
-              <ChevronRight size={18} />
-            </Link>
           </div>
 
-          {/* RIGHT sidebar */}
+          {/* RIGHT — Quick Intel & Live Squad Status */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-            {/* Team roster */}
-            <div className="df" style={{ background: '#161b22', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '22px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 18 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(9,205,114,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Users size={16} color="#09cd72" />
-                </div>
-                <span style={{ fontSize: 16, fontWeight: 700, color: '#e6edf3' }}>Team Roster</span>
+            {/* Direct Launch CTA */}
+            <div className="tactical-box corner-brackets p-6 rounded-md">
+              <div style={{ fontSize: 11, color: '#ef4444', fontWeight: 700, letterSpacing: 2, marginBottom: 6, fontFamily: 'monospace' }}>
+                // TACTICAL LAUNCH //
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {members.map((name, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10 }}>
-                    <div style={{ width: 38, height: 38, borderRadius: '50%', background: i === 0 ? 'linear-gradient(135deg,#09cd72,#0ea5e9)' : 'linear-gradient(135deg,#f59e0b,#ef4444)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
-                      {name[0]?.toUpperCase()}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: '#e6edf3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-                      <div style={{ fontSize: 12, color: '#6e7681', marginTop: 2 }}>{i === 0 ? 'Lead Agent' : 'Agent'}</div>
-                    </div>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#09cd72', boxShadow: '0 0 6px #09cd72' }} />
-                  </div>
-                ))}
-              </div>
+              <h3 style={{ fontSize: 20, fontWeight: 900, color: '#f1f5f9', textTransform: 'uppercase', marginBottom: 8, letterSpacing: '1px' }}>
+                ENTER MISSION INTERFACE
+              </h3>
+              <p style={{ color: '#94a3b8', fontSize: 12, lineHeight: 1.6, marginBottom: 18 }}>
+                Connect directly to the encrypted mall server terminal and decrypt intercepted ciphers.
+              </p>
+              <Link
+                href="/challenges"
+                className="btn-game-primary"
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                <Target size={16} /> LAUNCH TERMINAL
+              </Link>
             </div>
 
-            {/* Active round */}
-            {currentRound && (
-              <div className="df" style={{ background: '#161b22', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '22px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 16 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(245,158,11,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Flag size={16} color="#f59e0b" />
-                  </div>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: '#e6edf3' }}>Active Round</span>
-                </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 12px', background: 'rgba(9,205,114,0.1)', border: '1px solid rgba(9,205,114,0.25)', borderRadius: 20, fontSize: 12, fontWeight: 700, color: '#09cd72', letterSpacing: 0.5, marginBottom: 12 }}>
-                  Round {roundNum}
-                </div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#e6edf3', marginBottom: 8 }}>{currentRound.name}</div>
-                <p style={{ fontSize: 14, color: '#6e7681', lineHeight: 1.65, margin: 0 }}>
-                  {currentRound.description || 'Active cyber operation in progress. Complete all challenges to advance.'}
-                </p>
+            {/* Intel Briefing Card */}
+            <div className="tactical-box p-6 rounded-md">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <ShieldAlert size={16} color="#ef4444" />
+                <span style={{ fontSize: 12, color: '#f87171', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'monospace' }}>DIRECTIVE SUMMARY</span>
               </div>
-            )}
-
-            {/* Quick access */}
-            <div className="df" style={{ background: '#161b22', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '22px' }}>
-              <div style={{ fontSize: 14, color: '#6e7681', fontWeight: 600, marginBottom: 14 }}>Quick Access</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {[
-                  { href: '/challenges',  icon: Target,   label: 'Challenges',       color: '#0ea5e9' },
-                  { href: '/leaderboard', icon: Trophy,   label: 'Leaderboard',      color: '#f59e0b' },
-                  { href: '/story',       icon: BookOpen, label: 'Mission Briefing', color: '#a78bfa' },
-                  { href: '/timeline',    icon: Activity, label: 'Mission Timeline', color: '#09cd72' },
-                ].map(item => (
-                  <Link key={item.href} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, textDecoration: 'none', transition: 'all 0.15s' }}>
-                    <div style={{ width: 30, height: 30, borderRadius: 8, background: `${item.color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <item.icon size={15} color={item.color} />
-                    </div>
-                    <span style={{ fontSize: 14, color: '#c9d1d9', fontWeight: 500, flex: 1 }}>{item.label}</span>
-                    <ChevronRight size={15} color="#30363d" />
-                  </Link>
-                ))}
-              </div>
+              <p style={{ color: '#94a3b8', fontSize: 12, lineHeight: 1.6, margin: '0 0 14px' }}>
+                Veera is pinned down in basement maintenance. NSA Althaf provides orbital intel. Solve each level to disarm C4 triggers and free 1,200 civilians.
+              </p>
+              <Link
+                href="/story"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px 16px', background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: 6, color: '#fee2e2', fontSize: 12, fontWeight: 700, textDecoration: 'none', letterSpacing: 1, fontFamily: 'monospace' }}
+              >
+                <BookOpen size={13} /> REVIEW INTEL
+              </Link>
             </div>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes dpulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
-        .df { opacity: 0; }
-        a:hover { opacity: 0.82 !important; }
-      `}</style>
     </div>
   );
 }

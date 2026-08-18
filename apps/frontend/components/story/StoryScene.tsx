@@ -29,7 +29,7 @@ export default function StoryScene({
   subtitle,
   scene,
   backgroundImage,
-  backgroundColor = 'from-gray-900 via-purple-900 to-black',
+  backgroundColor = 'from-[#050508] via-[#12080a] to-[#050508]',
   autoPlay = false,
   playSpeed = 3,
   onComplete,
@@ -86,10 +86,11 @@ export default function StoryScene({
 
   return (
     <div className={`min-h-screen relative overflow-hidden bg-gradient-to-b ${backgroundColor}`}>
+      <div className="blood-splatter-bg" />
       {/* Background */}
       {backgroundImage && (
         <div 
-          className="absolute inset-0 opacity-20"
+          className="absolute inset-0 opacity-15"
           style={{
             backgroundImage: `url(${backgroundImage})`,
             backgroundSize: 'cover',
@@ -102,11 +103,11 @@ export default function StoryScene({
       <div className="relative z-10 container mx-auto px-6 py-12">
         {/* Scene Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl font-black mb-4 blood-crimson-title tracking-widest uppercase">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-xl text-gray-400 font-light">
+            <p className="text-lg text-red-200/70 font-mono tracking-wider">
               {subtitle}
             </p>
           )}
@@ -120,15 +121,15 @@ export default function StoryScene({
                   className={`
                     h-1 flex-1 rounded-full transition-all duration-300
                     ${visibleDialogues.includes(index) 
-                      ? 'bg-cyan-500' 
-                      : 'bg-gray-700'
+                      ? 'bg-red-500 shadow-[0_0_8px_#ef4444]' 
+                      : 'bg-red-950/40'
                     }
                   `}
                 />
               ))}
             </div>
-            <p className="text-gray-500 text-sm mt-2">
-              {visibleDialogues.length} / {scene.length}
+            <p className="text-gray-500 text-xs font-mono mt-2 tracking-widest">
+              {visibleDialogues.length} / {scene.length} LOGS
             </p>
           </div>
         </div>
@@ -153,27 +154,27 @@ export default function StoryScene({
         {/* Controls */}
         {showControls && (
           <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-            <div className="bg-gray-900/95 backdrop-blur-md border border-cyan-500/30 rounded-2xl px-8 py-4 shadow-2xl">
-              <div className="flex gap-4 items-center">
+            <div className="bg-[rgba(10,4,6,0.95)] backdrop-blur-md border border-red-600/40 rounded-lg px-8 py-4 shadow-[0_0_30px_rgba(220,38,38,0.3)] tactical-box">
+              <div className="flex gap-4 items-center font-mono">
                 {/* Previous Button */}
                 <button
                   onClick={handlePrevious}
                   disabled={currentIndex === 0}
-                  className="px-4 py-2 bg-gray-800 text-cyan-400 rounded-lg font-semibold 
+                  className="px-4 py-2 bg-red-950/30 text-gray-300 border border-red-900/40 rounded font-semibold text-xs tracking-wider
                            disabled:opacity-30 disabled:cursor-not-allowed
-                           hover:bg-gray-700 transition-all"
+                           hover:bg-red-900/40 transition-all"
                 >
-                  ← Previous
+                  ← PREV
                 </button>
 
                 {/* Play/Pause */}
                 {autoPlay && (
                   <button
                     onClick={() => setIsPlaying(!isPlaying)}
-                    className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 
-                             rounded-lg font-semibold hover:scale-105 transition-transform"
+                    className="px-6 py-2 bg-gradient-to-r from-red-700 to-red-500 text-white
+                             rounded font-bold text-xs tracking-widest hover:scale-105 transition-transform"
                   >
-                    {isPlaying ? '⏸ Pause' : '▶ Play'}
+                    {isPlaying ? '⏸ PAUSE' : '▶ AUTO'}
                   </button>
                 )}
 
@@ -181,33 +182,27 @@ export default function StoryScene({
                 <button
                   onClick={handleNext}
                   disabled={!autoPlay && currentIndex >= scene.length - 1}
-                  className="px-4 py-2 bg-gray-800 text-cyan-400 rounded-lg font-semibold 
+                  className="px-4 py-2 bg-red-950/30 text-gray-300 border border-red-900/40 rounded font-semibold text-xs tracking-wider
                            disabled:opacity-30 disabled:cursor-not-allowed
-                           hover:bg-gray-700 transition-all"
+                           hover:bg-red-900/40 transition-all"
                 >
-                  Next →
+                  NEXT →
                 </button>
 
                 {/* Skip */}
                 {autoPlay && currentIndex < scene.length && (
                   <button
                     onClick={handleSkip}
-                    className="px-4 py-2 text-gray-400 hover:text-cyan-400 
-                             transition-colors font-semibold"
+                    className="px-4 py-2 text-gray-400 hover:text-red-400 
+                             transition-colors font-semibold text-xs tracking-wider"
                   >
-                    Skip All →
+                    SKIP ALL →
                   </button>
                 )}
               </div>
             </div>
           </div>
         )}
-      </div>
-
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
       </div>
     </div>
   );

@@ -6,8 +6,9 @@ import { api } from '@/lib/api';
 import {
   Trophy, Crown, Users, Activity, ArrowLeft,
   Shield, RefreshCw, Lock, Zap, Star,
-  CheckCircle2, Target,
+  CheckCircle2, Target, Crosshair, Skull,
 } from 'lucide-react';
+import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
 
 const POLL_INTERVAL = 15000;
 
@@ -69,82 +70,83 @@ export default function LeaderboardPage() {
   function isMe(t: Record<string, any>)      { return myTeamId && (t?.teamId === myTeamId || t?.id === myTeamId); }
 
   const PODIUM_ORDER = [1, 0, 2]; // display as: 2nd | 1st | 3rd
-  const PODIUM_H     = [160, 210, 130]; // display heights for 2nd | 1st | 3rd
+  const PODIUM_H     = [150, 200, 120]; // display heights for 2nd | 1st | 3rd
   const PODIUM_CFG = [
-    { icon: '', color: '#fbbf24', glow: 'rgba(251,191,36,0.25)', border: 'rgba(251,191,36,0.5)', rank: 1 },
-    { icon: '', color: '#94a3b8', glow: 'rgba(148,163,184,0.15)', border: 'rgba(148,163,184,0.4)', rank: 2 },
-    { icon: '', color: '#ea8c34', glow: 'rgba(234,140,52,0.18)', border: 'rgba(234,140,52,0.4)', rank: 3 },
+    { icon: '🥇', color: '#dc2626', glow: 'rgba(220,38,38,0.45)', border: 'rgba(239,68,68,0.7)', rank: 1 },
+    { icon: '🥈', color: '#94a3b8', glow: 'rgba(148,163,184,0.2)', border: 'rgba(148,163,184,0.4)', rank: 2 },
+    { icon: '🥉', color: '#b91c1c', glow: 'rgba(185,28,28,0.25)', border: 'rgba(185,28,28,0.5)', rank: 3 },
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080614', fontFamily: "'Inter', system-ui, sans-serif", position: 'relative', overflow: 'hidden' }}>
-      {/* Static BG layers */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, backgroundImage: 'repeating-linear-gradient(0deg,rgba(0,0,0,0.22),rgba(0,0,0,0.22) 1px,transparent 1px,transparent 3px)', opacity: 0.28 }} />
-      <svg style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', opacity: 0.015, zIndex: 0, pointerEvents: 'none' }}>
-        <defs><pattern id="bg" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M60 0 L0 0 0 60" fill="none" stroke="#7c3aed" strokeWidth="0.5" /></pattern></defs>
-        <rect width="100%" height="100%" fill="url(#bg)" />
-      </svg>
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.12) 0%,transparent 55%), radial-gradient(ellipse at 50% 100%,rgba(6,182,212,0.07) 0%,transparent 55%)' }} />
+    <div style={{ minHeight: '100vh', background: '#050508', position: 'relative', overflowX: 'hidden', color: '#f1f5f9' }}>
+      <HalfCircleMenu />
+      {/* Blood texture overlays */}
+      <div className="blood-splatter-bg" />
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(220,38,38,0.12) 0%, transparent 60%), radial-gradient(ellipse at 50% 100%, rgba(138,3,3,0.15) 0%, transparent 55%)' }} />
 
       {/*  NAV  */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '10px 28px', borderBottom: '1px solid rgba(109,40,217,0.25)', background: 'rgba(5,2,18,0.97)', backdropFilter: 'blur(24px)', gap: 14 }}>
-        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7 }}>
-          <ArrowLeft size={12} />HQ
+      <div style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '10px 28px', borderBottom: '1px solid rgba(220,38,38,0.3)', background: 'rgba(10,4,6,0.95)', backdropFilter: 'blur(20px)', gap: 12 }}>
+        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
+          <ArrowLeft size={12} className="text-red-500" />HQ
         </Link>
-        <Link href="/timeline" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7 }}>
-          <Target size={12} />TIMELINE
+        <Link href="/challenges" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
+          <Target size={12} className="text-red-500" />MISSIONS
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Shield size={13} color="#fff" />
+          <div style={{ width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg,#7f1d1d,#dc2626)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Crosshair size={13} color="#fff" />
           </div>
-          <span style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800, letterSpacing: 2 }}>THE EXTRACTION</span>
-          <span style={{ color: '#4b5563', fontSize: 11, letterSpacing: 2 }}>/ RANKINGS</span>
+          <span style={{ color: '#f1f5f9', fontSize: 13, fontWeight: 900, letterSpacing: 2 }}>THE EXTRACTION</span>
+          <span style={{ color: '#ef4444', fontSize: 11, letterSpacing: 2, fontFamily: 'monospace' }}>/ AGENT RANKINGS</span>
         </div>
         <div style={{ flex: 1 }} />
         {/* Live indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 7, padding: '5px 12px' }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981', animation: 'dopulse 1.5s infinite' }} />
-          <span style={{ color: '#10b981', fontSize: 12, fontWeight: 700, letterSpacing: 2 }}>LIVE</span>
-          <span style={{ color: '#4b5563', fontSize: 11, letterSpacing: 1 }}>{countdown}s</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: 6, padding: '5px 12px' }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444', animation: 'dopulse 1.5s infinite' }} />
+          <span style={{ color: '#f87171', fontSize: 11, fontWeight: 700, letterSpacing: 2, fontFamily: 'monospace' }}>LIVE FEED</span>
+          <span style={{ color: '#6b7280', fontSize: 10, letterSpacing: 1, fontFamily: 'monospace' }}>{countdown}s</span>
         </div>
-        <button onClick={() => loadData(true)} disabled={refreshing} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', background: 'rgba(109,40,217,0.1)', border: '1px solid rgba(109,40,217,0.35)', borderRadius: 7, cursor: 'pointer', color: '#a78bfa', fontSize: 11, fontWeight: 700, letterSpacing: 1, fontFamily: 'inherit', opacity: refreshing ? 0.6 : 1 }}>
+        <button onClick={() => loadData(true)} disabled={refreshing} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.4)', borderRadius: 6, cursor: 'pointer', color: '#fee2e2', fontSize: 11, fontWeight: 700, letterSpacing: 1, fontFamily: 'monospace', opacity: refreshing ? 0.6 : 1 }}>
           <RefreshCw size={12} style={{ animation: refreshing ? 'spin 0.8s linear infinite' : 'none' }} />REFRESH
         </button>
-        {lastUpdated && <span style={{ color: '#374151', fontSize: 11, letterSpacing: 1 }}>{lastUpdated.toLocaleTimeString()}</span>}
+        {lastUpdated && <span style={{ color: '#6b7280', fontSize: 10, letterSpacing: 1, fontFamily: 'monospace' }}>{lastUpdated.toLocaleTimeString()}</span>}
       </div>
 
-      <div style={{ position: 'relative', zIndex: 10, maxWidth: 860, margin: '0 auto', padding: '36px 24px 80px' }}>
+      <div style={{ position: 'relative', zIndex: 10, maxWidth: 940, margin: '0 auto', padding: '36px 24px 80px' }}>
 
         {/*  PAGE HEADER  */}
-        <div style={{ textAlign: 'center', marginBottom: 44 }}>
-          <div style={{ color: '#4b5563', fontSize: 12, letterSpacing: 6, fontWeight: 700, marginBottom: 12, textTransform: 'uppercase' }}>The Extraction</div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 8 }}>
-            <Crown size={26} color="#fbbf24" />
-            <h1 style={{ margin: 0, fontSize: 36, fontWeight: 900, color: 'transparent', backgroundImage: 'linear-gradient(135deg,#fbbf24,#f59e0b,#fbbf24)', backgroundClip: 'text', WebkitBackgroundClip: 'text', letterSpacing: 6, textTransform: 'uppercase', filter: 'drop-shadow(0 0 40px rgba(251,191,36,0.4))' }}>LEADERBOARD</h1>
-            <Crown size={26} color="#fbbf24" />
+        <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <div style={{ color: '#ef4444', fontSize: 11, letterSpacing: 5, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', fontFamily: 'monospace' }}>
+            // CLASSIFIED OPERATIVE LEADERBOARD //
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#4b5563', fontSize: 12 }}>
-              <Users size={12} />{leaderboard.length} Teams Competing
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 8 }}>
+            <Trophy size={28} className="text-red-500 animate-pulse" />
+            <h1 className="blood-crimson-title" style={{ margin: 0, fontSize: 36, fontWeight: 900, letterSpacing: 5, textTransform: 'uppercase' }}>
+              AGENT RANKINGS
+            </h1>
+            <Trophy size={28} className="text-red-500 animate-pulse" />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, fontFamily: 'monospace' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#94a3b8', fontSize: 11 }}>
+              <Users size={12} className="text-red-500" />{leaderboard.length} Strike Teams Enlisted
             </div>
-            <div style={{ width: 1, height: 12, background: 'rgba(109,40,217,0.35)' }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#4b5563', fontSize: 12 }}>
-              <Activity size={12} />Updates every {POLL_INTERVAL / 1000}s via SSE
+            <div style={{ width: 1, height: 12, background: 'rgba(220,38,38,0.4)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#94a3b8', fontSize: 11 }}>
+              <Activity size={12} className="text-red-500" />Real-time SSE encrypted sync
             </div>
           </div>
         </div>
 
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 0', gap: 16 }}>
-            <div style={{ width: 44, height: 44, border: '3px solid rgba(124,58,237,0.25)', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            <div style={{ color: '#7c3aed', fontSize: 12, letterSpacing: 4, fontWeight: 700 }}>LOADING RANKINGS...</div>
+            <div style={{ width: 44, height: 44, border: '3px solid rgba(220,38,38,0.2)', borderTopColor: '#ef4444', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <div style={{ color: '#ef4444', fontSize: 12, letterSpacing: 4, fontWeight: 700, fontFamily: 'monospace' }}>SYNCING LIVE SCOREBOARD...</div>
           </div>
         ) : leaderboard.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 20px', border: '1px dashed rgba(55,65,81,0.35)', borderRadius: 14, color: '#374151' }}>
-            <Trophy size={42} style={{ margin: '0 auto 14px', opacity: 0.25 }} />
-            <div style={{ fontSize: 14, color: '#4b5563' }}>No teams have scored yet.</div>
-            <div style={{ fontSize: 11, marginTop: 6, letterSpacing: 1, color: '#374151' }}>Be the first to complete a mission.</div>
+          <div style={{ textAlign: 'center', padding: '80px 20px', border: '1px dashed rgba(220,38,38,0.3)', borderRadius: 12, color: '#6b7280' }}>
+            <Skull size={42} style={{ margin: '0 auto 14px', opacity: 0.35, color: '#ef4444' }} />
+            <div style={{ fontSize: 14, color: '#94a3b8', fontFamily: 'monospace' }}>No strike teams have breached the network yet.</div>
+            <div style={{ fontSize: 11, marginTop: 6, letterSpacing: 1, color: '#ef4444', fontFamily: 'monospace' }}>Be the first operative to crack a cipher.</div>
           </div>
         ) : (
           <>
@@ -163,39 +165,39 @@ export default function LeaderboardPage() {
                       {/* Card above podium block */}
                       <div style={{
                         width: '100%', padding: '16px 14px 14px',
-                        background: `linear-gradient(180deg, rgba(5,2,18,0.98), rgba(10,5,30,0.96))`,
+                        background: 'linear-gradient(180deg, rgba(12,4,7,0.98), rgba(20,5,8,0.96))',
                         border: `1.5px solid ${cfg.border}`,
                         borderBottom: 'none',
-                        borderRadius: '14px 14px 0 0',
+                        borderRadius: '12px 12px 0 0',
                         textAlign: 'center',
                         boxShadow: `0 0 ${dataIdx === 0 ? 50 : 30}px ${cfg.glow}`,
                         position: 'relative',
                         overflow: 'hidden',
                       }}>
                         {me && (
-                          <div style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.4)', borderRadius: 5, padding: '2px 7px', fontSize: 8, color: '#34d399', fontWeight: 700, letterSpacing: 1 }}>YOU</div>
+                          <div style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(220,38,38,0.2)', border: '1px solid rgba(239,68,68,0.6)', borderRadius: 4, padding: '2px 7px', fontSize: 8, color: '#fca5a5', fontWeight: 800, letterSpacing: 1, fontFamily: 'monospace' }}>YOUR OP</div>
                         )}
-                        <div style={{ fontSize: dataIdx === 0 ? 36 : 28, marginBottom: 6, filter: `drop-shadow(0 0 12px ${cfg.color}60)` }}>{cfg.icon}</div>
-                        <div style={{ fontWeight: 900, fontSize: dataIdx === 0 ? 15 : 13, color: '#e9d5ff', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{team.teamName}</div>
-                        <div style={{ fontSize: dataIdx === 0 ? 28 : 22, fontWeight: 900, color: cfg.color, lineHeight: 1, marginBottom: 4, textShadow: `0 0 20px ${cfg.color}80` }}>{getPoints(team).toLocaleString()}</div>
-                        <div style={{ fontSize: 8, color: '#4b5563', letterSpacing: 2, marginBottom: 10 }}>POINTS</div>
+                        <div style={{ fontSize: dataIdx === 0 ? 32 : 26, marginBottom: 6, filter: `drop-shadow(0 0 12px ${cfg.color}80)` }}>{cfg.icon}</div>
+                        <div style={{ fontWeight: 800, fontSize: dataIdx === 0 ? 15 : 13, color: '#f1f5f9', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textTransform: 'uppercase' }}>{team.teamName}</div>
+                        <div style={{ fontSize: dataIdx === 0 ? 28 : 22, fontWeight: 900, color: cfg.color, lineHeight: 1, marginBottom: 4, textShadow: `0 0 20px ${cfg.color}80`, fontFamily: 'var(--font-rajdhani), sans-serif' }}>{getPoints(team).toLocaleString()}</div>
+                        <div style={{ fontSize: 9, color: '#ef4444', letterSpacing: 2, marginBottom: 10, fontFamily: 'monospace' }}>POINTS</div>
                         {/* Score bar */}
-                        <div style={{ height: 3, background: 'rgba(255,255,255,0.04)', borderRadius: 2, overflow: 'hidden', marginBottom: 6 }}>
-                          <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg,${cfg.color},#a78bfa)`, borderRadius: 2 }} />
+                        <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden', marginBottom: 6 }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#7f1d1d,#dc2626,#ef4444)', borderRadius: 2 }} />
                         </div>
-                        <div style={{ color: '#4b5563', fontSize: 11, letterSpacing: 1 }}>{getLevel(team)} / 9 missions</div>
+                        <div style={{ color: '#94a3b8', fontSize: 10, letterSpacing: 1, fontFamily: 'monospace' }}>{getLevel(team)} / 9 TARGETS SOLVED</div>
                       </div>
                       {/* Podium block */}
                       <div style={{
                         width: '100%', height: h,
-                        background: `linear-gradient(180deg, ${cfg.color}18, ${cfg.color}06)`,
+                        background: `linear-gradient(180deg, ${cfg.color}22, ${cfg.color}08)`,
                         border: `1.5px solid ${cfg.border}`,
                         borderTop: 'none',
                         borderRadius: '0 0 8px 8px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         boxShadow: `0 8px 40px ${cfg.glow}`,
                       }}>
-                        <span style={{ fontSize: 48, fontWeight: 900, color: `${cfg.color}30`, letterSpacing: -4 }}>
+                        <span style={{ fontSize: 44, fontWeight: 900, color: `${cfg.color}40`, letterSpacing: -2, fontFamily: 'var(--font-rajdhani), sans-serif' }}>
                           #{cfg.rank}
                         </span>
                       </div>
@@ -209,18 +211,18 @@ export default function LeaderboardPage() {
             {rest.length > 0 && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                  <div style={{ color: '#374151', fontSize: 9, fontWeight: 700, letterSpacing: 3 }}>FULL RANKINGS</div>
-                  <div style={{ flex: 1, height: 1, background: 'rgba(109,40,217,0.15)' }} />
+                  <div style={{ color: '#ef4444', fontSize: 10, fontWeight: 700, letterSpacing: 3, fontFamily: 'monospace' }}>// FULL AGENT ROSTER //</div>
+                  <div style={{ flex: 1, height: 1, background: 'rgba(220,38,38,0.2)' }} />
                 </div>
 
                 {/* Table header */}
-                <div style={{ display: 'grid', gridTemplateColumns: '44px 1fr 100px 180px 80px', gap: 8, padding: '6px 14px', marginBottom: 4 }}>
-                  {['RANK','TEAM','PROGRESS','SCORE BAR','SCORE'].map(h => (
-                    <div key={h} style={{ fontSize: 11, color: '#374151', fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>{h}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 110px 180px 90px', gap: 8, padding: '6px 14px', marginBottom: 4 }}>
+                  {['RANK','SQUAD','TARGETS','EFFICIENCY','SCORE'].map(h => (
+                    <div key={h} style={{ fontSize: 10, color: '#64748b', fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', fontFamily: 'monospace' }}>{h}</div>
                   ))}
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {rest.map((team, i) => {
                     const rank = i + 4;
                     const pts  = getPoints(team);
@@ -232,40 +234,38 @@ export default function LeaderboardPage() {
                         key={team.teamId ?? i}
                         ref={el => { rowRefs.current[i] = el; }}
                         style={{
-                          display: 'grid', gridTemplateColumns: '44px 1fr 100px 180px 80px',
+                          display: 'grid', gridTemplateColumns: '50px 1fr 110px 180px 90px',
                           gap: 8, alignItems: 'center',
-                          padding: '12px 14px',
-                          background: me ? 'rgba(16,185,129,0.07)' : 'rgba(5,2,18,0.7)',
-                          border: `1px solid ${me ? 'rgba(16,185,129,0.35)' : 'rgba(55,65,81,0.22)'}`,
-                          borderRadius: 10, position: 'relative', overflow: 'hidden',
+                          padding: '12px 16px',
+                          background: me ? 'rgba(220,38,38,0.16)' : 'rgba(10,4,6,0.85)',
+                          border: `1px solid ${me ? 'rgba(239,68,68,0.6)' : 'rgba(220,38,38,0.25)'}`,
+                          borderRadius: 8, position: 'relative', overflow: 'hidden',
                           transition: 'all 0.15s',
                         }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(109,40,217,0.4)'; (e.currentTarget as HTMLDivElement).style.background = 'rgba(109,40,217,0.07)'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = me ? 'rgba(16,185,129,0.35)' : 'rgba(55,65,81,0.22)'; (e.currentTarget as HTMLDivElement).style.background = me ? 'rgba(16,185,129,0.07)' : 'rgba(5,2,18,0.7)'; }}
                       >
                         {/* Rank */}
-                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(55,65,81,0.3)', border: '1px solid rgba(55,65,81,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontSize: 13, fontWeight: 800 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 6, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87171', fontSize: 13, fontWeight: 900, fontFamily: 'monospace' }}>
                           {rank}
                         </div>
                         {/* Team name */}
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ color: me ? '#6ee7b7' : '#e2e8f0', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{team.teamName}</div>
-                          {me && <div style={{ fontSize: 10, color: '#34d399', letterSpacing: 2, marginTop: 1 }}>YOUR TEAM</div>}
+                          <div style={{ color: me ? '#fee2e2' : '#f1f5f9', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{team.teamName}</div>
+                          {me && <div style={{ fontSize: 9, color: '#ef4444', letterSpacing: 2, marginTop: 1, fontFamily: 'monospace', fontWeight: 800 }}>YOUR SQUAD</div>}
                         </div>
                         {/* Mission progress bubbles */}
                         <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                           {Array.from({ length: 9 }, (_, ii) => (
-                            <div key={ii} style={{ width: 7, height: 7, borderRadius: '50%', background: ii < lvl ? '#10b981' : ii === lvl ? '#7c3aed' : '#1f2937', boxShadow: ii === lvl ? '0 0 6px #7c3aed' : 'none' }} />
+                            <div key={ii} style={{ width: 7, height: 7, borderRadius: '2px', background: ii < lvl ? '#10b981' : ii === lvl ? '#ef4444' : '#1f0d12', boxShadow: ii === lvl ? '0 0 6px #ef4444' : 'none' }} />
                           ))}
                         </div>
                         {/* Score bar */}
-                        <div style={{ height: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 2, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,rgba(124,58,237,0.7),rgba(6,182,212,0.5))', borderRadius: 2, transition: 'width 0.6s ease' }} />
+                        <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#7f1d1d,#dc2626,#ef4444)', borderRadius: 2, transition: 'width 0.6s ease' }} />
                         </div>
                         {/* Score */}
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ color: '#a78bfa', fontSize: 16, fontWeight: 900 }}>{pts.toLocaleString()}</div>
-                          <div style={{ color: '#374151', fontSize: 10, letterSpacing: 2 }}>PTS</div>
+                          <div style={{ color: '#ef4444', fontSize: 15, fontWeight: 900, fontFamily: 'monospace' }}>{pts.toLocaleString()}</div>
+                          <div style={{ color: '#64748b', fontSize: 9, letterSpacing: 2, fontFamily: 'monospace' }}>PTS</div>
                         </div>
                       </div>
                     );
@@ -277,11 +277,11 @@ export default function LeaderboardPage() {
         )}
 
         {/* Footer */}
-        <div style={{ marginTop: 44, padding: '14px 20px', background: 'rgba(5,2,18,0.5)', border: '1px solid rgba(55,65,81,0.2)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#374151', fontSize: 11 }}>
-            <Lock size={11} />Real-time via SSE + {POLL_INTERVAL / 1000}s polling fallback
+        <div style={{ marginTop: 40, padding: '12px 18px', background: 'rgba(10,4,6,0.6)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#6b7280', fontSize: 11, fontFamily: 'monospace' }}>
+            <Lock size={11} className="text-red-500" />Real-time SSE encrypted sync active
           </div>
-          <div style={{ color: '#374151', fontSize: 11, letterSpacing: 2 }}>THE EXTRACTION — CHENNAI</div>
+          <div style={{ color: '#ef4444', fontSize: 10, letterSpacing: 2, fontFamily: 'monospace' }}>THE EXTRACTION — CLASSIFIED COMMAND</div>
         </div>
       </div>
 

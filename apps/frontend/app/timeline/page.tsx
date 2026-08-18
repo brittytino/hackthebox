@@ -7,9 +7,10 @@ import Link from 'next/link';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
-  Shield, Flag, Lock, CheckCircle, Zap, ArrowLeft, Trophy,
+  Shield, Flag, Lock, CheckCircle, Zap, ArrowLeft, Trophy, Crosshair, Skull,
 } from 'lucide-react';
 import { api } from '@/lib/api';
+import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -17,21 +18,21 @@ const MISSIONS = [
   { order: 1, round: 1, level: '1.1', name: 'The Intercepted Transmission', type: 'CRYPTOGRAPHY', difficulty: 'medium', points: 100, character: 'Veera Raghavan', characterImage: '/images/characters/veera_determined.png', bgImage: '/images/background/1.jpg', act: 'ROUND 1 — THE BREACH', accentColor: '#ef4444', accentRgb: '239,68,68', description: 'A dark, encrypted message intercepts the terror cell\'s communication channel. Triple-layer encoding stands between you and the command center location.' },
   { order: 2, round: 1, level: '1.2', name: 'The Fragmented Server Map', type: 'FORENSICS', difficulty: 'medium', points: 150, character: 'NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgImage: '/images/background/2.jpg', act: 'ROUND 1 — THE BREACH', accentColor: '#ef4444', accentRgb: '239,68,68', description: 'Three encrypted file fragments hold the codes to override the hijacked security doors. Decimal ASCII, octal ASCII, and Atbash — assemble them before patrols return.' },
   { order: 3, round: 1, level: '1.3', name: 'The Time-Locked Vault', type: 'MATH/HASH', difficulty: 'hard', points: 200, character: 'NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgImage: '/images/background/3.jpg', act: 'ROUND 1 — THE BREACH', accentColor: '#ef4444', accentRgb: '239,68,68', description: 'A unique biometric vault uses your team\'s identity as part of the combination. The city\'s attack blueprint is locked inside.' },
-  { order: 4, round: 2, level: '2.1', name: 'The Corrupted Hash Trail', type: 'HASH CRACKING', difficulty: 'medium', points: 250, character: 'Veera Raghavan', characterImage: '/images/characters/veera_intense.png', bgImage: '/images/background/4.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#f59e0b', accentRgb: '245,158,11', description: 'Three password-protected databases hold evidence against the terror cell. MD5, SHA-1, SHA-256 — crack all three to stop Farooq\'s release.' },
-  { order: 5, round: 2, level: '2.2', name: 'The JWT Inception', type: 'WEB/TOKEN', difficulty: 'medium', points: 300, character: 'NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgImage: '/images/background/5.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#f59e0b', accentRgb: '245,158,11', description: 'A hex-encoded JWT token guards the live TV feed. Decode this multi-layered token to prove the execution of the Home Minister\'s family is staged.' },
-  { order: 6, round: 2, level: '2.3', name: 'The Pattern Lock', type: 'CRYPTOGRAPHY', difficulty: 'hard', points: 350, character: 'NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgImage: '/images/background/6.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#f59e0b', accentRgb: '245,158,11', description: 'Bypass the government lines so Veera can spoof his identity as a Bangladeshi militant. A SHA-256 challenge unique to every team.' },
-  { order: 7, round: 3, level: '3.1', name: 'The Payload Hunt', type: 'REVERSE ENG', difficulty: 'medium', points: 400, character: 'Veera Raghavan', characterImage: '/images/characters/veera_concerned.png', bgImage: '/images/background/7.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#10b981', accentRgb: '16,185,129', description: 'The mall lockdown payload is split across four encoding methods. Decode each fragment to lift the lockdown and allow hostages to escape.' },
-  { order: 8, round: 3, level: '3.2', name: 'The Logic Bomb Defusal', type: 'NESTED DECODE', difficulty: 'hard', points: 450, character: 'NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgImage: '/images/background/8.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#10b981', accentRgb: '16,185,129', description: 'Saif has armed a fail-deadly explosive trigger. Five encoding layers deep — one wrong step and the mall goes up in flames tonight.' },
-  { order: 9, round: 3, level: '3.3', name: 'The Master Vault', type: 'FINAL BOSS', difficulty: 'hard', points: 1000, character: 'Veera Raghavan', characterImage: '/images/characters/veera_relieved.png', bgImage: '/images/background/9.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#10b981', accentRgb: '16,185,129', description: 'Months later in Pakistan. Every technique you have learned converges here. Crack Farooq\'s master server and destroy his network forever.' },
+  { order: 4, round: 2, level: '2.1', name: 'The Corrupted Hash Trail', type: 'HASH CRACKING', difficulty: 'medium', points: 250, character: 'Veera Raghavan', characterImage: '/images/characters/veera_intense.png', bgImage: '/images/background/4.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#dc2626', accentRgb: '220,38,38', description: 'Three password-protected databases hold evidence against the terror cell. MD5, SHA-1, SHA-256 — crack all three to stop Farooq\'s release.' },
+  { order: 5, round: 2, level: '2.2', name: 'The JWT Inception', type: 'WEB/TOKEN', difficulty: 'medium', points: 300, character: 'NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgImage: '/images/background/5.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#dc2626', accentRgb: '220,38,38', description: 'A hex-encoded JWT token guards the live TV feed. Decode this multi-layered token to prove the execution of the Home Minister\'s family is staged.' },
+  { order: 6, round: 2, level: '2.3', name: 'The Pattern Lock', type: 'CRYPTOGRAPHY', difficulty: 'hard', points: 350, character: 'NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgImage: '/images/background/6.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#dc2626', accentRgb: '220,38,38', description: 'Bypass the government lines so Veera can spoof his identity as a Bangladeshi militant. A SHA-256 challenge unique to every team.' },
+  { order: 7, round: 3, level: '3.1', name: 'The Payload Hunt', type: 'REVERSE ENG', difficulty: 'medium', points: 400, character: 'Veera Raghavan', characterImage: '/images/characters/veera_concerned.png', bgImage: '/images/background/7.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#b91c1c', accentRgb: '185,28,28', description: 'The mall lockdown payload is split across four encoding methods. Decode each fragment to lift the lockdown and allow hostages to escape.' },
+  { order: 8, round: 3, level: '3.2', name: 'The Logic Bomb Defusal', type: 'NESTED DECODE', difficulty: 'hard', points: 450, character: 'NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgImage: '/images/background/8.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#b91c1c', accentRgb: '185,28,28', description: 'Saif has armed a fail-deadly explosive trigger. Five encoding layers deep — one wrong step and the mall goes up in flames tonight.' },
+  { order: 9, round: 3, level: '3.3', name: 'The Master Vault', type: 'FINAL BOSS', difficulty: 'hard', points: 1000, character: 'Veera Raghavan', characterImage: '/images/characters/veera_relieved.png', bgImage: '/images/background/9.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#b91c1c', accentRgb: '185,28,28', description: 'Months later in Pakistan. Every technique you have learned converges here. Crack Farooq\'s master server and destroy his network forever.' },
 ];
 
 const ROUND_COLORS: Record<number, { primary: string; rgb: string; label: string }> = {
   1: { primary: '#ef4444', rgb: '239,68,68', label: 'ROUND 1 — THE BREACH' },
-  2: { primary: '#f59e0b', rgb: '245,158,11', label: 'ROUND 2 — INFILTRATION' },
-  3: { primary: '#10b981', rgb: '16,185,129', label: 'ROUND 3 — FINAL STRIKE' },
+  2: { primary: '#dc2626', rgb: '220,38,38', label: 'ROUND 2 — INFILTRATION' },
+  3: { primary: '#991b1b', rgb: '153,27,27', label: 'ROUND 3 — FINAL STRIKE' },
 };
 
-const DIFF_COLORS: Record<string, string> = { easy: '#22c55e', medium: '#f59e0b', hard: '#ef4444' };
+const DIFF_COLORS: Record<string, string> = { easy: '#22c55e', medium: '#ef4444', hard: '#dc2626' };
 
 export default function TimelinePage() {
   const router = useRouter();
@@ -50,7 +51,6 @@ export default function TimelinePage() {
       setCurrentLevel(data?.progress?.currentLevel ?? 1);
       setTeamPoints(data?.team?.currentPoints ?? 0);
       setTeamName(data?.team?.name ?? '');
-      // Auto-scroll to active card after brief delay
       setTimeout(() => {
         if (activeCardRef.current) {
           activeCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -62,38 +62,6 @@ export default function TimelinePage() {
   useEffect(() => {
     if (!containerRef.current) return;
     const ctx = gsap.context(() => {
-      // Create floating particles
-      const particleCount = 20;
-      for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'floating-particle';
-        particle.style.cssText = `
-          position: fixed;
-          width: ${Math.random() * 60 + 20}px;
-          height: ${Math.random() * 60 + 20}px;
-          border: 1.5px solid rgba(124,58,237,${Math.random() * 0.15 + 0.05});
-          border-radius: ${Math.random() > 0.3 ? '50%' : '8px'};
-          left: ${Math.random() * 100}%;
-          top: ${Math.random() * 100}%;
-          pointer-events: none;
-          z-index: 1;
-          transform: rotate(${Math.random() * 360}deg);
-        `;
-        containerRef.current?.appendChild(particle);
-
-        // Animate particle floating
-        gsap.to(particle, {
-          x: (Math.random() - 0.5) * 300,
-          y: (Math.random() - 0.5) * 300,
-          rotation: Math.random() * 360,
-          opacity: Math.random() * 0.4,
-          duration: Math.random() * 10 + 10,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-        });
-      }
-
       // Title entrance with bounce
       gsap.from('[data-tl="header"]', {
         y: -80,
@@ -113,7 +81,7 @@ export default function TimelinePage() {
         onUpdate: function() {
           if (lineRef.current) {
             const progress = this.progress();
-            lineRef.current.style.filter = `drop-shadow(0 0 ${progress * 20}px rgba(124,58,237,0.6))`;
+            lineRef.current.style.filter = `drop-shadow(0 0 ${progress * 20}px rgba(220,38,38,0.7))`;
           }
         },
       });
@@ -123,14 +91,12 @@ export default function TimelinePage() {
         if (!card) return;
         const isRight = i % 2 === 1;
         
-        // Card entrance
         gsap.from(card, {
-          x: isRight ? 180 : -180,
-          y: 50,
+          x: isRight ? 160 : -160,
+          y: 40,
           opacity: 0,
-          scale: 0.85,
-          rotation: isRight ? 8 : -8,
-          duration: 0.9,
+          scale: 0.88,
+          duration: 0.8,
           ease: 'power3.out',
           scrollTrigger: {
             trigger: card,
@@ -139,70 +105,11 @@ export default function TimelinePage() {
             toggleActions: 'play none none reverse',
           },
         });
-
-        // Card subtle floating animation when in view
-        gsap.to(card, {
-          y: '+=10',
-          duration: 2.5 + i * 0.3,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 90%',
-            end: 'bottom 10%',
-            toggleActions: 'play pause play pause',
-          },
-        });
-
-        // Dot entrance with spring
-        const dot = card.querySelector('[data-dot]');
-        if (dot) {
-          gsap.from(dot, {
-            scale: 0,
-            rotation: 360,
-            duration: 0.8,
-            ease: 'elastic.out(1, 0.5)',
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 85%',
-              toggleActions: 'play none none reverse',
-            },
-          });
-
-          // Continuous pulse
-          gsap.to(dot, {
-            scale: 1.15,
-            duration: 1.5,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut',
-          });
-        }
-
-        // Connector line draw-in
-        const connector = card.parentElement?.querySelector('[data-connector]');
-        if (connector) {
-          gsap.from(connector, {
-            scaleX: 0,
-            transformOrigin: isRight ? 'right center' : 'left center',
-            duration: 0.6,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 85%',
-              toggleActions: 'play none none reverse',
-            },
-          });
-        }
       });
     }, containerRef);
 
     return () => {
       ctx.revert();
-      // Clean up particles
-      const particles = containerRef.current?.querySelectorAll('.floating-particle');
-      particles?.forEach(p => p.remove());
     };
   }, []);
 
@@ -213,71 +120,70 @@ export default function TimelinePage() {
   };
 
   return (
-    <div ref={containerRef} style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #080614 0%, #0a0818 40%, #080614 100%)', fontFamily: "'Inter', system-ui, sans-serif", overflow: 'auto', position: 'relative' }}>
-      {/* Animated radial gradient overlay */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 100%, rgba(6,182,212,0.1) 0%, transparent 50%)', opacity: 0.6 }} />
-      {/* Scanlines */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, backgroundImage: 'repeating-linear-gradient(0deg,rgba(0,0,0,0.22),rgba(0,0,0,0.22) 1px,transparent 1px,transparent 3px)', opacity: 0.28 }} />
-      {/* Grid bg */}
-      <svg style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', opacity: 0.02, zIndex: 0, pointerEvents: 'none' }}>
-        <defs><pattern id="tg" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M60 0 L0 0 0 60" fill="none" stroke="#7c3aed" strokeWidth="0.5" /></pattern></defs>
-        <rect width="100%" height="100%" fill="url(#tg)" />
-      </svg>
+    <div ref={containerRef} style={{ minHeight: '100vh', background: '#050508', overflow: 'auto', position: 'relative', color: '#f1f5f9' }}>
+      <HalfCircleMenu />
+      {/* Blood textures */}
+      <div className="blood-splatter-bg" />
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(220,38,38,0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 100%, rgba(138,3,3,0.15) 0%, transparent 50%)' }} />
 
       {/* Top nav */}
-      <div data-tl="header" style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '10px 28px', borderBottom: '1px solid rgba(109,40,217,0.25)', background: 'rgba(5,2,18,0.97)', backdropFilter: 'blur(24px)', gap: 14 }}>
-        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 14px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7 }}>
-          <ArrowLeft size={13} />HQ
+      <div data-tl="header" style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '10px 28px', borderBottom: '1px solid rgba(220,38,38,0.3)', background: 'rgba(10,4,6,0.95)', backdropFilter: 'blur(24px)', gap: 12 }}>
+        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
+          <ArrowLeft size={12} className="text-red-500" />HQ
         </Link>
-        <Link href="/leaderboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 14px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7 }}>
-          <Trophy size={13} />RANKS
+        <Link href="/challenges" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
+          <Crosshair size={12} className="text-red-500" />MISSIONS
         </Link>
-        <Link href="/story" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280', fontSize: 12, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '7px 14px', border: '1px solid rgba(55,65,81,0.4)', borderRadius: 7 }}>
-          <Flag size={13} />STORY
+        <Link href="/leaderboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
+          <Trophy size={12} className="text-red-500" />RANKS
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#7c3aed,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg,#7f1d1d,#dc2626)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Shield size={13} color="#fff" />
           </div>
-          <span style={{ color: '#e2e8f0', fontSize: 14, fontWeight: 800, letterSpacing: 2 }}>THE EXTRACTION</span>
-          <span style={{ color: '#4b5563', fontSize: 12, letterSpacing: 2 }}>/ MISSION TIMELINE</span>
+          <span style={{ color: '#f1f5f9', fontSize: 13, fontWeight: 900, letterSpacing: 2 }}>THE EXTRACTION</span>
+          <span style={{ color: '#ef4444', fontSize: 11, letterSpacing: 2, fontFamily: 'monospace' }}>/ MISSION TIMELINE</span>
         </div>
         <div style={{ flex: 1 }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.32)', borderRadius: 8, padding: '5px 14px' }}>
-          <Trophy size={13} color="#fbbf24" />
-          <span style={{ color: '#fbbf24', fontWeight: 900, fontSize: 18 }}>{teamPoints.toLocaleString()}</span>
-          <span style={{ color: '#92400e', fontSize: 11, fontWeight: 700, letterSpacing: 2 }}>PTS</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: 6, padding: '5px 12px' }}>
+          <Trophy size={13} color="#ef4444" />
+          <span style={{ color: '#fee2e2', fontWeight: 900, fontSize: 16, fontFamily: 'monospace' }}>{teamPoints.toLocaleString()}</span>
+          <span style={{ color: '#ef4444', fontSize: 10, fontWeight: 700, letterSpacing: 2, fontFamily: 'monospace' }}>PTS</span>
         </div>
         {teamName && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981', animation: 'dopulse 2s infinite' }} />
-            <span style={{ color: '#94a3b8', fontSize: 11, letterSpacing: 1, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{teamName}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="status-dot active" />
+            <span style={{ color: '#fee2e2', fontSize: 11, letterSpacing: 1, fontFamily: 'monospace' }}>{teamName}</span>
           </div>
         )}
       </div>
 
       {/* Page header */}
-      <div data-tl="header" style={{ textAlign: 'center', padding: '60px 24px 30px', position: 'relative', zIndex: 5 }}>
-        <div style={{ color: '#6b7280', fontSize: 13, fontWeight: 700, letterSpacing: 6, marginBottom: 14, textTransform: 'uppercase' }}>The Extraction</div>
-        <h1 style={{ margin: 0, fontSize: 48, fontWeight: 900, color: 'transparent', backgroundImage: 'linear-gradient(135deg, #a78bfa 0%, #06b6d4 50%, #10b981 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', letterSpacing: 8, textTransform: 'uppercase', textShadow: 'none', filter: 'drop-shadow(0 0 60px rgba(124,58,237,0.6))' }}>
-          Mission Timeline
+      <div data-tl="header" style={{ textAlign: 'center', padding: '50px 24px 24px', position: 'relative', zIndex: 5 }}>
+        <div style={{ color: '#ef4444', fontSize: 11, fontWeight: 700, letterSpacing: 6, marginBottom: 10, textTransform: 'uppercase', fontFamily: 'monospace' }}>
+          // OPERATION ROADMAP //
+        </div>
+        <h1 className="blood-crimson-title" style={{ margin: 0, fontSize: 44, fontWeight: 900, letterSpacing: 6, textTransform: 'uppercase' }}>
+          TACTICAL TIMELINE
         </h1>
-        <div style={{ height: 3, width: 120, background: 'linear-gradient(90deg,transparent,#7c3aed 20%,#06b6d4 50%,#10b981 80%,transparent)', margin: '20px auto 0', borderRadius: 3, boxShadow: '0 0 30px rgba(124,58,237,0.5)' }} />
-        <p style={{ color: '#94a3b8', fontSize: 15, marginTop: 20, letterSpacing: 3, fontWeight: 600 }}>9 MISSIONS · 3 ACTS · CHENNAI</p>
+        <div style={{ height: 3, width: 120, background: 'linear-gradient(90deg,transparent,#dc2626,#ef4444,transparent)', margin: '16px auto 0', borderRadius: 3, boxShadow: '0 0 20px rgba(220,38,38,0.6)' }} />
+        <p style={{ color: '#94a3b8', fontSize: 13, marginTop: 16, letterSpacing: 3, fontWeight: 600, fontFamily: 'monospace' }}>
+          9 MISSIONS • 3 SECURITY SECTORS • CHENNAI RECON
+        </p>
       </div>
 
       {/* Timeline */}
-      <div style={{ position: 'relative', maxWidth: 900, margin: '0 auto', padding: '20px 24px 80px', zIndex: 5 }}>
+      <div style={{ position: 'relative', maxWidth: 940, margin: '0 auto', padding: '20px 24px 80px', zIndex: 5 }}>
         {/* Center vertical line */}
         <div
           data-tl="line"
           ref={lineRef}
           style={{
             position: 'absolute', left: '50%', transform: 'translateX(-50%)',
-            top: 0, bottom: 0, width: 3,
-            background: 'linear-gradient(180deg,rgba(124,58,237,0) 0%,rgba(124,58,237,0.8) 10%,rgba(124,58,237,0.9) 30%,rgba(6,182,212,0.7) 50%,rgba(16,185,129,0.8) 70%,rgba(16,185,129,0.9) 90%,rgba(16,185,129,0) 100%)',
+            top: 0, bottom: 0, width: 2,
+            background: 'linear-gradient(180deg,rgba(220,38,38,0) 0%,rgba(220,38,38,0.8) 20%,rgba(239,68,68,0.9) 60%,rgba(220,38,38,0.2) 100%)',
             zIndex: 1,
-            boxShadow: '0 0 20px rgba(124,58,237,0.6), 0 0 40px rgba(6,182,212,0.3)',
+            boxShadow: '0 0 20px rgba(220,38,38,0.6)',
           }}
         />
 
@@ -292,7 +198,7 @@ export default function TimelinePage() {
                 cardRefs.current[i] = el;
                 if (state === 'active') activeCardRef.current = el;
               }}
-              style={{ display: 'flex', justifyContent: isRight ? 'flex-end' : 'flex-start', marginBottom: state === 'active' ? 50 : 36, position: 'relative', zIndex: state === 'active' ? 5 : 2 }}
+              style={{ display: 'flex', justifyContent: isRight ? 'flex-end' : 'flex-start', marginBottom: state === 'active' ? 44 : 32, position: 'relative', zIndex: state === 'active' ? 5 : 2 }}
             >
               {/* Center dot */}
               <div
@@ -300,19 +206,19 @@ export default function TimelinePage() {
                 style={{
                   position: 'absolute', left: '50%', top: '50%',
                   transform: 'translate(-50%, -50%)',
-                  width: 22, height: 22, borderRadius: '50%',
+                  width: 20, height: 20, borderRadius: '50%',
                   background: state === 'solved'
-                    ? 'radial-gradient(circle, #34d399 0%, #10b981 100%)'
+                    ? 'radial-gradient(circle, #10b981 0%, #064e3b 100%)'
                     : state === 'active'
-                    ? 'radial-gradient(circle, #a78bfa 0%, #7c3aed 100%)'
-                    : 'radial-gradient(circle, #4b5563 0%, #1f2937 100%)',
-                  border: `3px solid ${state === 'solved' ? '#6ee7b7' : state === 'active' ? '#c4b5fd' : '#374151'}`,
+                    ? 'radial-gradient(circle, #ef4444 0%, #7f1d1d 100%)'
+                    : 'radial-gradient(circle, #374151 0%, #111827 100%)',
+                  border: `2px solid ${state === 'solved' ? '#34d399' : state === 'active' ? '#f87171' : '#1f0d12'}`,
                   boxShadow: state === 'active'
-                    ? '0 0 30px rgba(124,58,237,1), 0 0 60px rgba(124,58,237,0.6), inset 0 0 15px rgba(255,255,255,0.3)'
+                    ? '0 0 25px rgba(239,68,68,1), 0 0 50px rgba(220,38,38,0.6)'
                     : state === 'solved'
-                    ? '0 0 20px rgba(16,185,129,0.9), 0 0 40px rgba(16,185,129,0.5), inset 0 0 10px rgba(255,255,255,0.2)'
+                    ? '0 0 20px rgba(16,185,129,0.8)'
                     : 'none',
-                  zIndex: 10, transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  zIndex: 10, transition: 'all 0.3s ease',
                 }}
               />
 
@@ -323,146 +229,105 @@ export default function TimelinePage() {
                 width: 'calc(8% - 2px)', height: 2,
                 background: `linear-gradient(${isRight ? '90deg' : '-90deg'},transparent,rgba(${rc.rgb}, 0.7))`,
                 zIndex: 1,
-                boxShadow: `0 0 12px rgba(${rc.rgb}, 0.4)`,
               }} />
 
               {/* Card */}
               <div
                 onClick={() => state !== 'locked' && router.push(`/challenges?level=${m.order}`)}
+                className={`tactical-box corner-brackets ${
+                  state === 'active'
+                    ? 'border-red-500 shadow-[0_0_40px_rgba(220,38,38,0.35)]'
+                    : state === 'solved'
+                    ? 'border-emerald-700/60 shadow-[0_0_25px_rgba(16,185,129,0.15)]'
+                    : 'border-red-950/40 opacity-40'
+                }`}
                 style={{
                   width: '42%',
-                  background: state === 'active'
-                    ? 'linear-gradient(135deg,rgba(109,40,217,0.22),rgba(5,2,18,0.97))'
-                    : state === 'solved'
-                    ? 'linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,2,18,0.97))'
-                    : 'rgba(5,2,18,0.92)',
-                  border: `2px solid ${state === 'active' ? 'rgba(124,58,237,0.65)' : state === 'solved' ? 'rgba(16,185,129,0.45)' : 'rgba(55,65,81,0.3)'}`,
-                  borderRadius: 20,
+                  borderRadius: 10,
                   overflow: 'hidden',
                   cursor: state !== 'locked' ? 'pointer' : 'default',
-                  opacity: state === 'locked' ? 0.5 : 1,
-                  boxShadow: state === 'active'
-                    ? '0 0 50px rgba(109,40,217,0.35), 0 12px 50px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.1)'
-                    : state === 'solved'
-                    ? '0 0 30px rgba(16,185,129,0.2), 0 8px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)'
-                    : '0 4px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03)',
-                  transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transition: 'all 0.3s ease',
                   position: 'relative',
-                  backdropFilter: 'blur(8px)',
-                }}
-                onMouseEnter={e => {
-                  if (state === 'locked') return;
-                  (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-8px) scale(1.02)';
-                  (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 70px rgba(${rc.rgb},0.45), 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.15)`;
-                  (e.currentTarget as HTMLDivElement).style.borderColor = `rgba(${rc.rgb}, 0.9)`;
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0) scale(1)';
-                  (e.currentTarget as HTMLDivElement).style.boxShadow = state === 'active'
-                    ? '0 0 50px rgba(109,40,217,0.35), 0 12px 50px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.1)'
-                    : state === 'solved'
-                    ? '0 0 30px rgba(16,185,129,0.2), 0 8px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)'
-                    : '0 4px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03)';
-                  (e.currentTarget as HTMLDivElement).style.borderColor = state === 'active' ? 'rgba(124,58,237,0.65)' : state === 'solved' ? 'rgba(16,185,129,0.45)' : 'rgba(55,65,81,0.3)';
                 }}
               >
-                {/* Accent top bar with glow */}
-                <div style={{ height: 4, background: `linear-gradient(90deg,transparent,${m.accentColor},${m.accentColor},transparent)`, boxShadow: `0 0 20px ${m.accentColor}, 0 0 40px ${m.accentColor}50` }} />
+                {/* Accent top bar */}
+                <div style={{ height: 3, background: `linear-gradient(90deg,transparent,${m.accentColor},transparent)`, boxShadow: `0 0 15px ${m.accentColor}` }} />
 
-                {/* Background image subtle overlay */}
+                {/* Background image preview */}
                 <div style={{ position: 'relative' }}>
-                  <div style={{ height: 120, position: 'relative', overflow: 'hidden' }}>
-                    <Image src={m.bgImage} alt={m.name} fill style={{ objectFit: 'cover', objectPosition: 'center', opacity: 0.28, filter: 'saturate(0.6)' }} />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(5,2,18,0.4) 0%,rgba(5,2,18,0.85) 100%)' }} />
+                  <div style={{ height: 110, position: 'relative', overflow: 'hidden' }}>
+                    <Image src={m.bgImage} alt={m.name} fill style={{ objectFit: 'cover', objectPosition: 'center', opacity: 0.22, filter: 'saturate(0.5)' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(10,4,6,0.3) 0%,rgba(10,4,6,0.9) 100%)' }} />
                     {/* Character */}
-                    <div style={{ position: 'absolute', bottom: 0, [isRight ? 'left' : 'right']: 12, height: 115, width: 70, overflow: 'hidden' }}>
-                      <Image src={m.characterImage} alt={m.character} fill style={{ objectFit: 'cover', objectPosition: 'top center', filter: state === 'locked' ? 'grayscale(1) brightness(0.4)' : 'none' }} />
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,rgba(5,2,18,0.3),transparent,rgba(5,2,18,0.3))' }} />
+                    <div style={{ position: 'absolute', bottom: 0, [isRight ? 'left' : 'right']: 12, height: 105, width: 65, overflow: 'hidden' }}>
+                      <Image src={m.characterImage} alt={m.character} fill style={{ objectFit: 'cover', objectPosition: 'top center', filter: state === 'locked' ? 'grayscale(1) brightness(0.3)' : 'none' }} />
                     </div>
                     {/* Status badge */}
-                    <div style={{ position: 'absolute', top: 12, [isRight ? 'right' : 'left']: 12, display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(5,2,18,0.85)', border: `1px solid ${state === 'solved' ? 'rgba(16,185,129,0.5)' : state === 'active' ? 'rgba(124,58,237,0.5)' : 'rgba(55,65,81,0.4)'}`, borderRadius: 7, padding: '4px 10px' }}>
-                      {state === 'solved' ? <CheckCircle size={11} color="#10b981" /> : state === 'active' ? <Zap size={11} color="#a78bfa" /> : <Lock size={11} color="#4b5563" />}
-                      <span style={{ fontSize: 10, fontWeight: 700, color: state === 'solved' ? '#10b981' : state === 'active' ? '#a78bfa' : '#4b5563', letterSpacing: 1 }}>{state.toUpperCase()}</span>
+                    <div style={{ position: 'absolute', top: 10, [isRight ? 'right' : 'left']: 10, display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(10,4,6,0.9)', border: `1px solid ${state === 'solved' ? 'rgba(16,185,129,0.5)' : state === 'active' ? 'rgba(239,68,68,0.6)' : 'rgba(220,38,38,0.2)'}`, borderRadius: 4, padding: '3px 8px' }}>
+                      {state === 'solved' ? <CheckCircle size={11} color="#10b981" /> : state === 'active' ? <Zap size={11} color="#ef4444" /> : <Lock size={11} color="#6b7280" />}
+                      <span style={{ fontSize: 9, fontWeight: 800, color: state === 'solved' ? '#10b981' : state === 'active' ? '#ef4444' : '#6b7280', letterSpacing: 1, fontFamily: 'monospace' }}>{state.toUpperCase()}</span>
                     </div>
                   </div>
 
                   <div style={{ padding: '14px 16px 16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, color: m.accentColor, background: `rgba(${m.accentRgb},0.12)`, border: `1px solid rgba(${m.accentRgb},0.3)`, borderRadius: 5, padding: '2px 8px' }}>{m.act}</span>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: DIFF_COLORS[m.difficulty], letterSpacing: 1 }}>{m.difficulty.toUpperCase()}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: 1, color: m.accentColor, background: `rgba(${m.accentRgb},0.15)`, border: `1px solid rgba(${m.accentRgb},0.35)`, borderRadius: 3, padding: '2px 6px', fontFamily: 'monospace' }}>{m.act}</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: DIFF_COLORS[m.difficulty], letterSpacing: 1, fontFamily: 'monospace' }}>{m.difficulty.toUpperCase()}</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
                       <div>
-                        <div style={{ color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 2, marginBottom: 4 }}>{m.level}</div>
-                        <div style={{ color: '#e9d5ff', fontSize: 16, fontWeight: 900, lineHeight: 1.25, letterSpacing: 1 }}>{m.name}</div>
+                        <div style={{ color: '#ef4444', fontSize: 10, fontWeight: 800, letterSpacing: 2, marginBottom: 2, fontFamily: 'monospace' }}>TARGET {m.level}</div>
+                        <div style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 800, lineHeight: 1.25, letterSpacing: '0.5px' }}>{m.name}</div>
                       </div>
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <div style={{ color: '#fbbf24', fontSize: 18, fontWeight: 900 }}>{m.points}</div>
-                        <div style={{ color: '#92400e', fontSize: 9, letterSpacing: 2 }}>PTS</div>
+                        <div style={{ color: '#ef4444', fontSize: 16, fontWeight: 900, fontFamily: 'monospace' }}>{m.points}</div>
+                        <div style={{ color: '#991b1b', fontSize: 8, letterSpacing: 2, fontFamily: 'monospace' }}>PTS</div>
                       </div>
                     </div>
-                    <div style={{ color: '#6b7280', fontSize: 11, fontWeight: 700, letterSpacing: 2, marginBottom: 6 }}>{m.type}</div>
-                    <p style={{ color: '#94a3b8', fontSize: 13, lineHeight: 1.75, margin: 0 }}>{m.description}</p>
+                    <p style={{ color: '#94a3b8', fontSize: 12, lineHeight: 1.6, margin: 0 }}>{m.description}</p>
 
                     {state !== 'locked' && (
                       <div
                         onClick={e => { e.stopPropagation(); router.push(`/challenges?level=${m.order}`); }}
                         style={{
-                          marginTop: 16,
-                          padding: state === 'active' ? '14px 20px' : '10px 14px',
+                          marginTop: 14,
+                          padding: state === 'active' ? '10px 16px' : '8px 12px',
                           background: state === 'active'
-                            ? `linear-gradient(135deg,${m.accentColor},${m.accentColor}cc)`
+                            ? 'linear-gradient(135deg,#7f1d1d,#dc2626)'
                             : 'rgba(16,185,129,0.1)',
                           border: state === 'active'
-                            ? 'none'
-                            : '1px solid rgba(16,185,129,0.3)',
-                          borderRadius: 10,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                          color: state === 'active' ? '#fff' : '#10b981',
-                          fontSize: state === 'active' ? 14 : 11,
-                          fontWeight: 900,
-                          letterSpacing: state === 'active' ? 3 : 1,
+                            ? '1px solid rgba(248,113,113,0.6)'
+                            : '1px solid rgba(16,185,129,0.35)',
+                          borderRadius: 6,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                          color: '#fff',
+                          fontSize: state === 'active' ? 12 : 10,
+                          fontWeight: 800,
+                          letterSpacing: 2,
                           cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          boxShadow: state === 'active' ? `0 0 30px ${m.accentColor}50, 0 4px 20px rgba(0,0,0,0.5)` : 'none',
-                          fontFamily: 'inherit',
+                          fontFamily: 'monospace',
                           textTransform: 'uppercase',
-                          animation: state === 'active' ? 'activePulse 2s ease-in-out infinite' : 'none',
                         }}
                       >
-                        {state === 'active' ? <><Zap size={16} />START MISSION</> : <><CheckCircle size={12} />COMPLETED</>}
+                        {state === 'active' ? <><Zap size={13} />ENGAGE TARGET</> : <><CheckCircle size={11} color="#10b981" /><span style={{ color: '#10b981' }}>COMPLETED</span></>}
                       </div>
                     )}
                   </div>
                 </div>
               </div>
-
-              {/* Round separator (between rounds) */}
-              {[3, 6].includes(m.order) && i < MISSIONS.length - 1 && (
-                <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '100%', marginTop: 10, zIndex: 20 }}>
-                  <div style={{ background: 'rgba(5,2,18,0.95)', border: `1px solid rgba(${ROUND_COLORS[m.round + 1]?.rgb ?? '109,40,217'},0.45)`, borderRadius: 8, padding: '4px 14px', color: ROUND_COLORS[m.round + 1]?.primary ?? '#a78bfa', fontSize: 9, fontWeight: 700, letterSpacing: 3, whiteSpace: 'nowrap' }}>
-                    ↓ {ROUND_COLORS[m.round + 1]?.label}
-                  </div>
-                </div>
-              )}
             </div>
           );
         })}
 
         {/* Final complete node */}
-        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 2, marginTop: 20 }}>
-          <div style={{ background: 'linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,2,18,0.97))', border: '2px solid rgba(16,185,129,0.45)', borderRadius: 16, padding: '20px 40px', textAlign: 'center', boxShadow: '0 0 40px rgba(16,185,129,0.15)' }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>🎯</div>
-            <div style={{ color: '#6ee7b7', fontSize: 14, fontWeight: 900, letterSpacing: 4, marginBottom: 4 }}>OPERATION TERMINATED</div>
-            <div style={{ color: '#4b5563', fontSize: 11, letterSpacing: 2 }}>Chennai is safe. Good luck.</div>
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 2, marginTop: 24 }}>
+          <div className="tactical-box p-5 rounded-md text-center max-w-sm">
+            <Skull className="w-8 h-8 text-red-500 mx-auto mb-2" />
+            <div style={{ color: '#ef4444', fontSize: 13, fontWeight: 900, letterSpacing: 3, marginBottom: 2, fontFamily: 'monospace' }}>OPERATION THE EXTRACTION</div>
+            <div style={{ color: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}>HOSTAGE RESCUE PROTOCOL COMPLETE</div>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes dopulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
-        @keyframes activePulse { 0%,100%{box-shadow: 0 0 30px currentColor; transform: scale(1)} 50%{box-shadow: 0 0 50px currentColor; transform: scale(1.02)} }
-      `}</style>
     </div>
   );
 }

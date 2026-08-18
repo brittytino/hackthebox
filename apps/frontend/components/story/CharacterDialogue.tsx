@@ -5,14 +5,12 @@ import Image from 'next/image';
 
 type CharacterName = 'veera' | 'althaf' | 'preethi' | 'umar';
 type VeeraExpression = 'neutral' | 'intense' | 'determined' | 'concerned' | 'relieved';
-
 type AlthafExpression = 'neutral' | 'commanding' | 'concerned';
 type PreethiExpression = 'worried' | 'hopeful';
 type UmarExpression = 'threatening' | 'angry';
 
 type CharacterExpression = 
   | VeeraExpression 
-
   | AlthafExpression 
   | PreethiExpression 
   | UmarExpression;
@@ -27,27 +25,26 @@ interface CharacterDialogueProps {
   mood?: 'normal' | 'urgent' | 'danger' | 'success';
 }
 
-const characterInfo: Record<CharacterName, { name: string; title: string; color: 'cyan' | 'blue' | 'purple' | 'pink' | 'red' }> = {
+const characterInfo: Record<CharacterName, { name: string; title: string; color: 'red' | 'crimson' | 'darkRed' | 'blood' }> = {
   veera: {
     name: 'Veera Raghavan',
-    title: 'Ex-RAW Agent',
-    color: 'cyan',
+    title: 'Ex-RAW Operative',
+    color: 'red',
   },
-
   althaf: {
     name: 'Althaf',
-    title: 'NSA Commander',
-    color: 'purple',
+    title: 'NSA Tactical Commander',
+    color: 'crimson',
   },
   preethi: {
     name: 'Preethi',
-    title: 'Security Specialist',
-    color: 'pink',
+    title: 'Cyber Security Analyst',
+    color: 'darkRed',
   },
   umar: {
     name: 'Umar Saif',
-    title: 'Terrorist Leader',
-    color: 'red',
+    title: 'Terrorist Commander',
+    color: 'blood',
   },
 };
 
@@ -62,26 +59,17 @@ export default function CharacterDialogue({
 }: CharacterDialogueProps) {
   const info = characterInfo[character];
   
-  // Fix the typo in filename (veera_neautral -> veera_neutral)
   const fixedExpression = character === 'veera' && expression === 'neutral' 
-    ? 'neautral' // Keep the typo for now since that's the actual filename
+    ? 'neautral' 
     : expression;
   
   const imagePath = `/images/characters/${character}_${fixedExpression}.png`;
 
   const moodStyles = {
-    normal: 'border-cyan-500/40 bg-gray-900/95',
-    urgent: 'border-yellow-500/60 bg-yellow-900/20 shadow-yellow-500/30',
-    danger: 'border-red-500/60 bg-red-900/20 shadow-red-500/30',
-    success: 'border-green-500/60 bg-green-900/20 shadow-green-500/30',
-  };
-
-  const colorClasses = {
-    cyan: 'text-cyan-400 border-cyan-500',
-    blue: 'text-blue-400 border-blue-500',
-    purple: 'text-purple-400 border-purple-500',
-    pink: 'text-pink-400 border-pink-500',
-    red: 'text-red-400 border-red-500',
+    normal: 'border-red-950/60 bg-[rgba(10,4,6,0.95)] shadow-[0_0_25px_rgba(220,38,38,0.15)]',
+    urgent: 'border-amber-600/60 bg-[rgba(20,8,6,0.95)] shadow-[0_0_25px_rgba(245,158,11,0.25)]',
+    danger: 'border-red-600/80 bg-[rgba(25,5,8,0.95)] shadow-[0_0_35px_rgba(220,38,38,0.4)]',
+    success: 'border-emerald-600/60 bg-[rgba(5,15,10,0.95)] shadow-[0_0_25px_rgba(16,185,129,0.25)]',
   };
 
   const positionClasses = {
@@ -101,12 +89,7 @@ export default function CharacterDialogue({
       {/* Character Image */}
       {showProfile && (
         <div className="relative flex-shrink-0">
-          <div className={`
-            w-32 h-32 md:w-40 md:h-40 rounded-xl overflow-hidden 
-            border-4 ${colorClasses[info.color]}
-            shadow-lg shadow-${info.color}-500/50
-            transition-transform duration-300 hover:scale-105
-          `}>
+          <div className="w-32 h-32 md:w-40 md:h-40 rounded-lg overflow-hidden border-2 border-red-600/60 shadow-[0_0_20px_rgba(220,38,38,0.3)] bg-black/60 transition-transform duration-300 hover:scale-105">
             <Image
               src={imagePath}
               alt={`${info.name} - ${expression}`}
@@ -118,16 +101,11 @@ export default function CharacterDialogue({
           </div>
           
           {/* Character Name Badge */}
-          <div className={`
-            absolute -bottom-3 left-1/2 transform -translate-x-1/2
-            px-4 py-1 rounded-full text-xs font-bold
-            bg-gray-950 border-2 ${colorClasses[info.color]}
-            whitespace-nowrap shadow-lg
-          `}>
-            <div className={colorClasses[info.color]}>
+          <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded text-xs font-bold bg-[#0a0406] border border-red-600/60 whitespace-nowrap shadow-lg text-center font-mono">
+            <div className="text-red-400 uppercase tracking-wider text-[11px]">
               {info.name}
             </div>
-            <div className="text-gray-400 text-[10px]">
+            <div className="text-gray-400 text-[9px] tracking-widest">
               {info.title}
             </div>
           </div>
@@ -138,8 +116,8 @@ export default function CharacterDialogue({
       <div className={`
         relative flex-1 max-w-3xl
         ${moodStyles[mood]}
-        border-2 rounded-2xl p-6
-        shadow-2xl backdrop-blur-md
+        border rounded-lg p-6
+        backdrop-blur-md tactical-box corner-brackets
         ${animated ? 'animate-slideIn' : ''}
       `}>
         {/* Speech Arrow */}
@@ -148,11 +126,11 @@ export default function CharacterDialogue({
             className={`
               absolute top-8 w-0 h-0
               ${position === 'left' ? '-left-3' : '-right-3'}
-              border-t-[12px] border-t-transparent
-              border-b-[12px] border-b-transparent
+              border-t-[10px] border-t-transparent
+              border-b-[10px] border-b-transparent
               ${position === 'left' 
-                ? 'border-r-[12px] border-r-cyan-500/40' 
-                : 'border-l-[12px] border-l-cyan-500/40'
+                ? 'border-r-[10px] border-r-red-900/60' 
+                : 'border-l-[10px] border-l-red-900/60'
               }
             `}
           />
@@ -160,21 +138,21 @@ export default function CharacterDialogue({
 
         {/* Dialogue Text */}
         <div className="relative">
-          <div className="absolute -top-4 -left-2 text-6xl text-cyan-500/20 font-serif">"</div>
+          <div className="absolute -top-4 -left-2 text-6xl text-red-600/20 font-serif">"</div>
           <p className="text-gray-100 text-lg leading-relaxed pl-6 pr-4 font-light">
             {dialogue}
           </p>
-          <div className="absolute -bottom-4 -right-2 text-6xl text-cyan-500/20 font-serif">"</div>
+          <div className="absolute -bottom-4 -right-2 text-6xl text-red-600/20 font-serif">"</div>
         </div>
 
         {/* Mood Indicator */}
         {mood !== 'normal' && (
           <div className={`
-            absolute top-2 right-2
+            absolute top-3 right-3
             w-3 h-3 rounded-full
-            ${mood === 'urgent' ? 'bg-yellow-400 animate-pulse' : ''}
-            ${mood === 'danger' ? 'bg-red-400 animate-pulse' : ''}
-            ${mood === 'success' ? 'bg-green-400 animate-pulse' : ''}
+            ${mood === 'urgent' ? 'bg-amber-500 shadow-[0_0_8px_#f59e0b] animate-pulse' : ''}
+            ${mood === 'danger' ? 'bg-red-500 shadow-[0_0_8px_#ef4444] animate-pulse' : ''}
+            ${mood === 'success' ? 'bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse' : ''}
           `} />
         )}
       </div>

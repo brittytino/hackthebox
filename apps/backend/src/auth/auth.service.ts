@@ -21,21 +21,33 @@ export class AuthService {
 
   // Register: create user + team directly, no OTP needed
   async register(dto: RegisterDto) {
-    const { email, password, teamName, participant1Name, participant2Name } = dto;
+    const { username, password, teamName, participant1Name, participant2Name } = dto;
+    const cleanUsername = username.trim();
+    const cleanEmail =
+      dto.email?.trim() ||
+      `${cleanUsername.toLowerCase().replace(/[^a-z0-9_.-]/g, '')}@theextraction.local`;
+
+    // Check if username already taken
+    const existingByUsername = await this.prisma.user.findFirst({
+      where: { username: { equals: cleanUsername, mode: 'insensitive' } },
+    });
+    if (existingByUsername) {
+      throw new ConflictException('Username already taken. Please choose a different username.');
+    }
 
     // Check if email already registered and verified
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email },
+    const existingUser = await this.prisma.user.findFirst({
+      where: { email: { equals: cleanEmail, mode: 'insensitive' } },
       include: { team: true },
     });
 
     if (existingUser?.isVerified) {
-      throw new ConflictException('Email already registered. Please login.');
+      throw new ConflictException('An account with this username already exists. Please login.');
     }
 
     // Clean up orphaned team from a previous incomplete registration attempt
     if (existingUser?.team) {
-      this.logger.log(`Cleaning up prior incomplete registration for ${email}`);
+      this.logger.log(`Cleaning up prior incomplete registration for ${cleanEmail}`);
       await this.prisma.storyProgress.deleteMany({ where: { teamId: existingUser.team.id } });
       await this.prisma.score.deleteMany({ where: { teamId: existingUser.team.id } });
       await this.prisma.user.update({ where: { id: existingUser.id }, data: { teamId: null } });
@@ -65,27 +77,27 @@ export class AuthService {
     // Initialize story progress
     await this.prisma.storyProgress.create({ data: { teamId: team.id, currentRound: 1 } });
 
-    // Create or update user â€” mark as verified immediately
+    // Create or update user — mark as verified immediately
     let user: any;
     if (existingUser) {
       user = await this.prisma.user.update({
         where: { id: existingUser.id },
-        data: { passwordHash, isVerified: true, teamId: team.id, username: teamName },
+        data: { passwordHash, isVerified: true, teamId: team.id, username: cleanUsername },
       });
     } else {
       user = await this.prisma.user.create({
         data: {
-          email,
+          email: cleanEmail,
           passwordHash,
           isVerified: true,
           teamId: team.id,
-          username: teamName,
+          username: cleanUsername,
         },
       });
     }
 
     const token = this.generateToken(user.id);
-    this.logger.log(`Team registered: ${teamName} (${email})`);
+    this.logger.log(`Team registered: ${teamName} (username: ${cleanUsername})`);
 
     return {
       success: true,
@@ -94,6 +106,7 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
+        username: user.username,
         role: user.role,
         teamName: team.name,
       },
@@ -106,34 +119,46 @@ export class AuthService {
     };
   }
 
-  // Login for returning teams
+  // Login for returning teams (by username or email)
   async login(dto: LoginDto) {
+    const identifier = (dto.username || dto.email || '').trim();
+    if (!identifier) {
+      throw new BadRequestException('Username is required');
+    }
+
     const user = await this.prisma.user.findFirst({
-      where: { email: dto.email, isVerified: true },
+      where: {
+        OR: [
+          { username: { equals: identifier, mode: 'insensitive' } },
+          { email: { equals: identifier, mode: 'insensitive' } },
+        ],
+        isVerified: true,
+      },
       include: { team: true },
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid username or password');
     }
 
     if (!user.passwordHash) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid username or password');
     }
 
     const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid username or password');
     }
 
     const token = this.generateToken(user.id);
-    this.logger.log(`Login: ${dto.email}`);
+    this.logger.log(`Login: ${identifier} (${user.username || user.email})`);
 
     return {
       access_token: token,
       user: {
         id: user.id,
         email: user.email,
+        username: user.username,
         role: user.role,
         teamName: user.team?.name,
       },

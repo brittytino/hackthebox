@@ -122,17 +122,17 @@ export default function LeaderboardPage() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 8 }}>
             <Trophy size={28} className="text-red-500 animate-pulse" />
             <h1 className="blood-crimson-title" style={{ margin: 0, fontSize: 36, fontWeight: 900, letterSpacing: 5, textTransform: 'uppercase' }}>
-              AGENT RANKINGS
+              LEADERBOARD
             </h1>
             <Trophy size={28} className="text-red-500 animate-pulse" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, fontFamily: 'monospace' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#94a3b8', fontSize: 11 }}>
-              <Users size={12} className="text-red-500" />{leaderboard.length} Strike Teams Enlisted
+              <Users size={12} className="text-red-500" />{leaderboard.length} Teams Registered
             </div>
             <div style={{ width: 1, height: 12, background: 'rgba(220,38,38,0.4)' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#94a3b8', fontSize: 11 }}>
-              <Activity size={12} className="text-red-500" />Real-time SSE encrypted sync
+              <Activity size={12} className="text-red-500" />Real-time live sync
             </div>
           </div>
         </div>
@@ -145,8 +145,8 @@ export default function LeaderboardPage() {
         ) : leaderboard.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 20px', border: '1px dashed rgba(220,38,38,0.3)', borderRadius: 12, color: '#6b7280' }}>
             <Skull size={42} style={{ margin: '0 auto 14px', opacity: 0.35, color: '#ef4444' }} />
-            <div style={{ fontSize: 14, color: '#94a3b8', fontFamily: 'monospace' }}>No strike teams have breached the network yet.</div>
-            <div style={{ fontSize: 11, marginTop: 6, letterSpacing: 1, color: '#ef4444', fontFamily: 'monospace' }}>Be the first operative to crack a cipher.</div>
+            <div style={{ fontSize: 14, color: '#94a3b8', fontFamily: 'monospace' }}>No teams have scored points yet.</div>
+            <div style={{ fontSize: 11, marginTop: 6, letterSpacing: 1, color: '#ef4444', fontFamily: 'monospace' }}>Be the first team to solve a challenge.</div>
           </div>
         ) : (
           <>

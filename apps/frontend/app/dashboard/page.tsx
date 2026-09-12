@@ -11,6 +11,7 @@ import {
   Activity, Star, Map, Terminal, Crosshair, Skull, ShieldAlert,
 } from 'lucide-react';
 import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
+import FocusScreenAdvisory, { FocusScreenButton } from '@/components/ui/FocusScreenAdvisory';
 
 interface Challenge {
   id: string; title: string; points: number; order: number; roundId: string;
@@ -104,6 +105,7 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#050508', position: 'relative', overflowX: 'hidden', color: '#f1f5f9' }}>
       <HalfCircleMenu />
+      <FocusScreenAdvisory />
       {/* Background blood splatter textures */}
       <div className="blood-splatter-bg" />
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse 80% 40% at 50% -10%, rgba(220,38,38,0.12) 0%, transparent 60%), radial-gradient(ellipse at bottom right, rgba(138,3,3,0.15) 0%, transparent 50%)' }} />
@@ -129,6 +131,8 @@ export default function DashboardPage() {
           <span style={{ color: '#f87171', fontSize: 11, fontWeight: 700, fontFamily: 'monospace', letterSpacing: '1px' }}>OPERATION LIVE</span>
         </div>
 
+        <FocusScreenButton />
+
         <Link href="/challenges" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, color: '#fee2e2', fontSize: 13, fontWeight: 700, textDecoration: 'none', transition: 'all 0.15s' }}>
           <Target size={14} className="text-red-500" /> Missions
         </Link>
@@ -150,7 +154,7 @@ export default function DashboardPage() {
         <div className="df" style={{ marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <span className="status-dot active" />
-            <span style={{ color: '#ef4444', fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'monospace' }}>// ACTIVE STRIKE TEAM //</span>
+            <span style={{ color: '#ef4444', fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'monospace' }}>// TEAM DASHBOARD //</span>
           </div>
           <h1 className="font-heading-tactical" style={{ fontSize: 38, fontWeight: 900, color: '#f1f5f9', margin: '0 0 10px', letterSpacing: '1px', lineHeight: 1.15 }}>
             {teamName}
@@ -159,7 +163,7 @@ export default function DashboardPage() {
             {members.map((m, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 14px', background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6 }}>
                 <div style={{ width: 22, height: 22, borderRadius: 4, background: 'linear-gradient(135deg,#7f1d1d,#dc2626)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, color: '#fff', fontFamily: 'monospace' }}>{m[0]?.toUpperCase()}</div>
-                <span style={{ fontSize: 13, color: '#fee2e2', fontWeight: 600, fontFamily: 'monospace' }}>OPERATIVE: {m}</span>
+                <span style={{ fontSize: 13, color: '#fee2e2', fontWeight: 600, fontFamily: 'monospace' }}>MEMBER: {m}</span>
               </div>
             ))}
           </div>
@@ -168,10 +172,10 @@ export default function DashboardPage() {
         {/* -- STAT CARDS -- */}
         <div className="df" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 28 }}>
           {[
-            { icon: Trophy,       label: 'TOTAL SCORE',  value: totalScore.toLocaleString(), sub: 'POINTS SECURED',                          accent: '#dc2626' },
-            { icon: Star,         label: 'CURRENT RANK',    value: myRank ? `#${myRank}` : '—', sub: `OUT OF ${sortedBoard.length} SQUADS`,   accent: '#ef4444' },
-            { icon: CheckCircle2, label: 'CIPHERS BROKEN',       value: `${totalSolved}`,            sub: `OF ${challenges.length} TARGETS SOLVED`, accent: '#f87171' },
-            { icon: Flag,         label: 'ACTIVE OPERATION', value: `ROUND ${roundNum}`,         sub: currentRound?.name || 'IN PROGRESS', accent: '#fca5a5' },
+            { icon: Trophy,       label: 'TOTAL SCORE',  value: totalScore.toLocaleString(), sub: 'POINTS EARNED',                          accent: '#dc2626' },
+            { icon: Star,         label: 'CURRENT RANK',    value: myRank ? `#${myRank}` : '—', sub: `OUT OF ${sortedBoard.length} TEAMS`,   accent: '#ef4444' },
+            { icon: CheckCircle2, label: 'CHALLENGES SOLVED',       value: `${totalSolved}`,            sub: `OF ${challenges.length} SOLVED`, accent: '#f87171' },
+            { icon: Flag,         label: 'CURRENT ROUND', value: `ROUND ${roundNum}`,         sub: currentRound?.name || 'IN PROGRESS', accent: '#fca5a5' },
           ].map(stat => (
             <div key={stat.label} className="tactical-box corner-brackets p-5 rounded-md">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>

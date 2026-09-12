@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { gsap } from 'gsap';
 import { ChevronRight, SkipForward, ArrowLeft, Skull, Trophy } from 'lucide-react';
 import { api } from '@/lib/api';
+import { FocusScreenButton } from '@/components/ui/FocusScreenAdvisory';
 
 /* --- Types --------------------------------------------------------------- */
 type Scene = {
@@ -24,7 +25,7 @@ const INTRO_SCENES: Scene[] = [
     bg: '/images/background/1.jpg',
     speaker: 'NARRATOR',
     speakerColor: '#94a3b8',
-    text: 'Present Day. East Coast Mall, Chennai. It was supposed to be a normal day. But a heavily armed terror cell has hijacked the entire building, taking hundreds of innocent civilians hostage. The city is in a state of panic.',
+    text: 'Present Day. East Coast Mall, Chennai. A heavily armed terror cell commanded by Umar Saif has hijacked the complex, trapping 1,200 innocent shoppers and staff hostage. The entire city is gripped by fear.',
     image: '/images/characters/narrator.png',
     imagePos: 'right',
   },
@@ -32,183 +33,367 @@ const INTRO_SCENES: Scene[] = [
     bg: '/images/background/1.jpg',
     speaker: 'UMAR SAIF',
     speakerColor: '#dc2626',
-    text: '"Listen to me carefully. I am Umar Saif. We have wired the mall with C4. You will release our leader, Umar Farooq, from prison immediately, or I will execute hostages one by one. Do not test our patience."',
+    text: '"Listen to me carefully! I am Umar Saif. We have wired East Coast Mall with military-grade C4. Release our supreme leader, Umar Farooq, from high-security prison immediately, or we execute hostages one by one!"',
     image: '/images/characters/umar_threatening.png',
     imagePos: 'left',
   },
   {
+    bg: '/images/background/2.jpg',
+    speaker: 'PREETHI',
+    speakerColor: '#fca5a5',
+    text: '"Panic has broken out across all four floors! Saif\'s gunmen have locked the exit turnstiles and deployed automatic rifles. We are trapped in here with 1,200 innocent people!"',
+    image: '/images/characters/preethi_worried.png',
+    imagePos: 'left',
+  },
+  {
     bg: '/images/background/6.jpg',
-    speaker: 'ALTHAF',
+    speaker: 'NSA ALTHAF',
     speakerColor: '#ef4444',
-    text: '"The government will not negotiate with terrorists. But a frontal assault will result in mass casualties. We need a miracle inside that mall. Wait... intelligence says Veera Raghavan is inside. A former RAW agent. He is our only hope."',
-    image: '/images/characters/althaf_commanding.png',
+    text: '"The government will not surrender to terror. But a frontal assault on the glass atrium will trigger the C4 explosives. Wait... satellite thermal scan detects an operative inside: Veera Raghavan — ex-RAW black-ops specialist."',
+    image: '/images/characters/althaf_concerned.png',
     imagePos: 'left',
   },
   {
     bg: '/images/background/4.jpg',
     speaker: 'VEERA',
     speakerColor: '#f87171',
-    text: '"Althaf, I am inside. The terrorists have jammed all signals, but I managed to access a maintenance terminal in the basement. I need remote cyber support to crack their encrypted comms. Who do we have?"',
-    image: '/images/characters/veera_determined.png',
+    text: '"Althaf, I am in the basement maintenance sector. Civilian cellular bands are jammed, but I tapped into Server Room ER-42 backup telecom line. I need Preethi and a cyber team outside to punch through their electronic grid."',
+    image: '/images/characters/veera_neautral.png',
     imagePos: 'right',
   },
   {
     bg: '/images/background/2.jpg',
     speaker: 'PREETHI',
     speakerColor: '#fca5a5',
-    text: '"Veera! It\'s Preethi. I am coordinating with Althaf\'s team from the outside. We have patched into your terminal. We need to decode Saif\'s network to track his men and disarm their explosives. My team of cyber specialists is ready."',
+    text: '"Veera! I have linked into Althaf\'s tactical van outside the perimeter. Our cyber unit is tied directly to your terminal. We can punch through their digital barriers layer by layer!"',
     image: '/images/characters/preethi_hopeful.png',
     imagePos: 'left',
   },
   {
     bg: '/images/background/6.jpg',
-    speaker: 'ALTHAF',
+    speaker: 'NSA ALTHAF',
     speakerColor: '#ef4444',
-    text: '"Veera, Preethi\'s team will handle the cryptography. There are nine security layers protecting Saif\'s master command server. Solve them one by one. For every cipher they crack, you move forward. Let\'s get to work."',
+    text: '"Veera, you have operational greenlight. Preethi\'s team will handle the cryptography remotely while you take back East Coast Mall ground by ground. Operation Beast begins now."',
     image: '/images/characters/althaf_commanding.png',
     imagePos: 'left',
   },
 ];
 
-/* --- POST-CHALLENGE SCENES ? /timeline ----------------------------------- */
+/* --- POST-CHALLENGE SCENES (BEAST 2022 SEQUENCE) ------------------------ */
 const CHALLENGE_SCENES: Record<number, Scene[]> = [
   // Dummy index 0, not used
   [],
-  // 1
+  // 1: The Intercepted Transmission
   [
     {
       bg: '/images/background/1.jpg',
       speaker: 'VEERA',
       speakerColor: '#f87171',
-      text: '"First transmission decoded! I have the patrol routes for Saif\'s men on the ground floor. I\'m taking them out now. Preethi, the next door is locked with a fragment code. Get your team on it."',
+      text: '"First transmission decoded! I have pinpointed the ground floor patrol routes for Saif\'s men. Neutralizing them silently right now."',
       image: '/images/characters/veera_determined.png',
       imagePos: 'right',
     },
     {
       bg: '/images/background/1.jpg',
+      speaker: 'UMAR SAIF',
+      speakerColor: '#dc2626',
+      text: '"All squads, check in! Why is the ground floor patrol unresponsive?! Someone is killing our guards inside! Scan the security corridors!"',
+      image: '/images/characters/umar_angry.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/2.jpg',
+      speaker: 'PREETHI',
+      speakerColor: '#fca5a5',
+      text: '"Veera, Saif has placed the complex on maximum alert! The outer bulkhead door to Server Room ER-42 has been sealed with a three-fragment cipher. My team is analyzing it now."',
+      image: '/images/characters/preethi_worried.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/1.jpg',
       speaker: 'NARRATOR',
       speakerColor: '#94a3b8',
-      text: 'The first cipher falls. Veera neutralizes the ground floor guards silently. But the security doors remain a barrier. Two more challenges stand before they can reach the security control room.',
+      text: 'The first cipher falls. Veera clears the corridor silently. The race to reach the server vault is underway.',
       image: '/images/characters/narrator.png',
       imagePos: 'right',
     },
   ],
-  // 2
+  // 2: The Fragmented Server Map
   [
     {
       bg: '/images/background/2.jpg',
       speaker: 'PREETHI',
       speakerColor: '#fca5a5',
-      text: '"Veera, we\'ve cracked the fragment code. The door is open! But wait, they have a biometric time-lock on the security room. The lock uses a team-specific hash. My team needs to compute the unique code to bypass it."',
+      text: '"All three fragments assembled! Octal, Atbash, and inverted hex solved — the ER-42 bulkhead is unlocked! Move in, Veera!"',
+      image: '/images/characters/preethi_hopeful.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/2.jpg',
+      speaker: 'VEERA',
+      speakerColor: '#f87171',
+      text: '"Bulkhead breached. I am inside ER-42. Armed reinforcements are searching the hallway. I have eyes on the biometric vault door."',
+      image: '/images/characters/veera_determined.png',
+      imagePos: 'right',
+    },
+    {
+      bg: '/images/background/2.jpg',
+      speaker: 'NSA ALTHAF',
+      speakerColor: '#ef4444',
+      text: '"Veera, our acoustic sensors detect seismic charges wired to the floor beneath you. Saif has linked the vault alarm to the transformers. Zero room for error."',
+      image: '/images/characters/althaf_concerned.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/2.jpg',
+      speaker: 'PREETHI',
+      speakerColor: '#fca5a5',
+      text: '"The biometric vault is secured by a team-bound algorithmic lock. Our cyber team must calculate our exact registration digest to grant access before the failsafe triggers!"',
       image: '/images/characters/preethi_worried.png',
       imagePos: 'left',
     },
   ],
-  // 3
+  // 3: The Time-Locked Vault
   [
     {
       bg: '/images/background/3.jpg',
       speaker: 'VEERA',
       speakerColor: '#f87171',
-      text: '"I am inside the security room. I have camera access. I can see all the hostages... they are terrified. I also see Umar Saif. He is heavily guarded. I need access to their explosive deployment plans to ensure they can\'t blow the mall."',
+      text: '"Biometric vault cracked! I have extracted Saif\'s encrypted operational hard drive. The entire mall\'s C4 demolition grid and camera feeds are right here."',
       image: '/images/characters/veera_intense.png',
       imagePos: 'right',
     },
     {
       bg: '/images/background/3.jpg',
-      speaker: 'ALTHAF',
+      speaker: 'NSA ALTHAF',
       speakerColor: '#ef4444',
-      text: '"Excellent. You have eyes on the hostages. Now we move to Round 2: Infiltration. Crack the databases containing the C4 schematics and their backup triggers. We must disarm those explosives."',
+      text: '"Good god... the explosives are wired to central transformers and gas lines. 1,200 hostages are trapped in the atrium. Saif is preparing his first broadcast deadline."',
       image: '/images/characters/althaf_concerned.png',
       imagePos: 'left',
     },
+    {
+      bg: '/images/background/3.jpg',
+      speaker: 'UMAR SAIF',
+      speakerColor: '#dc2626',
+      text: '"Attention Indian government! Your first deadline has expired! If Umar Farooq is not escorted to the border immediately, we begin executing hostages live on camera!"',
+      image: '/images/characters/umar_threatening.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/3.jpg',
+      speaker: 'NSA ALTHAF',
+      speakerColor: '#ef4444',
+      text: '"Round 1 complete! Now entering Round 2: Infiltration. Crack the three password databases on that drive to identify who is financing and facilitating Saif from the outside."',
+      image: '/images/characters/althaf_commanding.png',
+      imagePos: 'left',
+    },
   ],
-  // 4
+  // 4: The Corrupted Hash Trail
   [
+    {
+      bg: '/images/background/4.jpg',
+      speaker: 'VEERA',
+      speakerColor: '#f87171',
+      text: '"Three databases cracked! Sleeper cells, foreign wire transfers... and direct high-frequency phone records. The calls lead straight to Home Minister Veera Santhanam\'s office!"',
+      image: '/images/characters/veera_intense.png',
+      imagePos: 'right',
+    },
+    {
+      bg: '/images/background/4.jpg',
+      speaker: 'UMAR SAIF',
+      speakerColor: '#dc2626',
+      text: '"To the Prime Minister: the Home Minister\'s family is in our hands inside the mall. If Umar Farooq is not escorted to the border within three hours, the executions begin!"',
+      image: '/images/characters/umar_threatening.png',
+      imagePos: 'left',
+    },
     {
       bg: '/images/background/4.jpg',
       speaker: 'PREETHI',
       speakerColor: '#fca5a5',
-      text: '"The database has three hashed passwords. We need to crack all three to access the C4 schematics. My team is analyzing the hashes now. Veera, stay out of sight until we get this!"',
-      image: '/images/characters/preethi_hopeful.png',
+      text: '"Veera, the minister\'s kidnapping is a lie! He staged this crisis to emotionally blackmail the cabinet into releasing Farooq! We need unalterable admin proof from their portal."',
+      image: '/images/characters/preethi_worried.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/4.jpg',
+      speaker: 'VEERA',
+      speakerColor: '#f87171',
+      text: '"A high cabinet official betraying his own countrymen for a terrorist. Preethi, intercept their live admin session token. I\'m going to rip his mask off before the cabinet."',
+      image: '/images/characters/veera_determined.png',
       imagePos: 'right',
     },
   ],
-  // 5
+  // 5: The JWT Inception
   [
+    {
+      bg: '/images/background/5.jpg',
+      speaker: 'PREETHI',
+      speakerColor: '#fca5a5',
+      text: '"Admin JWT decoded! We pulled the raw session logs from their command portal — Home Minister Veera Santhanam\'s staged crisis is fully documented! His treason is undeniable!"',
+      image: '/images/characters/preethi_hopeful.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/5.jpg',
+      speaker: 'NSA ALTHAF',
+      speakerColor: '#ef4444',
+      text: '"The Cabinet has received our decrypt. The Home Minister\'s conspiracy is shattered and his orders revoked. But Farooq\'s prison transport convoy was already dispatched toward the border."',
+      image: '/images/characters/althaf_neutral.png',
+      imagePos: 'left',
+    },
     {
       bg: '/images/background/5.jpg',
       speaker: 'VEERA',
       speakerColor: '#f87171',
-      text: '"Good work. I have the schematics. But there\'s a problem... they have a dead-man\'s switch linked to a government broadcast system. If Saif triggers it, the bombs detonate. We need to invalidate that admin token."',
+      text: '"Then I am turning the tables. I\'ve captured the minister\'s inside conspirators. I\'m hijacking Saif\'s command frequency to issue our own counter-threat!"',
       image: '/images/characters/veera_intense.png',
       imagePos: 'right',
     },
   ],
-  // 6
+  // 6: The Pattern Lock
   [
     {
       bg: '/images/background/6.jpg',
       speaker: 'VEERA',
       speakerColor: '#f87171',
-      text: '"Token invalidated. Saif\'s dead-man switch is useless now. I am moving towards the hostages. But they have initiated a mall lockdown to prevent any escape. We need to decode the lockdown override payload to open the fire exits!"',
-      image: '/images/characters/veera_intense.png',
+      text: '"Pattern lock breached! I am live on their secure negotiation channel. Saif, your minister is in cuffs, your funding is frozen, and Farooq\'s border convoy has been halted!"',
+      image: '/images/characters/veera_determined.png',
       imagePos: 'right',
     },
     {
       bg: '/images/background/6.jpg',
-      speaker: 'NARRATOR',
-      speakerColor: '#94a3b8',
-      text: 'Round 2 complete. The explosives are disabled, but the hostages are still trapped. Round 3 begins: The Final Strike. Veera and the Cyber Unit race against time to lift the lockdown and confront Saif.',
-      image: '/images/characters/narrator.png',
+      speaker: 'UMAR SAIF',
+      speakerColor: '#dc2626',
+      text: '"You miserable ghost! You think you\'ve won?! If Farooq does not cross that border, NO ONE leaves East Coast Mall alive! Arm the demolition grid!"',
+      image: '/images/characters/umar_angry.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/6.jpg',
+      speaker: 'NSA ALTHAF',
+      speakerColor: '#ef4444',
+      text: '"Round 2 complete. But Saif has initiated total mall demolition! We enter Round 3: The Final Strike. Veera, you must locate and disarm the central detonator!"',
+      image: '/images/characters/althaf_concerned.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/6.jpg',
+      speaker: 'VEERA',
+      speakerColor: '#f87171',
+      text: '"The entire structural framework is rigged. If that detonator fires, the atrium collapses on 1,200 people. Preethi, track down Saif\'s detonator telemetry now!"',
+      image: '/images/characters/veera_concerned.png',
       imagePos: 'right',
     },
   ],
-  // 7
+  // 7: The Payload Hunt
   [
     {
       bg: '/images/background/7.jpg',
       speaker: 'PREETHI',
       speakerColor: '#fca5a5',
-      text: '"The lockdown override is protected by a logic bomb. It has five nested encoding layers. If we make a mistake, the blast doors permanently seal. We have to be extremely careful."',
+      text: '"Saif armed the atrium detonator! We intercepted four fragmented telemetry shards from his detonator unit: binary, hex, base64, and rot13."',
       image: '/images/characters/preethi_worried.png',
       imagePos: 'left',
     },
+    {
+      bg: '/images/background/7.jpg',
+      speaker: 'VEERA',
+      speakerColor: '#f87171',
+      text: '"I am in the central atrium pinned under heavy machine gun fire. Preethi, reassemble those payload shards so we can locate the disarm routine!"',
+      image: '/images/characters/veera_concerned.png',
+      imagePos: 'right',
+    },
+    {
+      bg: '/images/background/7.jpg',
+      speaker: 'PREETHI',
+      speakerColor: '#fca5a5',
+      text: '"All four fragments reconstructed! Killswitch override packet mapped! But Saif has activated a fail-deadly logic bomb inside the power grid!"',
+      image: '/images/characters/preethi_hopeful.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/7.jpg',
+      speaker: 'UMAR SAIF',
+      speakerColor: '#dc2626',
+      text: '"Concentrate fire on the atrium escalator! Do not let him reach the terminal! The countdown is running!"',
+      image: '/images/characters/umar_angry.png',
+      imagePos: 'left',
+    },
   ],
-  // 8
+  // 8: The Logic Bomb Defusal
   [
+    {
+      bg: '/images/background/8.jpg',
+      speaker: 'PREETHI',
+      speakerColor: '#fca5a5',
+      text: '"Logic bomb countdown: ten minutes! Nested encoding layers are guarding the defusal key. One error detonates the entire mall!"',
+      image: '/images/characters/preethi_worried.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/8.jpg',
+      speaker: 'PREETHI',
+      speakerColor: '#fca5a5',
+      text: '"DEFUSED! The logic bomb is dead! Blast doors are disengaging — all 1,200 hostages are evacuating through the east exits!"',
+      image: '/images/characters/preethi_hopeful.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/8.jpg',
+      speaker: 'UMAR SAIF',
+      speakerColor: '#dc2626',
+      text: '"It doesn\'t matter that you stopped the bomb... Farooq was already flown across the border into Pakistan! You can never touch him now!"',
+      image: '/images/characters/umar_angry.png',
+      imagePos: 'left',
+    },
     {
       bg: '/images/background/8.jpg',
       speaker: 'VEERA',
       speakerColor: '#f87171',
-      text: '"Fire exits are open! The hostages are escaping. I am going after Umar Saif. His command network is collapsing, but he has retreated to a reinforced master vault. That\'s where he controls the remaining defense systems."',
+      text: '"Watch me. Umar Saif is down in the atrium, and East Coast Mall is safe. Althaf, clear runway three. I am taking an Indian Air Force fighter jet across the border."',
       image: '/images/characters/veera_determined.png',
       imagePos: 'right',
     },
+  ],
+  // 9: The Master Vault (Dogfight Climax)
+  [
     {
-      bg: '/images/background/8.jpg',
-      speaker: 'ALTHAF',
-      speakerColor: '#ef4444',
-      text: '"This is the final hurdle. Saif\'s Master Vault is protected by a complex cryptographic sequence. Your team needs to crack it. Give Veera the access code so he can finish this."',
-      image: '/images/characters/althaf_commanding.png',
+      bg: '/images/background/9.jpg',
+      speaker: 'NARRATOR',
+      speakerColor: '#94a3b8',
+      text: 'Hostile Border Airspace. Veera pushes the fighter jet into supersonic velocity, dodging surface-to-air missiles and dogfighting hostile interceptors over the mountains.',
+      image: '/images/characters/narrator.png',
+      imagePos: 'right',
+    },
+    {
+      bg: '/images/background/9.jpg',
+      speaker: 'UMAR FAROOQ',
+      speakerColor: '#dc2626',
+      text: '"How did an Indian jet penetrate this deep into our airspace?! Scramble all defenses! Protect the master vault server!"',
+      image: '/images/characters/umar_threatening.png',
       imagePos: 'left',
     },
-  ],
-  // 9
-  [
     {
       bg: '/images/background/9.jpg',
       speaker: 'VEERA',
       speakerColor: '#f87171',
-      text: '"The vault is open. Umar Saif is subdued. The mall is secure. It\'s over."',
+      text: '"Airspace cleared. Compound neutralized. Umar Farooq is tied up in my custody, and his Master Vault is completely shattered. The global terror network is finished. Chennai is safe."',
       image: '/images/characters/veera_relieved.png',
       imagePos: 'right',
     },
     {
       bg: '/images/background/9.jpg',
-      speaker: 'ALTHAF',
+      speaker: 'PREETHI',
+      speakerColor: '#fca5a5',
+      text: '"Veera... you did it! All 1,200 hostages are home safe, and Farooq is in chains! The nightmare is finally over!"',
+      image: '/images/characters/preethi_hopeful.png',
+      imagePos: 'left',
+    },
+    {
+      bg: '/images/background/6.jpg',
+      speaker: 'NSA ALTHAF',
       speakerColor: '#ef4444',
-      text: '"Outstanding work, Veera. The hostages are safe, and the terror cell is dismantled. The Extraction is complete. I owe this team a great debt."',
+      text: '"Sensational work, Veera. You brought back Farooq, exposed high-level treason, and saved 1,200 innocent citizens. A true Beast in action. Chennai and the nation salute you."',
       image: '/images/characters/althaf_commanding.png',
       imagePos: 'left',
     },
@@ -216,7 +401,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = [
       bg: '/images/background/9.jpg',
       speaker: 'NARRATOR',
       speakerColor: '#94a3b8',
-      text: 'The East Coast Mall siege is over. Hundreds of lives saved. The city sleeps peacefully, unaware of the heroes in the shadows who fought a silent war. The mission is accomplished.',
+      text: 'The East Coast Mall siege and the border dogfight are over. 1,200 innocent lives saved. The mastermind is captured. Operation Beast is accomplished.',
       image: '/images/characters/narrator.png',
       imagePos: 'right',
     },
@@ -336,27 +521,19 @@ function StoryInner() {
     api.challenges.getCurrent().then((data) => {
       if (cancelled) return;
       const currentLevel = Math.min(Math.max(data?.progress?.currentLevel ?? 1, 1), 9);
-      const maxDebrief = Math.max(0, currentLevel - 1);
-
-      if (maxDebrief <= 0) {
-        setResolvedChallengeNum(null);
-        setAccessReady(true);
-        router.replace('/timeline');
-        return;
-      }
-
-      setResolvedChallengeNum(Math.min(challengeNum, maxDebrief));
+      const target = Math.min(Math.max(challengeNum, 1), currentLevel);
+      setResolvedChallengeNum(target);
       setAccessReady(true);
     }).catch(() => {
       if (cancelled) return;
-      setResolvedChallengeNum(null);
+      setResolvedChallengeNum(challengeNum);
       setAccessReady(true);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [challengeNum, router]);
+  }, [challengeNum]);
 
   const scenes: Scene[] = resolvedChallengeNum !== null
     ? (CHALLENGE_SCENES[resolvedChallengeNum] ?? INTRO_SCENES)
@@ -491,28 +668,29 @@ function StoryInner() {
           {challengeNum ? `LEVEL ${challengeNum} — DEBRIEF` : 'THE EXTRACTION'}
         </div>
 
-        {/* Skip */}
-        <button
-          onClick={e => { e.stopPropagation(); setShowSkipConfirm(true); }}
-          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 15px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 8, cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 700, letterSpacing: 1 }}
-        >
-          <SkipForward size={12} />SKIP
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <FocusScreenButton />
+          {/* Skip */}
+          <button
+            onClick={e => { e.stopPropagation(); setShowSkipConfirm(true); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 15px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 8, cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 700, letterSpacing: 1 }}
+          >
+            <SkipForward size={12} />SKIP
+          </button>
+        </div>
       </div>
 
       {/* Character portrait */}
       <div
         ref={portraitRef}
+        className="story-portrait"
         style={{
           position: 'absolute',
           bottom: 0,
           [scene.imagePos === 'left' ? 'left' : 'right']: 0,
           zIndex: 10,
-          width: '28vw',
-          minWidth: 200,
-          maxWidth: 420,
-          height: '72vh',
-          minHeight: 320,
+          width: 'clamp(240px, 28vw, 440px)',
+          height: 'clamp(340px, 72vh, 740px)',
           pointerEvents: 'none',
         }}
       >
@@ -537,12 +715,13 @@ function StoryInner() {
       {/* Dialogue box */}
       <div
         ref={dialogueRef}
+        className="story-dialogue-container"
         style={{
           position: 'absolute',
-          bottom: '2vh',
+          bottom: '2.5vh',
           ...(scene.imagePos === 'left'
-            ? { left: 'calc(28vw + 16px)', right: '2vw' }
-            : { left: '2vw', right: 'calc(28vw + 16px)' }
+            ? { left: 'clamp(250px, 29vw, 460px)', right: '3vw' }
+            : { left: '3vw', right: 'clamp(250px, 29vw, 460px)' }
           ),
           zIndex: 15,
           pointerEvents: 'none',
@@ -644,6 +823,18 @@ function StoryInner() {
       <style>{`
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
         @keyframes nudge { 0%,100%{opacity:0.6;transform:translateX(0)} 50%{opacity:1;transform:translateX(4px)} }
+        @media (max-width: 860px) {
+          .story-portrait {
+            opacity: 0.35 !important;
+            height: clamp(260px, 50vh, 460px) !important;
+            width: clamp(180px, 45vw, 300px) !important;
+          }
+          .story-dialogue-container {
+            left: 16px !important;
+            right: 16px !important;
+            bottom: 16px !important;
+          }
+        }
       `}</style>
     </div>
   );

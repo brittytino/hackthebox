@@ -54,7 +54,7 @@ export class ChallengesService {
 
   private async getTeamPoints(teamId: string) {
     const score = await this.prisma.score.findUnique({ where: { teamId } });
-    return score?.totalPoints || 0;
+    return score?.totalPoints ?? 0;
   }
 
   // Calculate team-specific flag for challenges 1.3 and 2.3
@@ -82,12 +82,12 @@ export class ChallengesService {
 
   private getAcceptedFlagsForLevel(team: { name: string; member2Name?: string | null }, absoluteLevel: number): string[] {
     const staticFlags: Record<number, string[]> = {
-      1: ['ctf{server.room-er42,east-wing}'],
-      2: ['ctf#accessgranted'],
-      4: ['ctf{pas+dra+mon+42}'],
-      5: ['ctf{rdfnc6okbay5cayzid3g1dcf}'],
-      7: ['ctf{blackout.feb14.payload}'],
-      8: ['ctf{defusal.killswitch.overrode}'],
+      1: ['ctf{v33r4_n0d3_x92_s3rv3r}'],
+      2: ['ctf{k3rn3l_p4th_v4ult91}'],
+      4: ['ctf{shadow99_valkyrie_crimson7}'],
+      5: ['ctf{minister_staged_treason_88x}'],
+      7: ['ctf{k1llsw17ch_0v3rr1d3_p4ck37}'],
+      8: ['ctf{d3fus3_l0g1c_b0mb_s41f99}'],
       9: ['ctf{master_a1b2c3_vault}'],
     };
 
@@ -100,26 +100,41 @@ export class ChallengesService {
 
   private getDefaultHintsForLevel(absoluteLevel: number): string[] {
     const hints: Record<number, string[]> = {
-      1: ['Use character set and `=` padding to identify the first decode step, then test one classic text transform at a time until output resembles flag format.'],
-      2: ['Decode A, B, and C as separate systems first, then concatenate results strictly in A -> B -> C order.'],
+      1: [
+        'The transmission payload is armored in standard transport encoding, but decodes into non-printable binary telemetry rather than plain text.',
+        'Standard flag headers always begin with known characters. Compare the first few raw bytes against the expected protocol header to recover the single-byte masking key.',
+      ],
+      2: [
+        'The three pieces originate from separate comms relays: an ancient computer base, a symmetric classical alphabet inversion, and a reversed byte capture.',
+        'Resolve Fragment A using base-8 byte values, apply standard Atbash substitution to alphabetical characters in Fragment B, and invert the byte order of the final hex stream before decoding.',
+      ],
       3: [
-        'This is team-specific and deterministic. Reconstruct one exact input string using your real team name plus fixed constants in strict order.',
-        'Use a legacy hash function for the lock, then place only the first 8 lowercase hex characters inside `CTF{...}`.',
+        'The vault lock combines team registration telemetry with mission parameters using a strict pipe-delimited schema.',
+        'Construct the lock seed using your exact team name, operational headcount (1 or 2), round index 1, and mission codename separated by pipes. Digest with MD5 and extract the first 8 characters into standard flag format.',
       ],
-      4: ['Classify each hash by length, crack all three independently, then assemble only the required segments into final flag format.'],
-      5: ['Decode outer hex first, split the token-like value by sections, then apply one additional transform if the credential is still obfuscated.'],
+      4: [
+        'Identify each digest family by length and analyze their bit footprints before choosing dictionary recovery tactics.',
+        'The three artifacts span 128-bit, 160-bit, and 256-bit cryptographic digest standards. Recover the operational passwords using standard CTF wordlists and join them with underscores.',
+      ],
+      5: [
+        'The artifact is wrapped in byte hex format; stripping the outer representation exposes a modern standard web authentication structure.',
+        'Extract the payload segment from the three-part token and inspect the operational claims for encoded operational intelligence. Decode the evidence field to reveal the treason string.',
+      ],
       6: [
-        'Another team-specific deterministic lock: input is your exact team name followed by fixed mission constants with no separator mistakes.',
-        'Hash with SHA-256 and submit only the first 8 lowercase hex characters in `CTF{...}` format.',
+        'This pattern lock binds your team\'s specific callsign directly to mission constants with zero delimiter padding.',
+        'Concatenate your exact team designation, the stage constant 5, and the operation codename THEEXTRACTION. Compute a 256-bit cryptographic digest and extract the leading 8 lowercase hex characters.',
       ],
-      7: ['Decode each shard using its own encoding family and merge outputs in fragment order 1 -> 2 -> 3 -> 4.'],
+      7: [
+        'The shards are segregated by encoding protocols: raw digital bits, byte hex stream, transport radix-64, and classic alphabetic rotation.',
+        'Translate each shard independently into ASCII: parse 8-bit binary, decode raw hex bytes, decode base64, and rotate the final alphabetic cipher by 13 positions before joining 1 through 4.',
+      ],
       8: [
-        'Treat this as layered decoding: after each pass, identify the new data type before choosing the next step.',
-        'Stop only when output is stable plaintext with valid flag semantics; random transform guessing will waste attempts.',
+        'The defusal payload is wrapped across multiple conversion barriers, terminating in a single-byte masked binary stream.',
+        'Strip the hexadecimal representation to reach the transport encoding, decode into raw bytes, and perform a known-plaintext XOR analysis against the standard flag prefix.',
       ],
       9: [
-        'This is a full-pipeline final: validate every intermediate artifact before proceeding to the next stage.',
-        'Final submission requires precise vault-code extraction and exact flag formatting; partial reconstructions will fail.',
+        'Access the designated interactive terminal and trace the multi-stage cryptographic authority chain in real time.',
+        'Resolve each authentication layer in the terminal interface sequentially: decode the outer packet to extract the token claim, recover the vault coordinates, and derive the 6-character unlock code.',
       ],
     };
 
@@ -237,7 +252,7 @@ export class ChallengesService {
       },
       team: {
         name: team.name,
-        currentPoints: team.scores[0]?.totalPoints || 0,
+        currentPoints: team.scores[0]?.totalPoints ?? 0,
       },
     };
   }
@@ -506,9 +521,9 @@ export class ChallengesService {
       });
     }
 
-    const currentPoints = existingScore?.totalPoints || 0;
-    const newTotalPoints = Math.max(currentPoints - penalty, 0);
-    const penaltyApplied = currentPoints - newTotalPoints;
+    const currentPoints = existingScore?.totalPoints ?? 0;
+    const newTotalPoints = currentPoints - penalty;
+    const penaltyApplied = penalty;
 
     await this.prisma.score.update({
       where: { teamId: team.id },

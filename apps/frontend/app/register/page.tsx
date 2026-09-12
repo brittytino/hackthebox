@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import {
-  ArrowLeft, UserPlus, Users, Mail, Lock, AlertTriangle,
-  ShieldAlert, X, RefreshCw, CheckCircle, Skull, Crosshair
+  ArrowLeft, UserPlus, Users, User, Lock, AlertTriangle,
+  CheckCircle, ShieldCheck
 } from 'lucide-react';
 
 interface MathProblem { q: string; a: number; }
@@ -42,13 +42,12 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [teamSize, setTeamSize] = useState<1 | 2>(2);
-  const [showMath, setShowMath] = useState(false);
   const [problem, setProblem] = useState<MathProblem | null>(null);
   const [mathInput, setMathInput] = useState('');
   const [mathWrong, setMathWrong] = useState(false);
 
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     teamName: '',
     participant1Name: '',
     participant2Name: '',
@@ -62,39 +61,56 @@ export default function RegisterPage() {
     setMathWrong(false);
   }, []);
 
-  const handleEnlist = (e: React.FormEvent) => {
+  useEffect(() => {
+    newProblem();
+  }, [newProblem]);
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!formData.teamName.trim()) { setError('Team designation is required'); return; }
+    setMathWrong(false);
+
+    if (!formData.teamName.trim()) {
+      setError('Team name is required');
+      return;
+    }
     if (!formData.participant1Name.trim()) {
-      setError('Operative 1 designation is required'); return;
+      setError('Member 1 name is required');
+      return;
     }
     if (teamSize === 2 && !formData.participant2Name.trim()) {
-      setError('Operative 2 designation is required for Strike Team Duo'); return;
+      setError('Member 2 name is required for Duo team');
+      return;
     }
-    if (!formData.email.trim()) { setError('Secure email is required'); return; }
-    if (formData.password.length < 6) { setError('Passphrase must be at least 6 characters'); return; }
-    if (formData.password !== formData.confirmPassword) { setError('Passphrases do not match'); return; }
-    newProblem();
-    setShowMath(true);
-  };
+    if (!formData.username.trim() || formData.username.trim().length < 3) {
+      setError('Username must be at least 3 characters');
+      return;
+    }
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
 
-  const handleMathSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
     const ans = parseInt(mathInput.trim(), 10);
     if (isNaN(ans) || ans !== problem?.a) {
       setMathWrong(true);
       setMathInput('');
       newProblem();
+      setError('Math verification failed. Please try the new challenge.');
       return;
     }
+
     setLoading(true);
     try {
       const result = await api.register({
-        email: formData.email,
-        teamName: formData.teamName,
-        participant1Name: formData.participant1Name,
-        participant2Name: teamSize === 2 ? formData.participant2Name : undefined,
+        username: formData.username.trim(),
+        teamName: formData.teamName.trim(),
+        participant1Name: formData.participant1Name.trim(),
+        participant2Name: teamSize === 2 ? formData.participant2Name.trim() : undefined,
         password: formData.password,
       });
       const token = result.access_token || result.token;
@@ -104,8 +120,9 @@ export default function RegisterPage() {
       }
       router.push('/story');
     } catch (err: unknown) {
-      setShowMath(false);
-      setError((err as Error).message || 'Enlistment failed. System rejected authorization.');
+      setMathInput('');
+      newProblem();
+      setError((err as Error).message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -142,6 +159,7 @@ export default function RegisterPage() {
         <div
           style={{
             display: 'flex', width: '100%', maxWidth: 1080,
+            maxHeight: 'calc(100vh - 48px)',
             boxShadow: '0 0 100px rgba(220,38,38,0.2)',
           }}
           className="flex-col md:flex-row rounded-xl overflow-hidden border border-red-900/60 bg-[#0a0406]/95 backdrop-blur-xl"
@@ -161,11 +179,11 @@ export default function RegisterPage() {
             <div style={{ height: 2, position: 'absolute', top: 0, left: 0, right: 0, background: 'linear-gradient(90deg, transparent, #dc2626, transparent)' }} />
 
             <Link href="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: '#9ca3af', textDecoration: 'none', marginBottom: 28, fontSize: 11, letterSpacing: 2, fontWeight: 700, textTransform: 'uppercase', fontFamily: 'monospace' }}>
-              <ArrowLeft size={13} className="text-red-500" />BACK TO AUTH
+              <ArrowLeft size={13} className="text-red-500" />BACK TO LOGIN
             </Link>
 
             <div style={{ fontSize: 10, color: '#ef4444', letterSpacing: 4, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4, fontFamily: 'monospace' }}>
-              // ENLISTMENT DIRECTIVE //
+              // TEAM REGISTRATION //
             </div>
             <div className="font-heading-tactical" style={{ fontSize: 26, color: '#f1f5f9', fontWeight: 900, lineHeight: 1.2, letterSpacing: 2, marginBottom: 20 }}>
               OPERATION<br /><span style={{ color: '#dc2626' }}>THE EXTRACTION</span>
@@ -182,19 +200,19 @@ export default function RegisterPage() {
               }}>
                 <div className="corner-brackets-all" style={{ position: 'absolute', inset: 6 }} />
                 <div style={{ textAlign: 'center' }}>
-                  <ShieldAlert className="w-10 h-10 text-red-500 mx-auto drop-shadow-[0_0_8px_#ef4444]" />
-                  <div style={{ color: '#f87171', fontSize: 9, letterSpacing: 2, fontWeight: 700, marginTop: 6, fontFamily: 'monospace' }}>NEW OPERATIVE</div>
+                  <ShieldCheck className="w-10 h-10 text-red-500 mx-auto drop-shadow-[0_0_8px_#ef4444]" />
+                  <div style={{ color: '#f87171', fontSize: 10, letterSpacing: 2, fontWeight: 700, marginTop: 6, fontFamily: 'monospace' }}>TEAM SIGNUP</div>
                 </div>
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
-              <span className="round-badge round-1">R1: BREACH</span>
-              <span className="round-badge round-2">R2: INFILTRATION</span>
-              <span className="round-badge round-3">R3: STRIKE</span>
+              <span className="round-badge round-1">ROUND 1</span>
+              <span className="round-badge round-2">ROUND 2</span>
+              <span className="round-badge round-3">ROUND 3</span>
             </div>
             <p style={{ color: '#94a3b8', fontSize: 12, lineHeight: 1.6, margin: 0 }}>
-              Form your elite cyber strike team and engage in classified operations against the mall hijackers.
+              Register your team to participate in the CTF challenges, unlock clues, and compete on the live leaderboard.
             </p>
           </div>
 
@@ -206,17 +224,16 @@ export default function RegisterPage() {
               padding: '36px 44px',
               display: 'flex', flexDirection: 'column', justifyContent: 'center',
               position: 'relative', overflowY: 'auto',
-              maxHeight: '90vh',
             }}
           >
             <div className="corner-brackets-all" style={{ position: 'absolute', inset: 12, pointerEvents: 'none' }} />
 
             <div style={{ marginBottom: 20 }}>
-              <div className="game-label" style={{ color: '#ef4444', marginBottom: 6 }}>◆ OPERATIVE REGISTRATION</div>
+              <div className="game-label" style={{ color: '#ef4444', marginBottom: 6 }}>◆ TEAM REGISTRATION</div>
               <h2 style={{ fontSize: 26, fontWeight: 900, color: '#f1f5f9', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4, fontFamily: 'var(--font-rajdhani), sans-serif' }}>
-                ENLIST YOUR STRIKE TEAM
+                REGISTER YOUR TEAM
               </h2>
-              <p style={{ color: '#94a3b8', fontSize: 13, margin: 0 }}>Complete all tactical credentials to join the cyber front.</p>
+              <p style={{ color: '#94a3b8', fontSize: 13, margin: 0 }}>Fill in your team and member details to get started.</p>
             </div>
 
             {error && (
@@ -226,23 +243,25 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <form onSubmit={handleEnlist} style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+            <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+              {/* Team Name */}
               <div>
                 <label className="game-label" style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6, color: '#fca5a5' }}>
-                  <Users size={12} className="text-red-500" />Team Designation
+                  <Users size={12} className="text-red-500" />Team Name
                 </label>
                 <input
                   className="game-input"
                   type="text"
-                  placeholder="e.g. SHADOW_PROTOCOL"
+                  placeholder="e.g. CyberKnights"
                   value={formData.teamName}
                   onChange={e => f('teamName', e.target.value)}
                   required
                 />
               </div>
 
+              {/* Team Size */}
               <div>
-                <label className="game-label" style={{ display: 'block', marginBottom: 6, color: '#fca5a5' }}>Tactical Team Size</label>
+                <label className="game-label" style={{ display: 'block', marginBottom: 6, color: '#fca5a5' }}>Team Size</label>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button
                     type="button"
@@ -256,7 +275,7 @@ export default function RegisterPage() {
                       fontFamily: 'monospace',
                     }}
                   >
-                    SOLO (1 Agent)
+                    Solo (1 Member)
                   </button>
                   <button
                     type="button"
@@ -270,18 +289,19 @@ export default function RegisterPage() {
                       fontFamily: 'monospace',
                     }}
                   >
-                    DUO (2 Agents)
+                    Duo (2 Members)
                   </button>
                 </div>
               </div>
 
+              {/* Member Names */}
               <div style={{ display: 'grid', gridTemplateColumns: teamSize === 2 ? '1fr 1fr' : '1fr', gap: 12 }}>
                 <div>
-                  <label className="game-label" style={{ display: 'block', marginBottom: 6, color: '#fca5a5' }}>Agent 1 Designation</label>
+                  <label className="game-label" style={{ display: 'block', marginBottom: 6, color: '#fca5a5' }}>Member 1 Name</label>
                   <input
                     className="game-input"
                     type="text"
-                    placeholder="Primary Operative"
+                    placeholder="First member's full name"
                     value={formData.participant1Name}
                     onChange={e => f('participant1Name', e.target.value)}
                     required
@@ -289,11 +309,11 @@ export default function RegisterPage() {
                 </div>
                 {teamSize === 2 && (
                   <div>
-                    <label className="game-label" style={{ display: 'block', marginBottom: 6, color: '#fca5a5' }}>Agent 2 Designation</label>
+                    <label className="game-label" style={{ display: 'block', marginBottom: 6, color: '#fca5a5' }}>Member 2 Name</label>
                     <input
                       className="game-input"
                       type="text"
-                      placeholder="Secondary Operative"
+                      placeholder="Second member's full name"
                       value={formData.participant2Name}
                       onChange={e => f('participant2Name', e.target.value)}
                       required
@@ -302,28 +322,34 @@ export default function RegisterPage() {
                 )}
               </div>
 
+              {/* Username (instead of email) */}
               <div>
                 <label className="game-label" style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6, color: '#fca5a5' }}>
-                  <Mail size={12} className="text-red-500" />Secure Operative Email
+                  <User size={12} className="text-red-500" />Username (for logging in)
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <Mail size={14} color="#ef4444" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', opacity: 0.7 }} />
+                  <User size={14} color="#ef4444" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', opacity: 0.7 }} />
                   <input
                     className="game-input"
-                    type="email"
-                    placeholder="team@theextraction.cert"
-                    value={formData.email}
-                    onChange={e => f('email', e.target.value)}
+                    type="text"
+                    placeholder="e.g. cyber_team"
+                    value={formData.username}
+                    onChange={e => f('username', e.target.value)}
                     style={{ paddingLeft: 40 }}
                     required
+                    autoComplete="username"
                   />
+                </div>
+                <div style={{ color: '#6b7280', fontSize: 11, marginTop: 4, fontFamily: 'monospace' }}>
+                  Choose a unique username that you will use to log in.
                 </div>
               </div>
 
+              {/* Password & Confirm Password */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <label className="game-label" style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6, color: '#fca5a5' }}>
-                    <Lock size={12} className="text-red-500" />Passphrase
+                    <Lock size={12} className="text-red-500" />Password
                   </label>
                   <input
                     className="game-input"
@@ -332,152 +358,78 @@ export default function RegisterPage() {
                     value={formData.password}
                     onChange={e => f('password', e.target.value)}
                     required
+                    autoComplete="new-password"
                   />
                 </div>
                 <div>
-                  <label className="game-label" style={{ display: 'block', marginBottom: 6, color: '#fca5a5' }}>Confirm Passphrase</label>
+                  <label className="game-label" style={{ display: 'block', marginBottom: 6, color: '#fca5a5' }}>Confirm Password</label>
                   <input
                     className="game-input"
                     type="password"
-                    placeholder="Repeat passphrase"
+                    placeholder="Repeat password"
                     value={formData.confirmPassword}
                     onChange={e => f('confirmPassword', e.target.value)}
                     required
+                    autoComplete="new-password"
                   />
                 </div>
               </div>
 
-              <button type="submit" className="btn-game-primary" style={{ width: '100%', marginTop: 4, justifyContent: 'center' }}>
-                <UserPlus size={15} />ENLIST STRIKE TEAM
+              {/* INLINE MATH VERIFICATION */}
+              {problem && (
+                <div style={{
+                  marginTop: 10, padding: '14px 18px', borderRadius: 8,
+                  background: 'rgba(0,0,0,0.55)', border: mathWrong ? '1px solid rgba(239,68,68,0.8)' : '1px solid rgba(220,38,38,0.4)',
+                  display: 'flex', alignItems: 'center', gap: 16
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#ef4444', fontSize: 10, letterSpacing: 2, marginBottom: 4, textTransform: 'uppercase', fontFamily: 'monospace' }}>
+                      Human Verification (Solve Math Problem):
+                    </div>
+                    <div style={{ fontFamily: "'Courier New', monospace", fontSize: 18, fontWeight: 900, color: '#fee2e2', letterSpacing: 2 }}>
+                      {problem.q} = ?
+                    </div>
+                  </div>
+                  <div style={{ width: 110 }}>
+                    <input
+                      className="game-input"
+                      type="number"
+                      placeholder="Answer"
+                      value={mathInput}
+                      onChange={e => { setMathInput(e.target.value); setMathWrong(false); }}
+                      style={{
+                        textAlign: 'center', fontSize: 16, letterSpacing: 2,
+                        ...(mathWrong ? { borderColor: 'rgba(239,68,68,0.9)' } : {}),
+                      }}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button type="submit" disabled={loading} className="btn-game-primary" style={{ width: '100%', marginTop: 4, justifyContent: 'center', opacity: loading ? 0.7 : 1 }}>
+                {loading ? (
+                  <>
+                    <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                    REGISTERING...
+                  </>
+                ) : (
+                  <><UserPlus size={15} />REGISTER TEAM</>
+                )}
               </button>
             </form>
 
             <div style={{ marginTop: 16, textAlign: 'center' }}>
-              <span style={{ color: '#94a3b8', fontSize: 13 }}>Already an active operative? </span>
+              <span style={{ color: '#94a3b8', fontSize: 13 }}>Already have an account? </span>
               <Link href="/login" style={{ color: '#ef4444', fontWeight: 700, fontSize: 13, textDecoration: 'none', letterSpacing: 1 }}>
-                AUTHENTICATE
+                LOG IN
               </Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* MATH VERIFICATION MODAL */}
-      {showMath && problem && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, zIndex: 100,
-            background: 'rgba(0,0,0,0.92)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backdropFilter: 'blur(8px)',
-          }}
-          onClick={e => { if (e.target === e.currentTarget) { setShowMath(false); } }}
-        >
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(12,4,7,0.99), rgba(24,6,10,0.99))',
-            border: '2px solid rgba(220,38,38,0.65)',
-            borderRadius: 12,
-            padding: '40px 44px',
-            width: '100%', maxWidth: 440,
-            position: 'relative',
-            boxShadow: '0 0 100px rgba(220,38,38,0.3)',
-          }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, #dc2626, #ef4444, transparent)', borderRadius: '12px 12px 0 0' }} />
-
-            <button
-              onClick={() => { setShowMath(false); setMathWrong(false); }}
-              style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 4, display: 'flex' }}
-            >
-              <X size={17} />
-            </button>
-
-            <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <div className="game-label" style={{ color: '#ef4444', marginBottom: 8 }}>// HUMAN VERIFICATION PROTOCOL //</div>
-              <h3 style={{ fontSize: 20, fontWeight: 900, color: '#f1f5f9', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6, fontFamily: 'var(--font-rajdhani), sans-serif' }}>
-                SECURITY CLEARANCE
-              </h3>
-              <p style={{ color: '#94a3b8', fontSize: 13, margin: 0 }}>
-                Solve the algorithmic challenge to authenticate human presence.
-              </p>
-            </div>
-
-            {mathWrong && (
-              <div className="game-alert-error" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <AlertTriangle size={14} color="#ef4444" style={{ flexShrink: 0 }} />
-                <span>Invalid solution. Challenge refreshed.</span>
-              </div>
-            )}
-
-            <form onSubmit={handleMathSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              {/* Problem box */}
-              <div style={{
-                background: 'rgba(0,0,0,0.55)',
-                border: '1px solid rgba(220,38,38,0.4)',
-                borderRadius: 8, padding: '18px 22px',
-                textAlign: 'center',
-              }}>
-                <div style={{ color: '#ef4444', fontSize: 10, letterSpacing: 3, marginBottom: 8, textTransform: 'uppercase', fontFamily: 'monospace' }}>
-                  Solve Equation:
-                </div>
-                <div style={{ fontFamily: "'Courier New', monospace", fontSize: 28, fontWeight: 900, color: '#fee2e2', letterSpacing: 4 }}>
-                  {problem.q} = ?
-                </div>
-              </div>
-
-              <div>
-                <label className="game-label" style={{ display: 'block', marginBottom: 8, color: '#fca5a5' }}>Target Solution</label>
-                <input
-                  className="game-input"
-                  type="number"
-                  placeholder="Computed Answer"
-                  value={mathInput}
-                  onChange={e => { setMathInput(e.target.value); setMathWrong(false); }}
-                  style={{
-                    textAlign: 'center', fontSize: 20, letterSpacing: 4,
-                    ...(mathWrong ? { borderColor: 'rgba(239,68,68,0.9)' } : {}),
-                  }}
-                  autoFocus
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button
-                  type="button"
-                  onClick={newProblem}
-                  style={{
-                    padding: '0 16px', height: 44, flexShrink: 0,
-                    background: 'rgba(220,38,38,0.1)',
-                    border: '1px solid rgba(220,38,38,0.3)',
-                    borderRadius: 8, cursor: 'pointer',
-                    color: '#f87171', display: 'flex', alignItems: 'center', gap: 6,
-                    fontSize: 12, letterSpacing: 1, fontWeight: 700,
-                  }}
-                >
-                  <RefreshCw size={13} />New
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !mathInput.trim()}
-                  className="btn-game-primary"
-                  style={{ flex: 1, justifyContent: 'center', opacity: loading || !mathInput.trim() ? 0.55 : 1 }}
-                >
-                  {loading ? (
-                    <>
-                      <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                      Enlisting Operative...
-                    </>
-                  ) : (
-                    <><CheckCircle size={14} />Authorize &amp; Enlist</>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </div>
   );
 }

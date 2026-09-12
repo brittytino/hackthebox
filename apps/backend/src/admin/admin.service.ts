@@ -176,7 +176,7 @@ export class AdminService {
       throw new NotFoundException('Team score not found');
     }
 
-    const newTotal = Math.max(0, score.totalPoints + points);
+    const newTotal = score.totalPoints + points;
 
     await this.prisma.score.update({
       where: { teamId },

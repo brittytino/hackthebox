@@ -80,7 +80,7 @@ export default function HalfCircleMenu({ isAdmin }: HalfCircleMenuProps) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setOpen(false);
-    router.push('/');
+    router.push('/login');
   };
 
   const allItems = isAdmin || user?.role === 'ADMIN'

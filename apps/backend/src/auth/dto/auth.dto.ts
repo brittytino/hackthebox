@@ -8,14 +8,20 @@ import {
 } from 'class-validator';
 
 export class RegisterDto {
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
   @IsString()
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(30)
+  username: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(2)
+  @MaxLength(50)
   teamName: string;
 
   @IsString()
@@ -35,9 +41,13 @@ export class RegisterDto {
 }
 
 export class LoginDto {
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  @IsString()
+  @IsOptional()
+  username?: string;
+
+  @IsString()
+  @IsOptional()
+  email?: string;
 
   @IsString()
   @MinLength(6)

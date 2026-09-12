@@ -369,13 +369,13 @@ export default function AdminPage() {
           <div className="df tactical-box" style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: '#f1f5f9', letterSpacing: 2, textTransform: 'uppercase', fontFamily: 'monospace' }}>
-                // ENLISTED STRIKE TEAMS ({teams.length}) //
+                // REGISTERED TEAMS ({teams.length}) //
               </div>
               <div style={{ position: 'relative', width: 280 }}>
                 <Search size={14} color="#ef4444" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
-                  placeholder="Filter strike teams..."
+                  placeholder="Search teams..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   style={{ ...inputStyle, paddingLeft: 34, fontSize: 13 }}
@@ -388,8 +388,8 @@ export default function AdminPage() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(220,38,38,0.3)', color: '#ef4444', fontFamily: 'monospace', textAlign: 'left', fontSize: 11, letterSpacing: 2 }}>
                     <th style={{ padding: '10px 14px' }}>RANK</th>
-                    <th style={{ padding: '10px 14px' }}>TEAM DESIGNATION</th>
-                    <th style={{ padding: '10px 14px' }}>OPERATIVES</th>
+                    <th style={{ padding: '10px 14px' }}>TEAM NAME</th>
+                    <th style={{ padding: '10px 14px' }}>MEMBERS</th>
                     <th style={{ padding: '10px 14px' }}>SCORE</th>
                     <th style={{ padding: '10px 14px' }}>STATUS</th>
                     <th style={{ padding: '10px 14px', textAlign: 'right' }}>ACTIONS</th>

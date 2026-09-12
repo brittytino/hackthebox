@@ -7,23 +7,24 @@ import Link from 'next/link';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
-  Shield, Flag, Lock, CheckCircle, Zap, ArrowLeft, Trophy, Crosshair, Skull,
+  Shield, Flag, Lock, CheckCircle, Zap, ArrowLeft, Trophy, Crosshair, Skull, Film,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
+import FocusScreenAdvisory, { FocusScreenButton } from '@/components/ui/FocusScreenAdvisory';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const MISSIONS = [
-  { order: 1, round: 1, level: '1.1', name: 'The Intercepted Transmission', type: 'CRYPTOGRAPHY', difficulty: 'medium', points: 100, character: 'Veera Raghavan', characterImage: '/images/characters/veera_determined.png', bgImage: '/images/background/1.jpg', act: 'ROUND 1 — THE BREACH', accentColor: '#ef4444', accentRgb: '239,68,68', description: 'A dark, encrypted message intercepts the terror cell\'s communication channel. Triple-layer encoding stands between you and the command center location.' },
-  { order: 2, round: 1, level: '1.2', name: 'The Fragmented Server Map', type: 'FORENSICS', difficulty: 'medium', points: 150, character: 'NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgImage: '/images/background/2.jpg', act: 'ROUND 1 — THE BREACH', accentColor: '#ef4444', accentRgb: '239,68,68', description: 'Three encrypted file fragments hold the codes to override the hijacked security doors. Decimal ASCII, octal ASCII, and Atbash — assemble them before patrols return.' },
-  { order: 3, round: 1, level: '1.3', name: 'The Time-Locked Vault', type: 'MATH/HASH', difficulty: 'hard', points: 200, character: 'NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgImage: '/images/background/3.jpg', act: 'ROUND 1 — THE BREACH', accentColor: '#ef4444', accentRgb: '239,68,68', description: 'A unique biometric vault uses your team\'s identity as part of the combination. The city\'s attack blueprint is locked inside.' },
-  { order: 4, round: 2, level: '2.1', name: 'The Corrupted Hash Trail', type: 'HASH CRACKING', difficulty: 'medium', points: 250, character: 'Veera Raghavan', characterImage: '/images/characters/veera_intense.png', bgImage: '/images/background/4.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#dc2626', accentRgb: '220,38,38', description: 'Three password-protected databases hold evidence against the terror cell. MD5, SHA-1, SHA-256 — crack all three to stop Farooq\'s release.' },
-  { order: 5, round: 2, level: '2.2', name: 'The JWT Inception', type: 'WEB/TOKEN', difficulty: 'medium', points: 300, character: 'NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgImage: '/images/background/5.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#dc2626', accentRgb: '220,38,38', description: 'A hex-encoded JWT token guards the live TV feed. Decode this multi-layered token to prove the execution of the Home Minister\'s family is staged.' },
-  { order: 6, round: 2, level: '2.3', name: 'The Pattern Lock', type: 'CRYPTOGRAPHY', difficulty: 'hard', points: 350, character: 'NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgImage: '/images/background/6.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#dc2626', accentRgb: '220,38,38', description: 'Bypass the government lines so Veera can spoof his identity as a Bangladeshi militant. A SHA-256 challenge unique to every team.' },
-  { order: 7, round: 3, level: '3.1', name: 'The Payload Hunt', type: 'REVERSE ENG', difficulty: 'medium', points: 400, character: 'Veera Raghavan', characterImage: '/images/characters/veera_concerned.png', bgImage: '/images/background/7.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#b91c1c', accentRgb: '185,28,28', description: 'The mall lockdown payload is split across four encoding methods. Decode each fragment to lift the lockdown and allow hostages to escape.' },
-  { order: 8, round: 3, level: '3.2', name: 'The Logic Bomb Defusal', type: 'NESTED DECODE', difficulty: 'hard', points: 450, character: 'NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgImage: '/images/background/8.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#b91c1c', accentRgb: '185,28,28', description: 'Saif has armed a fail-deadly explosive trigger. Five encoding layers deep — one wrong step and the mall goes up in flames tonight.' },
-  { order: 9, round: 3, level: '3.3', name: 'The Master Vault', type: 'FINAL BOSS', difficulty: 'hard', points: 1000, character: 'Veera Raghavan', characterImage: '/images/characters/veera_relieved.png', bgImage: '/images/background/9.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#b91c1c', accentRgb: '185,28,28', description: 'Months later in Pakistan. Every technique you have learned converges here. Crack Farooq\'s master server and destroy his network forever.' },
+  { order: 1, round: 1, level: '1.1', name: 'The Intercepted Transmission', type: 'CRYPTOGRAPHY', difficulty: 'medium', points: 100, character: 'Veera Raghavan', characterImage: '/images/characters/veera_determined.png', bgImage: '/images/background/1.jpg', act: 'ROUND 1 — THE BREACH', accentColor: '#ef4444', accentRgb: '239,68,68', description: 'East Coast Mall is seized. Veera reaches basement telecom relay ER-42 and taps encrypted shortwave comms to identify patrol routes.' },
+  { order: 2, round: 1, level: '1.2', name: 'The Fragmented Server Map', type: 'FORENSICS', difficulty: 'medium', points: 150, character: 'Preethi', characterImage: '/images/characters/preethi_worried.png', bgImage: '/images/background/2.jpg', act: 'ROUND 1 — THE BREACH', accentColor: '#ef4444', accentRgb: '239,68,68', description: 'Three encrypted file fragments hold the security door access codes for Server Room ER-42. Octal, Atbash, and inverted hex — assemble them before patrols return.' },
+  { order: 3, round: 1, level: '1.3', name: 'The Time-Locked Vault', type: 'MATH/HASH', difficulty: 'hard', points: 200, character: 'NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgImage: '/images/background/3.jpg', act: 'ROUND 1 — THE BREACH', accentColor: '#ef4444', accentRgb: '239,68,68', description: 'A unique biometric vault uses your team\'s registration profile. Umar Saif\'s complete mall infiltration blueprint and C4 deployment map are locked inside.' },
+  { order: 4, round: 2, level: '2.1', name: 'The Corrupted Hash Trail', type: 'HASH CRACKING', difficulty: 'medium', points: 250, character: 'Veera Raghavan', characterImage: '/images/characters/veera_intense.png', bgImage: '/images/background/4.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#dc2626', accentRgb: '220,38,38', description: 'Three password-protected databases hold evidence of the terror network. MD5, SHA-1, SHA-256 — crack all three to uncover the Home Minister\'s collusion.' },
+  { order: 5, round: 2, level: '2.2', name: 'The JWT Inception', type: 'WEB/TOKEN', difficulty: 'medium', points: 300, character: 'Preethi', characterImage: '/images/characters/preethi_hopeful.png', bgImage: '/images/background/5.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#dc2626', accentRgb: '220,38,38', description: 'A hex-encoded JWT token guards the live admin feed. Decode this token to prove Home Minister Veera Santhanam staged his family\'s kidnapping.' },
+  { order: 6, round: 2, level: '2.3', name: 'The Pattern Lock', type: 'CRYPTOGRAPHY', difficulty: 'hard', points: 350, character: 'NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgImage: '/images/background/6.jpg', act: 'ROUND 2 — INFILTRATION', accentColor: '#dc2626', accentRgb: '220,38,38', description: 'Override the communication relay so Veera can hijack the negotiation frequency and delay Farooq\'s border convoy. A SHA-256 challenge unique to your team.' },
+  { order: 7, round: 3, level: '3.1', name: 'The Payload Hunt', type: 'REVERSE ENG', difficulty: 'medium', points: 400, character: 'Veera Raghavan', characterImage: '/images/characters/veera_concerned.png', bgImage: '/images/background/7.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#b91c1c', accentRgb: '185,28,28', description: 'Saif\'s demolition payload is split across four encoding methods. Decode binary, hex, base64, and rot13 fragments to map the trigger mechanism.' },
+  { order: 8, round: 3, level: '3.2', name: 'The Logic Bomb Defusal', type: 'NESTED DECODE', difficulty: 'hard', points: 450, character: 'Preethi', characterImage: '/images/characters/preethi_worried.png', bgImage: '/images/background/8.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#b91c1c', accentRgb: '185,28,28', description: 'Saif has armed a fail-deadly explosive trigger on a 10-minute timer. Strip the nested encoding layers to defuse the logic bomb and evacuate all 1,200 hostages.' },
+  { order: 9, round: 3, level: '3.3', name: 'The Master Vault', type: 'FINAL BOSS', difficulty: 'hard', points: 1000, character: 'Veera Raghavan', characterImage: '/images/characters/veera_relieved.png', bgImage: '/images/background/9.jpg', act: 'ROUND 3 — FINAL STRIKE', accentColor: '#b91c1c', accentRgb: '185,28,28', description: 'Fighter jet dogfight across hostile borders. Every technique you have learned converges here. Crack Farooq\'s Master Vault and terminate his global terror network.' },
 ];
 
 const ROUND_COLORS: Record<number, { primary: string; rgb: string; label: string }> = {
@@ -122,6 +123,7 @@ export default function TimelinePage() {
   return (
     <div ref={containerRef} style={{ minHeight: '100vh', background: '#050508', overflow: 'auto', position: 'relative', color: '#f1f5f9' }}>
       <HalfCircleMenu />
+      <FocusScreenAdvisory />
       {/* Blood textures */}
       <div className="blood-splatter-bg" />
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(220,38,38,0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 100%, rgba(138,3,3,0.15) 0%, transparent 50%)' }} />
@@ -134,6 +136,9 @@ export default function TimelinePage() {
         <Link href="/challenges" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
           <Crosshair size={12} className="text-red-500" />MISSIONS
         </Link>
+        <Link href="/story" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
+          <Film size={12} className="text-red-500" />STORY
+        </Link>
         <Link href="/leaderboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
           <Trophy size={12} className="text-red-500" />RANKS
         </Link>
@@ -144,6 +149,7 @@ export default function TimelinePage() {
           <span style={{ color: '#f1f5f9', fontSize: 13, fontWeight: 900, letterSpacing: 2 }}>THE EXTRACTION</span>
           <span style={{ color: '#ef4444', fontSize: 11, letterSpacing: 2, fontFamily: 'monospace' }}>/ MISSION TIMELINE</span>
         </div>
+        <FocusScreenButton />
         <div style={{ flex: 1 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: 6, padding: '5px 12px' }}>
           <Trophy size={13} color="#ef4444" />
@@ -160,9 +166,6 @@ export default function TimelinePage() {
 
       {/* Page header */}
       <div data-tl="header" style={{ textAlign: 'center', padding: '50px 24px 24px', position: 'relative', zIndex: 5 }}>
-        <div style={{ color: '#ef4444', fontSize: 11, fontWeight: 700, letterSpacing: 6, marginBottom: 10, textTransform: 'uppercase', fontFamily: 'monospace' }}>
-          // OPERATION ROADMAP //
-        </div>
         <h1 className="blood-crimson-title" style={{ margin: 0, fontSize: 44, fontWeight: 900, letterSpacing: 6, textTransform: 'uppercase' }}>
           TACTICAL TIMELINE
         </h1>
@@ -287,29 +290,56 @@ export default function TimelinePage() {
                     <p style={{ color: '#94a3b8', fontSize: 12, lineHeight: 1.6, margin: 0 }}>{m.description}</p>
 
                     {state !== 'locked' && (
-                      <div
-                        onClick={e => { e.stopPropagation(); router.push(`/challenges?level=${m.order}`); }}
-                        style={{
-                          marginTop: 14,
-                          padding: state === 'active' ? '10px 16px' : '8px 12px',
-                          background: state === 'active'
-                            ? 'linear-gradient(135deg,#7f1d1d,#dc2626)'
-                            : 'rgba(16,185,129,0.1)',
-                          border: state === 'active'
-                            ? '1px solid rgba(248,113,113,0.6)'
-                            : '1px solid rgba(16,185,129,0.35)',
-                          borderRadius: 6,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                          color: '#fff',
-                          fontSize: state === 'active' ? 12 : 10,
-                          fontWeight: 800,
-                          letterSpacing: 2,
-                          cursor: 'pointer',
-                          fontFamily: 'monospace',
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        {state === 'active' ? <><Zap size={13} />ENGAGE TARGET</> : <><CheckCircle size={11} color="#10b981" /><span style={{ color: '#10b981' }}>COMPLETED</span></>}
+                      <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
+                        <div
+                          onClick={e => { e.stopPropagation(); router.push(`/challenges?level=${m.order}`); }}
+                          style={{
+                            flex: 1,
+                            padding: state === 'active' ? '10px 16px' : '8px 12px',
+                            background: state === 'active'
+                              ? 'linear-gradient(135deg,#7f1d1d,#dc2626)'
+                              : 'rgba(16,185,129,0.1)',
+                            border: state === 'active'
+                              ? '1px solid rgba(248,113,113,0.6)'
+                              : '1px solid rgba(16,185,129,0.35)',
+                            borderRadius: 6,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                            color: '#fff',
+                            fontSize: state === 'active' ? 12 : 10,
+                            fontWeight: 800,
+                            letterSpacing: 2,
+                            cursor: 'pointer',
+                            fontFamily: 'monospace',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {state === 'active' ? <><Zap size={13} />ENGAGE TARGET</> : <><CheckCircle size={11} color="#10b981" /><span style={{ color: '#10b981' }}>SOLVED</span></>}
+                        </div>
+
+                        {state === 'solved' && (
+                          <div
+                            onClick={e => { e.stopPropagation(); router.push(`/story?challenge=${m.order}`); }}
+                            title="Replay mission debrief and character dialogues"
+                            style={{
+                              padding: '8px 12px',
+                              background: 'rgba(239,68,68,0.12)',
+                              border: '1px solid rgba(239,68,68,0.35)',
+                              borderRadius: 6,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                              color: '#fca5a5',
+                              fontSize: 10,
+                              fontWeight: 800,
+                              letterSpacing: 1.5,
+                              cursor: 'pointer',
+                              fontFamily: 'monospace',
+                              textTransform: 'uppercase',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            <Film size={11} color="#ef4444" />
+                            <span>DEBRIEF</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

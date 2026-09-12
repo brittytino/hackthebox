@@ -10,8 +10,10 @@ import {
   Flag, Lock, CheckCircle, Zap, AlertTriangle, Eye, EyeOff,
   Terminal, Activity, Shield, Clock, X, Map, Users,
   RadioTower, ChevronDown, ChevronUp, Trophy,
-  ChevronsLeft, ChevronsRight, ChevronRight, SkipForward, Menu,
+  ChevronsLeft, ChevronsRight, ChevronRight, ChevronLeft,
+  SkipForward, Menu, Copy, Check,
 } from 'lucide-react';
+import FocusScreenAdvisory, { FocusScreenButton, useFocusScreen } from '@/components/ui/FocusScreenAdvisory';
 
 interface MissionMeta {
   order: number; round: number; level: string;
@@ -25,21 +27,102 @@ interface MissionMeta {
   roundLabel: string;
 }
 
-/* --- STORY COMPLETION SCENES -------------------------------------------- */
+/* --- STORY COMPLETION SCENES (BEAST 2022 NARRATIVE) ---------------------- */
 const COMPLETION_STORIES: Record<number, {
   title: string; quote: string; subtext: string;
   character: string; characterImage: string;
   bgColor: string; accentColor: string; bgImage: string;
 }> = {
-  1: { title: 'TRANSMISSION DECODED', quote: '"Command center located — east wing, sub-level 3. Preethi, route the team. We move in 5 minutes."', subtext: 'Server Room ER-42 is the next target. The fragmented access codes await.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_determined.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/1.jpg' },
-  2: { title: 'ACCESS CODES ASSEMBLED', quote: '"ER-42 is open. Move, Veera — the patrol returns in 4 minutes. The biometric vault is on sub-level 2."', subtext: 'The time-locked vault holds the complete attack blueprint.', character: 'Preethi', characterImage: '/images/characters/preethi_worried.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/2.jpg' },
-  3: { title: 'VAULT CRACKED — ROUND 1 COMPLETE', quote: '"Attack plans retrieved. They are preparing to execute hostages. Three encrypted databases are our next hurdle."', subtext: 'Round 1 complete. The Infiltration phase begins now.', character: 'NSA Althaf', characterImage: '/images/characters/althaf_commanding.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/3.jpg' },
-  4: { title: 'HASH TRAIL BROKEN', quote: '"Databases cracked. Farooq release is blocked. The government has hard evidence. But Saif knows we\'re inside."', subtext: 'The JWT admin token holds the next layer of proof.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_intense.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/4.jpg' },
-  5: { title: 'ADMIN ACCESS SECURED', quote: '"Logs confirmed — the minister\'s wife execution was theater. The government is being blackmailed. This changes everything."', subtext: 'One encrypted database remains. The hostage execution protocol is inside.', character: 'Preethi', characterImage: '/images/characters/preethi_hopeful.png', bgColor: 'rgba(234,179,8,0.12)', accentColor: '#f59e0b', bgImage: '/images/background/5.jpg' },
-  6: { title: 'PATTERN LOCK BROKEN — ROUND 2 COMPLETE', quote: '"Veera has spoofed his identity. The Home Minister is cornered. But Veera has been captured! We need to help him."', subtext: 'Round 2 complete. The Final Strike begins.', character: 'NSA Althaf', characterImage: '/images/characters/althaf_concerned.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/6.jpg' },
-  7: { title: 'PAYLOAD DECODED', quote: '"Now we understand the attack mechanism. Preethi handed us the fragments. The kill switch components are in two final systems."', subtext: 'A logic bomb guards the next layer. One wrong step detonates the C4 early.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_concerned.png', bgColor: 'rgba(239,68,68,0.12)', accentColor: '#ef4444', bgImage: '/images/background/7.jpg' },
-  8: { title: 'LOGIC BOMB NEUTRALISED', quote: '"Bomb dead. Mall siege ended. Saif is in custody. One target remains — Umar Farooq. The Master Vault holds everything."', subtext: 'Final challenge: The Master Vault. Use every skill you have learned.', character: 'Preethi', characterImage: '/images/characters/preethi_worried.png', bgColor: 'rgba(16,185,129,0.12)', accentColor: '#10b981', bgImage: '/images/background/8.jpg' },
-  9: { title: '?? TERRORIST NETWORK — TERMINATED', quote: '"Farooq\'s network is dismantled. The hostages are safe. You did it — all of you."', subtext: 'Mission complete. Your team has written history.', character: 'Veera Raghavan', characterImage: '/images/characters/veera_relieved.png', bgColor: 'rgba(16,185,129,0.18)', accentColor: '#10b981', bgImage: '/images/background/9.jpg' },
+  1: {
+    title: 'TRANSMISSION DECODED',
+    quote: '"Command relay identified — basement sector ER-42. Preethi, route the team through the ventilation shafts. We move now."',
+    subtext: 'Server Room ER-42 is the next target. The fragmented access codes await.',
+    character: 'Veera Raghavan',
+    characterImage: '/images/characters/veera_determined.png',
+    bgColor: 'rgba(239,68,68,0.12)',
+    accentColor: '#ef4444',
+    bgImage: '/images/background/1.jpg',
+  },
+  2: {
+    title: 'ACCESS CODES ASSEMBLED',
+    quote: '"ER-42 outer bulkhead unlocked. Move fast, Veera — armed patrols are converging on the east corridor. The biometric vault is on sub-level 2."',
+    subtext: 'The time-locked biometric vault holds Saif\'s complete attack blueprint.',
+    character: 'Preethi',
+    characterImage: '/images/characters/preethi_hopeful.png',
+    bgColor: 'rgba(234,179,8,0.12)',
+    accentColor: '#f59e0b',
+    bgImage: '/images/background/2.jpg',
+  },
+  3: {
+    title: 'VAULT CRACKED — ROUND 1 COMPLETE',
+    quote: '"Attack schematics secured. Saif is threatening to execute hostages live on air. Three encrypted databases hold his operational network."',
+    subtext: 'Round 1 complete. The Infiltration phase begins now.',
+    character: 'NSA Althaf',
+    characterImage: '/images/characters/althaf_commanding.png',
+    bgColor: 'rgba(16,185,129,0.12)',
+    accentColor: '#10b981',
+    bgImage: '/images/background/3.jpg',
+  },
+  4: {
+    title: 'HASH TRAIL BROKEN',
+    quote: '"Databases cracked. Foreign transactions and communications uncovered. The trail leads directly to the Home Minister! Veera, Saif knows we are inside."',
+    subtext: 'The JWT admin token holds the next layer of proof.',
+    character: 'Veera Raghavan',
+    characterImage: '/images/characters/veera_intense.png',
+    bgColor: 'rgba(239,68,68,0.12)',
+    accentColor: '#ef4444',
+    bgImage: '/images/background/4.jpg',
+  },
+  5: {
+    title: 'MINISTERIAL TREASON EXPOSED',
+    quote: '"Admin logs decrypted — Home Minister Veera Santhanam staged the crisis to force Umar Farooq\'s release. His high treason is documented!"',
+    subtext: 'One encrypted command database remains. The mall lockdown frequency is inside.',
+    character: 'Preethi',
+    characterImage: '/images/characters/preethi_hopeful.png',
+    bgColor: 'rgba(234,179,8,0.12)',
+    accentColor: '#f59e0b',
+    bgImage: '/images/background/5.jpg',
+  },
+  6: {
+    title: 'PATTERN LOCK BROKEN — ROUND 2 COMPLETE',
+    quote: '"Mall frequency hijacked. Veera has cornered the corrupt officials and delayed Farooq\'s border handover. But Saif has armed the demolition network!"',
+    subtext: 'Round 2 complete. The Final Strike begins.',
+    character: 'NSA Althaf',
+    characterImage: '/images/characters/althaf_concerned.png',
+    bgColor: 'rgba(16,185,129,0.12)',
+    accentColor: '#10b981',
+    bgImage: '/images/background/6.jpg',
+  },
+  7: {
+    title: 'PAYLOAD FRAGMENTS RECONSTRUCTED',
+    quote: '"Demolition telemetry reassembled! Preethi extracted the four shards from Saif\'s rig. The main detonator code is mapped — we need the disarm sequence now!"',
+    subtext: 'A fail-deadly logic bomb guards the central detonator. One misstep triggers the blast.',
+    character: 'Veera Raghavan',
+    characterImage: '/images/characters/veera_concerned.png',
+    bgColor: 'rgba(239,68,68,0.12)',
+    accentColor: '#ef4444',
+    bgImage: '/images/background/7.jpg',
+  },
+  8: {
+    title: 'LOGIC BOMB DEFUSED — MALL SECURED',
+    quote: '"Bomb neutralized! The blast doors are open and all 1,200 hostages are evacuating safely. Saif is down. But Umar Farooq is crossing the border!"',
+    subtext: 'Final challenge: Farooq\'s Master Vault across the border. Use every skill you have mastered.',
+    character: 'Preethi',
+    characterImage: '/images/characters/preethi_hopeful.png',
+    bgColor: 'rgba(16,185,129,0.12)',
+    accentColor: '#10b981',
+    bgImage: '/images/background/8.jpg',
+  },
+  9: {
+    title: 'TERRORIST NETWORK TERMINATED',
+    quote: '"Airspace breached, fighter dogfight won, and Farooq is captured. The master vault is shattered. Chennai and the nation are safe."',
+    subtext: 'Operation complete. All 9 missions cleared — true Beast status achieved.',
+    character: 'Veera Raghavan',
+    characterImage: '/images/characters/veera_relieved.png',
+    bgColor: 'rgba(16,185,129,0.18)',
+    accentColor: '#10b981',
+    bgImage: '/images/background/9.jpg',
+  },
 };
 
 const MISSIONS: MissionMeta[] = [
@@ -47,11 +130,11 @@ const MISSIONS: MissionMeta[] = [
     order: 1, round: 1, level: '1.1',
     name: 'The Intercepted Transmission',
     type: 'CRYPTOGRAPHY', difficulty: 'medium', points: 100,
-    storyAct: 'ACT II — THE SIEGE BEGINS',
-    storyTime: '03:47 AM  Basement Server Room',
-    storyStatus: ' 1,200 HOSTAGES  NEXT EXECUTION IN 28 MIN',
-    situation: 'Veera has gone dark inside the mall and found a backup server room in the basement. He taps the terrorist comms relay and intercepts an encrypted transmission addressed to Saif\'s inner circle. Decode it before they relocate the command center.',
-    intel: '"Intercepted a transmission from their encrypted relay. It\'s been through multiple encoding passes — figure out what they used and reverse it. Every second counts."',
+    storyAct: 'ACT I — THE SIEGE BEGINS',
+    storyTime: '03:47 AM  Basement Telecom Relay ER-42',
+    storyStatus: '1,200 HOSTAGES  EXECUTION THREAT IN 28 MIN',
+    situation: 'East Coast Mall in Chennai has been seized by terrorists commanded by Umar Saif, holding 1,200 hostages to demand the release of Umar Farooq. Veera has gone dark inside the building and reached the basement telecom relay ER-42. He taps into the encrypted shortwave line to intercept Saif\'s command transmission.',
+    intel: '"Intercepted their shortwave command packet. It was armored in multiple encoding passes to conceal their ground floor deployment. Reverse it before they shift frequencies."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_determined.png',
     roundLabel: 'ROUND 1  BREACH',
@@ -60,11 +143,11 @@ const MISSIONS: MissionMeta[] = [
     order: 2, round: 1, level: '1.2',
     name: 'The Fragmented Server Map',
     type: 'FORENSICS', difficulty: 'medium', points: 150,
-    storyAct: 'ACT II — THE SIEGE BEGINS',
+    storyAct: 'ACT I — THE SIEGE BEGINS',
     storyTime: '04:15 AM  Approaching Server Room ER-42',
-    storyStatus: ' PATROLS ACTIVE  NEXT EXECUTION IN 15 MIN',
-    situation: 'Preethi\'s cyber unit intercepts three encrypted files from the terrorist relay — the server room access code has been split into fragments. Veera is 50 meters away with armed patrols closing in. He needs the complete code now.',
-    intel: '"Three fragments, three different encodings. Identify each, decode them all, and assemble in order — A then B then C. No room for error. Veera is exposed."',
+    storyStatus: 'PATROLS ACTIVE  EXECUTION THREAT IN 15 MIN',
+    situation: 'Preethi\'s cyber unit intercepts three fragmented relay files — the security door access code for Server Room ER-42. With hostile patrols sweeping the corridors, Veera is 50 meters away and needs the complete authorization phrase immediately.',
+    intel: '"Three fragments, three independent encoding schemes. Decode each piece and assemble in exact order — A then B then C. Veera is holding off the patrol."',
     character: 'Preethi',
     characterImage: '/images/characters/preethi_worried.png',
     roundLabel: 'ROUND 1  BREACH',
@@ -74,10 +157,10 @@ const MISSIONS: MissionMeta[] = [
     name: 'The Time-Locked Vault',
     type: 'MATH/HASH', difficulty: 'hard', points: 200,
     storyAct: 'ROUND 1 FINALE',
-    storyTime: '04:45 AM  Server Room ER-42',
-    storyStatus: ' FIRST HOSTAGE EXECUTED ON LIVE TV',
-    situation: 'Veera reaches the biometric vault inside ER-42. The lock uses a team-personalised mathematical formula — every team computes a different answer. Anti-sharing security. Inside is Saif\'s full attack blueprint and proof of a second, larger threat.',
-    intel: '"Personalised vault lock — your code depends on your team\'s registration data. Compute it precisely or we\'re stuck. I cannot wait."',
+    storyTime: '04:45 AM  Server Room ER-42 Biometric Vault',
+    storyStatus: 'FIRST HOSTAGE DEADLINE EXPIRING',
+    situation: 'Veera reaches the biometric vault in ER-42. The system uses a team-bound algorithmic lock to prevent shared answers. Inside is Saif\'s complete mall infiltration blueprint and C4 detonation grid.',
+    intel: '"Personalised algorithmic vault lock — your authorization code depends strictly on your team registration data. Compute it with zero error or the vault seals permanently."',
     character: 'NSA Althaf',
     characterImage: '/images/characters/althaf_commanding.png',
     roundLabel: 'ROUND 1  BREACH',
@@ -86,11 +169,11 @@ const MISSIONS: MissionMeta[] = [
     order: 4, round: 2, level: '2.1',
     name: 'The Corrupted Hash Trail',
     type: 'HASH CRACKING', difficulty: 'medium', points: 250,
-    storyAct: 'ACT III — THE COUNTERATTACK',
-    storyTime: '05:12 AM  Vault Terminal',
-    storyStatus: ' GOVT CAVING  FAROOQ RELEASE PREP STARTED',
-    situation: 'The hard drive from the vault holds three password-protected databases — sleeper cell identities, financial backers, and the The Extraction payload. If Veera can crack these before Farooq is released, the transfer can be blocked.',
-    intel: '"Three locked databases, three hashed passwords. Crack them all and assemble the master key. This is the evidence that stops Farooq\'s release."',
+    storyAct: 'ACT II — THE CONSPIRACY',
+    storyTime: '05:12 AM  Security Ops Terminal',
+    storyStatus: 'CABINET UNDER PRESSURE  FAROOQ CONVOY PREPARING',
+    situation: 'The hard drive recovered from the vault contains three password-protected databases: sleeper cell identities, foreign funding channels, and high-level government communication records. Cracking them will stop Farooq\'s release.',
+    intel: '"Three locked databases, three password hashes. Crack all three to assemble the master credential. This evidence exposes who on the outside is helping Saif."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_intense.png',
     roundLabel: 'ROUND 2  INFILTRATION',
@@ -99,11 +182,11 @@ const MISSIONS: MissionMeta[] = [
     order: 5, round: 2, level: '2.2',
     name: 'The JWT Inception',
     type: 'WEB/TOKEN', difficulty: 'medium', points: 300,
-    storyAct: 'ACT IV — THE BETRAYAL',
+    storyAct: 'ACT II — THE MINISTERIAL BETRAYAL',
     storyTime: '05:50 AM  Terrorist Admin Panel',
-    storyStatus: ' BREAKING: HOME MINISTER\'S EXECUTION STAGED',
-    situation: 'Veera is inside the admin panel — but the authentication token has been obfuscated to evade scanners. Preethi spotted that the Home Minister\'s "wife execution" was theater staged for compliance. Decode the token to prove the conspiracy.',
-    intel: '"The token is encoded and buried inside a wrapper. Strip the layers, find the hidden credential, and reverse it. That\'s our proof the Home Minister is a traitor."',
+    storyStatus: 'HOME MINISTER SANTHANAM\'S CRISIS STAGED',
+    situation: 'Veera accesses the terrorist admin portal. Preethi uncovers proof that Home Minister Veera Santhanam staged his family\'s hostage situation inside East Coast Mall to force the Prime Minister into releasing Umar Farooq. Decode the obfuscated JWT token to expose his treason.',
+    intel: '"The token is wrapped and obfuscated in hex. Strip the wrapper, extract the operational claims, and decode the embedded evidence. That is our proof the Home Minister colluded with Saif."',
     character: 'Preethi',
     characterImage: '/images/characters/preethi_hopeful.png',
     roundLabel: 'ROUND 2  INFILTRATION',
@@ -112,11 +195,11 @@ const MISSIONS: MissionMeta[] = [
     order: 6, round: 2, level: '2.3',
     name: 'The Pattern Lock',
     type: 'CRYPTOGRAPHY', difficulty: 'hard', points: 350,
-    storyAct: 'ROUND 2 FINALE',
-    storyTime: '06:15 AM  Final Encrypted Database',
-    storyStatus: ' FAROOQ BORDER CROSSING IN 3 HOURS',
-    situation: 'The final database — containing the The Extraction worm payload and Feb 14 activation details — has a team-specific lock designed to prevent answer sharing. Althaf demands it cracked before Farooq crosses the border.',
-    intel: '"This lock is unique to your team. Compute your personalised code using the formula provided. No shared answers exist. Calculate yours and unlock the The Extraction blueprint."',
+    storyAct: 'ROUND 2 FINALE — HOSTAGE COUNTERSTRIKE',
+    storyTime: '06:15 AM  Central Command Node',
+    storyStatus: 'FAROOQ BORDER HANDOVER IN 3 HOURS',
+    situation: 'Veera turns the tables by capturing the Home Minister\'s accomplices inside the mall as leverage. NSA Althaf alerts Veera that Farooq\'s transport convoy is approaching the border. Veera must breach the dynamic pattern lock to hijack the negotiation frequency and freeze the handover.',
+    intel: '"Dynamic pattern lock unique to your team. Compute your hash digest to hijack the command frequency and broadcast our counter-ultimatum before Farooq crosses the border."',
     character: 'NSA Althaf',
     characterImage: '/images/characters/althaf_concerned.png',
     roundLabel: 'ROUND 2  INFILTRATION',
@@ -125,11 +208,11 @@ const MISSIONS: MissionMeta[] = [
     order: 7, round: 3, level: '3.1',
     name: 'The Payload Hunt',
     type: 'REVERSE ENG', difficulty: 'medium', points: 400,
-    storyAct: 'ACT IV — ESCAPE PHASE',
-    storyTime: '07:10 AM  The Extraction Payload Analysis',
-    storyStatus: ' VEERA INJURED  FAROOQ CROSSED BORDER',
-    situation: 'Veera was captured but escaped with help from Preethi — the Home Minister\'s daughter who chose the right side. The The Extraction payload is split across four encrypted fragments. Decode them all to understand the activation mechanism and build the kill switch.',
-    intel: '"Four fragments, four different encodings. Identify what each one is, decode them, and combine in exact order 1 through 4. We need the full payload to build the kill switch."',
+    storyAct: 'ACT III — THE FINAL STRIKE',
+    storyTime: '07:10 AM  Central Atrium Demolition Grid',
+    storyStatus: 'VEERA COMPROMISED  DEMOLITION SEQUENCE ARMED',
+    situation: 'Saif discovers Veera\'s identity and activates the mall\'s master demolition protocol. Preethi extracts four fragmented telemetry packets from Saif\'s detonator unit. Decode all four fragments to analyze the trigger sequence and build the disarm command.',
+    intel: '"Four payload fragments, four distinct conversion protocols. Identify each, decode them, and concatenate in order 1 through 4. We need the full payload string to disarm the detonator."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_concerned.png',
     roundLabel: 'ROUND 3  FINAL STRIKE',
@@ -138,11 +221,11 @@ const MISSIONS: MissionMeta[] = [
     order: 8, round: 3, level: '3.2',
     name: 'The Logic Bomb Defusal',
     type: 'NESTED DECODE', difficulty: 'hard', points: 450,
-    storyAct: 'ROUND 3 CRITICAL',
-    storyTime: '07:35 AM  Script Defusal Window',
-    storyStatus: ' LOGIC BOMB TRIGGER IN 10 MINUTES',
-    situation: 'A logic bomb is embedded in Saif\'s attack script. If it triggers, The Extraction goes live immediately — 13 days early. The defusal code is buried under multiple nested encoding layers. One wrong step and 50,000 jobs vanish tonight.',
-    intel: '"Multiple encoding layers protecting the defusal code. Strip every layer carefully until you reach the plaintext. The fully decoded output is what you submit."',
+    storyAct: 'ROUND 3 CRITICAL — THE MALL DEMOLITION',
+    storyTime: '07:35 AM  Power Substation Detonation Unit',
+    storyStatus: 'FAIL-DEADLY LOGIC BOMB: 10 MIN REMAINING',
+    situation: 'Umar Saif arms a fail-deadly logic bomb wired to the mall\'s gas line and primary transformers. If the countdown reaches zero, all 1,200 hostages will perish. The defusal payload is concealed beneath nested encoding layers. Strip every layer to stop the blast.',
+    intel: '"Multiple nested conversion layers protect the defusal code. Carefully peel each layer back until you recover the raw flag. One miscalculation detonates the mall."',
     character: 'Preethi',
     characterImage: '/images/characters/preethi_worried.png',
     roundLabel: 'ROUND 3  FINAL STRIKE',
@@ -151,11 +234,11 @@ const MISSIONS: MissionMeta[] = [
     order: 9, round: 3, level: '3.3',
     name: 'The Master Vault',
     type: 'FINAL BOSS', difficulty: 'hard', points: 1000,
-    storyAct: 'EPILOGUE — OPERATION COMPLETE',
-    storyTime: '08:00 AM  Farooq\'s Encrypted Server',
-    storyStatus: ' HOSTAGES FREED  ONE TARGET REMAINS',
-    situation: 'Months later, Veera tracked and recaptured Farooq in Pakistan. He breached Farooq\'s master server. The MASTER VAULT containing the identities of all sleeper cells worldwide is inside — protected by every technique you have encountered.',
-    intel: '"This is everything. Every technique, every skill you\'ve learned leads here. The kill switch is buried in that vault. Crack it and this is over. First team wins it all."',
+    storyAct: 'EPILOGUE — BORDER CLIMAX & DOGFIGHT',
+    storyTime: '08:00 AM  Hostile Airspace // Farooq\'s Mountain Fortress',
+    storyStatus: '1,200 HOSTAGES SAVED  FINAL TARGET: FAROOQ',
+    situation: 'East Coast Mall is saved and Saif is defeated, but Umar Farooq crossed the Pakistan border. Veera commandeers an IAF fighter jet, flies deep into hostile airspace in a high-speed dogfight, and breaches Farooq\'s master command server. Decrypt the Master Vault to permanently terminate the global terrorist syndicate.',
+    intel: '"This is the finale. Every cryptographic concept you have conquered culminates here. Break through the multi-layer security grid, crack the Master Vault, and bring Farooq to justice."',
     character: 'Veera Raghavan',
     characterImage: '/images/characters/veera_relieved.png',
     roundLabel: 'ROUND 3  FINAL STRIKE',
@@ -203,6 +286,11 @@ function ChallengesInner() {
   const [rightOpen, setRightOpen] = useState(true);
   const [focusMode, setFocusMode] = useState(false);
   const [compactMode, setCompactMode] = useState(false);
+  const [copiedPayload, setCopiedPayload] = useState(false);
+  const [cinematicTransition, setCinematicTransition] = useState(false);
+
+  const { toggleFullscreen } = useFocusScreen();
+
   // Hint cache: maps challengeId ? { texts, shown, revealed, total }
   const [hintCache, setHintCache] = useState<Record<string, { texts: string[]; shown: boolean; revealed: number; total: number }>>({})
   // Mobile panel overlay: 'missions' | 'intel' | null
@@ -283,17 +371,107 @@ function ChallengesInner() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // GSAP entrance animations
+  // GSAP entrance animations with smooth gentle glide
   useEffect(() => {
     if (loading) return;
     const ctx = gsap.context(() => {
-      gsap.from('[data-g="topbar"]', { y: -48, opacity: 0, duration: 0.5, ease: 'power3.out' });
-      gsap.from('[data-g="left"]', { x: -60, opacity: 0, duration: 0.65, ease: 'power3.out', delay: 0.1 });
-      gsap.from('[data-g="center"]', { y: 28, opacity: 0, duration: 0.6, ease: 'power3.out', delay: 0.18 });
-      gsap.from('[data-g="right"]', { x: 60, opacity: 0, duration: 0.65, ease: 'power3.out', delay: 0.12 });
+      gsap.from('[data-g="topbar"]', { y: -30, opacity: 0, duration: 0.45, ease: 'power3.out' });
+      gsap.from('[data-g="left"]', { x: -35, opacity: 0, duration: 0.5, ease: 'power3.out', delay: 0.06 });
+      gsap.from('[data-g="center"]', { y: 18, opacity: 0, duration: 0.5, ease: 'power3.out', delay: 0.1 });
+      gsap.from('[data-g="right"]', { x: 35, opacity: 0, duration: 0.5, ease: 'power3.out', delay: 0.06 });
     }, containerRef);
     return () => ctx.revert();
   }, [loading]);
+
+  // Sync fullscreen change with focusMode
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFs = Boolean(document.fullscreenElement);
+      if (!isFs && focusMode) {
+        setFocusMode(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [focusMode]);
+
+  const toggleFocusScreen = useCallback(async () => {
+    setCinematicTransition(true);
+    const nextMode = !focusMode;
+    setFocusMode(nextMode);
+
+    if (nextMode) {
+      if (!document.fullscreenElement) {
+        try {
+          if (document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+          }
+        } catch {}
+      }
+    } else {
+      if (document.fullscreenElement) {
+        try {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          }
+        } catch {}
+      }
+    }
+
+    setTimeout(() => {
+      setCinematicTransition(false);
+    }, 850);
+  }, [focusMode]);
+
+  const exitFocusMode = useCallback(async () => {
+    setFocusMode(false);
+    if (document.fullscreenElement) {
+      try {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      } catch {}
+    }
+  }, []);
+
+  // Keyboard shortcut listener: F = Focus, T = Timeline, I = Intel, Esc = Exit Focus
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFocusScreen();
+      } else if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        setLeftOpen(prev => !prev);
+      } else if (e.key === 'i' || e.key === 'I') {
+        e.preventDefault();
+        setRightOpen(prev => !prev);
+      } else if (e.key === 'Escape' && focusMode) {
+        exitFocusMode();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [focusMode, toggleFocusScreen, exitFocusMode]);
+
+  const handleCopyPayload = async () => {
+    const text = apiResponse?.challenge?.description
+      ? formatPayloadText(apiResponse.challenge.description)
+      : '';
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedPayload(true);
+      setTimeout(() => setCopiedPayload(false), 2200);
+    } catch {
+      // Fallback
+      setCopiedPayload(true);
+      setTimeout(() => setCopiedPayload(false), 2200);
+    }
+  };
 
   // Reset message/flag on level switch; preserve hints
   useEffect(() => {
@@ -302,6 +480,12 @@ function ChallengesInner() {
     setMessage('');
     setFlag('');
   }, [selectedLevel]);
+
+  const activeIndex = MISSIONS.findIndex(m => m.level === selectedLevel);
+  const prevMission = activeIndex > 0 ? MISSIONS[activeIndex - 1] : null;
+  const nextMission = activeIndex >= 0 && activeIndex < MISSIONS.length - 1 ? MISSIONS[activeIndex + 1] : null;
+  const canGoPrev = Boolean(prevMission);
+  const canGoNext = Boolean(nextMission && getState(nextMission.order) !== 'locked');
 
   const meta = selectedLevel ? MISSIONS.find(m => m.level === selectedLevel) : null;
   const state = meta ? getState(meta.order) : 'locked';
@@ -495,6 +679,49 @@ function ChallengesInner() {
       {/* Background grid */}
       <div className="ch-bg-grid" aria-hidden />
 
+      {/* Focus Screen Advisory on First Landing */}
+      <FocusScreenAdvisory onEngage={toggleFocusScreen} />
+
+      {/* Cinematic Full Screen Scanline Effect */}
+      {cinematicTransition && (
+        <div className="focus-scan-overlay" aria-hidden="true">
+          <div className="focus-scan-beam" />
+        </div>
+      )}
+
+      {/* Floating HUD Chip when in Focus Mode */}
+      {focusMode && (
+        <button
+          type="button"
+          onClick={exitFocusMode}
+          className="focus-hud-badge"
+          title="Exit Focus Mode (Esc or F11)"
+        >
+          <span
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              background: '#10b981',
+              boxShadow: '0 0 8px #10b981',
+              animation: 'ledPulse 1.5s infinite',
+            }}
+          />
+          <span>FOCUS MODE ACTIVE</span>
+          <span
+            style={{
+              fontSize: 9,
+              color: '#a7f3d0',
+              background: 'rgba(16,185,129,0.2)',
+              padding: '2px 6px',
+              borderRadius: 3,
+            }}
+          >
+            CLICK OR ESC TO EXIT
+          </span>
+        </button>
+      )}
+
       {/* -- TOP BAR -- */}
       <header data-g="topbar" className="ch-topbar">
         {/* Brand */}
@@ -505,18 +732,35 @@ function ChallengesInner() {
         {/* Nav */}
         <nav className="ch-topbar-nav">
           <Link href="/dashboard" className="ch-nav-link"><Activity size={13} /><span>HQ</span></Link>
-          <Link href="/leaderboard" className="ch-nav-link"><Trophy size={13} /><span>RANKS</span></Link>
+          <Link href="/leaderboard" className="ch-nav-link"><Trophy size={13} /><span>LEADERBOARD</span></Link>
           <Link href={storyHref} className="ch-nav-link"><Map size={13} /><span>STORY</span></Link>
+
+          {/* Quick Sidebar Toggles in Topbar */}
           <button
             type="button"
-            className={`ch-focus-btn ${focusMode ? 'active' : ''}`}
-            onClick={() => setFocusMode(v => !v)}
-            aria-label={focusMode ? 'Exit focus mode' : 'Enter focus mode'}
-            title={focusMode ? 'Exit focus mode' : 'Focus mode'}
+            onClick={() => setLeftOpen(v => !v)}
+            className={`ch-nav-link ${leftOpen ? 'ch-nav-active' : ''}`}
+            title={`Toggle Timeline (${leftOpen ? 'Open' : 'Collapsed'}) - Hotkey: T`}
           >
-            {focusMode ? <EyeOff size={13} /> : <Eye size={13} />}
-            <span>{focusMode ? 'EXIT FOCUS' : 'FOCUS'}</span>
+            <RadioTower size={13} />
+            <span className="ch-nav-hide-mob">TIMELINE</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setRightOpen(v => !v)}
+            className={`ch-nav-link ${rightOpen ? 'ch-nav-active' : ''}`}
+            title={`Toggle Intel Panel (${rightOpen ? 'Open' : 'Collapsed'}) - Hotkey: I`}
+          >
+            <Shield size={13} />
+            <span className="ch-nav-hide-mob">INTEL</span>
+          </button>
+
+          {/* Unified Animated Focus Screen Button */}
+          <FocusScreenButton
+            isFocusMode={focusMode}
+            onToggleFocus={toggleFocusScreen}
+          />
         </nav>
 
         <div className="ch-topbar-divider" />
@@ -675,10 +919,10 @@ function ChallengesInner() {
 
           {apiResponse?.progress?.completedAll && (
             <div className="ch-complete-banner">
-              <div className="ch-complete-icon">??</div>
-              <div className="game-title ch-complete-title">THE HOSTAGE CRISIS — TERMINATED</div>
-              <p className="ch-complete-body">All 9 missions complete. Farooq arrested. The malware is destroyed. 50,000 jobs saved. Chennai is safe.</p>
-              <div className="ch-complete-score">FINAL SCORE: {teamPoints.toLocaleString()} pts</div>
+              <div className="ch-complete-icon">🏆</div>
+              <div className="game-title ch-complete-title">OPERATION BEAST — SIEGE TERMINATED</div>
+              <p className="ch-complete-body">All 9 missions cleared! 1,200 hostages rescued, Umar Saif neutralized, and Umar Farooq recaptured across the border. East Coast Mall and Chennai are secure.</p>
+              <div className="ch-complete-score">FINAL SCORE: {teamPoints.toLocaleString()} PTS</div>
             </div>
           )}
 
@@ -704,50 +948,124 @@ function ChallengesInner() {
 
               {/* - Title - */}
               <div className="ch-title-block">
-                <div className="ch-act-label">{meta.storyAct}</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                  <div className="ch-act-label">{meta.storyAct}</div>
+                  
+                  {/* Quick Mission Switcher */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                      type="button"
+                      disabled={!canGoPrev}
+                      onClick={() => prevMission && setSelectedLevel(prevMission.level)}
+                      className="ch-step-btn"
+                      title={prevMission ? `Previous: ${prevMission.name}` : 'First mission'}
+                    >
+                      <ChevronLeft size={12} />
+                      <span>PREV</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!canGoNext}
+                      onClick={() => nextMission && canGoNext && setSelectedLevel(nextMission.level)}
+                      className="ch-step-btn"
+                      title={nextMission ? (canGoNext ? `Next: ${nextMission.name}` : 'Next mission locked') : 'Last mission'}
+                    >
+                      <span>NEXT</span>
+                      <ChevronRight size={12} />
+                    </button>
+                  </div>
+                </div>
                 <h1 className="ch-mission-title">{meta.level} — {meta.name}</h1>
               </div>
 
-              {/* - Character Intel Banner - */}
+              {/* - Character Intel Banner (Responsive Flexbox, No Vertical Misalignment) - */}
               <div className="ch-intel-banner" style={{
-                border: `1px solid ${rc.border}`,
+                borderColor: rc.border,
                 boxShadow: `0 0 24px ${rc.glow}, 0 6px 20px rgba(0,0,0,0.45)`,
               }}>
                 {/* Top accent line */}
                 <div className="ch-intel-accent-line" style={{ background: `linear-gradient(90deg,transparent,${rc.primary},transparent)` }} />
-                {/* Scene */}
+                
+                {/* Scene Content */}
                 <div className="ch-intel-scene" style={{ background: `linear-gradient(135deg,rgba(${meta.round===1?'239,68,68':meta.round===2?'245,158,11':'16,185,129'},0.06),rgba(2,1,12,0.98))` }}>
                   <div className="ch-intel-grid-bg" />
-                  {/* Portrait */}
-                  <div className="ch-portrait">
-                    <Image src={meta.characterImage} alt={meta.character} fill style={{ objectFit: 'contain', objectPosition: 'center bottom', filter: 'drop-shadow(8px 0 16px rgba(0,0,0,0.8))' }} priority />
+                  
+                  {/* Tactical Portrait Frame */}
+                  <div className="ch-portrait-box" style={{ borderColor: rc.border }}>
+                    <div className="ch-portrait-img-wrap">
+                      <Image
+                        src={meta.characterImage}
+                        alt={meta.character}
+                        fill
+                        sizes="92px"
+                        style={{ objectFit: 'cover', objectPosition: 'center 12%' }}
+                        priority
+                      />
+                    </div>
+                    <span className="ch-portrait-corner ch-p-tl" style={{ borderColor: rc.primary }} />
+                    <span className="ch-portrait-corner ch-p-br" style={{ borderColor: rc.primary }} />
+                    <div className="ch-portrait-tag" style={{ background: `rgba(${meta.round===1?'239,68,68':meta.round===2?'245,158,11':'16,185,129'},0.88)` }}>
+                      <span className="ch-tag-dot" /> LIVE
+                    </div>
                   </div>
-                  {/* Info overlay */}
+
+                  {/* Intel details */}
                   <div className="ch-intel-info">
                     <div className="ch-intel-row1">
-                      <div className="ch-operative-badge" style={{ background: `rgba(${meta.round===1?'239,68,68':meta.round===2?'245,158,11':'16,185,129'},0.12)`, borderColor: rc.border, color: rc.primary }}>OPERATIVE</div>
+                      <div className="ch-operative-badge" style={{ background: `rgba(${meta.round===1?'239,68,68':meta.round===2?'245,158,11':'16,185,129'},0.12)`, borderColor: rc.border, color: rc.primary }}>
+                        OPERATIVE
+                      </div>
                       <span className="ch-char-name">{meta.character}</span>
+                      <span className="ch-char-callsign">
+                        {meta.character === 'Veera Raghavan' ? 'EX-RAW AGENT // CODENAME: BEAST' :
+                         meta.character === 'Preethi' ? 'CYBER SECURITY LIAISON' :
+                         meta.character === 'NSA Althaf' ? 'CHIEF NEGOTIATOR // RAW COMMAND' : 'TACTICAL ADVISOR'}
+                      </span>
                     </div>
-                    <div className="ch-intel-time">
-                      <Clock size={10} color="#6b7280" />
-                      <span>{meta.storyTime}</span>
+
+                    <div className="ch-intel-meta-row">
+                      <div className="ch-intel-time">
+                        <Clock size={11} color="#94a3b8" />
+                        <span>{meta.storyTime}</span>
+                      </div>
+                      <div className="ch-intel-status">
+                        <span className="ch-status-dot" />
+                        <span>{meta.storyStatus}</span>
+                      </div>
                     </div>
-                    <div className="ch-intel-status">
-                      <span className="ch-status-dot" />
-                      {meta.storyStatus}
+
+                    <div className="ch-intel-transmission">
+                      <RadioTower size={11} color={rc.primary} style={{ flexShrink: 0, marginTop: 2 }} />
+                      <span className="ch-intel-comm-text">{meta.intel}</span>
                     </div>
                   </div>
                 </div>
-                {/* Rescue bar */}
-                <div className="ch-rescue-bar">
-                  <div className="ch-rescue-label">
-                    <Users size={10} color="#6b7280" />
-                    <span>HOSTAGES RESCUED</span>
+
+                {/* Hostage Rescue Section */}
+                <div className="ch-rescue-section">
+                  <div className="ch-rescue-bar">
+                    <div className="ch-rescue-label">
+                      <Users size={11} color="#94a3b8" />
+                      <span>HOSTAGE EVACUATION STATUS</span>
+                    </div>
+                    <div className="ch-rescue-meta">
+                      <span className="ch-rescue-count" style={{ color: rescuePct>=100?'#10b981':rescuePct>=60?'#f59e0b':'#ef4444' }}>
+                        {rescued.toLocaleString()} / 1,200 RESCUED
+                      </span>
+                      <span className="ch-rescue-pct" style={{ color: rescuePct>=100?'#10b981':'#f59e0b' }}>
+                        ({rescuePct}%)
+                      </span>
+                    </div>
                   </div>
-                  <span className="ch-rescue-count" style={{ color: rescuePct>=100?'#10b981':rescuePct>=60?'#f59e0b':'#ef4444' }}>{rescued.toLocaleString()} / 1,200</span>
-                </div>
-                <div className="ch-rescue-track">
-                  <div className="ch-rescue-fill" style={{ width:`${rescuePct}%`, background: rescuePct>=100?'linear-gradient(90deg,#10b981,#34d399)':'linear-gradient(90deg,#ef4444,#f59e0b,#7c3aed)' }} />
+                  <div className="ch-rescue-track">
+                    <div
+                      className="ch-rescue-fill"
+                      style={{
+                        width:`${rescuePct}%`,
+                        background: rescuePct>=100?'linear-gradient(90deg,#10b981,#34d399)':'linear-gradient(90deg,#ef4444,#f59e0b,#7c3aed)'
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -759,10 +1077,33 @@ function ChallengesInner() {
 
               {/* - Cipher payload - */}
               <div className="ch-payload-panel game-panel-bordered">
-                <div className="ch-payload-header">
-                  <Terminal size={12} color="#06b6d4" />
-                  CIPHER PAYLOAD
-                  {state === 'active' && <span className="ch-live-dot" />}
+                <div className="ch-payload-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <Terminal size={13} color="#06b6d4" />
+                    <span>CIPHER PAYLOAD</span>
+                    {state === 'active' && <span className="ch-live-dot" />}
+                  </div>
+
+                  {state === 'active' && apiResponse?.challenge?.description && (
+                    <button
+                      type="button"
+                      onClick={handleCopyPayload}
+                      className="ch-copy-btn"
+                      title="Copy payload to clipboard"
+                    >
+                      {copiedPayload ? (
+                        <>
+                          <Check size={12} color="#10b981" />
+                          <span style={{ color: '#6ee7b7' }}>COPIED!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={12} color="#fca5a5" />
+                          <span>COPY PAYLOAD</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
 
                 {state === 'active' && meta.level === '3.3' && (
@@ -982,7 +1323,7 @@ function ChallengesInner() {
             </div>
             <p className="ch-modal-body">Mission intel is classified. Accessing it deducts points from your team score. Once revealed, intel stays visible at no further cost — you can hide/show it freely.</p>
             <div className="game-alert-error ch-modal-warning">
-              <AlertTriangle size={13} />Penalty for next intel tier: -{nextHintPenalty} points
+              <AlertTriangle size={13} />Penalty for next intel tier: -{nextHintPenalty} points (Will result in negative score if points are low or zero)
             </div>
             <div className="ch-modal-actions">
               <button className="btn-game-secondary" onClick={() => setShowHintConfirm(false)}>Abort</button>
@@ -1174,19 +1515,34 @@ function ChallengesInner() {
         .ch-body { position:relative; z-index:10; flex:1; display:flex; min-height:0; height:calc(100vh - 56px); }
 
         /* --- side panels ------------------------------------------ */
-        .ch-left-panel  { border-right:1px solid rgba(220,38,38,0.22); background:rgba(8,3,5,0.95); backdrop-filter:blur(20px); display:flex; flex-direction:column; transition:width 0.28s ease,min-width 0.28s ease; overflow:hidden; position:relative; height:100%; flex-shrink:0; }
-        .ch-right-panel { border-left:1px solid rgba(220,38,38,0.22);  background:rgba(8,3,5,0.95); backdrop-filter:blur(20px); display:flex; flex-direction:column; transition:width 0.28s ease,min-width 0.28s ease; overflow:hidden; position:relative; height:100%; flex-shrink:0; }
+        .ch-left-panel  { border-right:1px solid rgba(220,38,38,0.22); background:rgba(8,3,5,0.95); backdrop-filter:blur(20px); display:flex; flex-direction:column; transition:width 0.32s cubic-bezier(0.16,1,0.3,1),min-width 0.32s cubic-bezier(0.16,1,0.3,1),transform 0.32s cubic-bezier(0.16,1,0.3,1),opacity 0.25s ease; overflow:hidden; position:relative; height:100%; flex-shrink:0; }
+        .ch-right-panel { border-left:1px solid rgba(220,38,38,0.22);  background:rgba(8,3,5,0.95); backdrop-filter:blur(20px); display:flex; flex-direction:column; transition:width 0.32s cubic-bezier(0.16,1,0.3,1),min-width 0.32s cubic-bezier(0.16,1,0.3,1),transform 0.32s cubic-bezier(0.16,1,0.3,1),opacity 0.25s ease; overflow:hidden; position:relative; height:100%; flex-shrink:0; }
         .ch-left-panel.ch-panel-open   { width:clamp(228px, 16.5vw, 270px); min-width:clamp(228px, 16.5vw, 270px); }
         .ch-right-panel.ch-panel-open  { width:clamp(236px, 17.5vw, 282px); min-width:clamp(236px, 17.5vw, 282px); }
         .ch-left-panel.ch-panel-collapsed,
         .ch-right-panel.ch-panel-collapsed { width:48px; min-width:48px; }
-        .ch-focus-mode .ch-left-panel,
-        .ch-focus-mode .ch-right-panel { width:0 !important; min-width:0 !important; opacity:0; pointer-events:none; border:none; }
+
+        /* --- focus mode layout overrides --- */
+        .ch-focus-mode .ch-left-panel { width:0 !important; min-width:0 !important; opacity:0 !important; pointer-events:none !important; border:none !important; transform:translateX(-100%) !important; }
+        .ch-focus-mode .ch-right-panel { width:0 !important; min-width:0 !important; opacity:0 !important; pointer-events:none !important; border:none !important; transform:translateX(100%) !important; }
+        .ch-focus-mode .ch-center-scroll { padding-top:28px; padding-bottom:20px; }
+        .ch-focus-mode .ch-center-scroll > * { max-width:1060px; margin-left:auto; margin-right:auto; width:100%; }
+        .ch-focus-mode .ch-flag-inner { max-width:1060px; margin:0 auto; width:100%; }
+
+        /* --- interactive control styles --- */
+        .ch-copy-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(220,38,38,0.12); border:1px solid rgba(220,38,38,0.35); border-radius:6px; color:#fca5a5; font-size:11px; font-weight:700; letter-spacing:1px; padding:5px 11px; cursor:pointer; font-family:monospace; transition:all 0.2s cubic-bezier(0.16,1,0.3,1); }
+        .ch-copy-btn:hover { background:rgba(220,38,38,0.25); border-color:rgba(239,68,68,0.6); color:#ffffff; box-shadow:0 0 14px rgba(220,38,38,0.4); transform:translateY(-1px); }
+        .ch-copy-btn:active { transform:translateY(0); }
+        .ch-step-btn { display:inline-flex; align-items:center; gap:5px; background:rgba(18,6,10,0.85); border:1px solid rgba(220,38,38,0.3); border-radius:6px; color:#cbd5e1; font-size:11px; font-weight:700; font-family:monospace; letter-spacing:1px; padding:5px 12px; cursor:pointer; transition:all 0.2s cubic-bezier(0.16,1,0.3,1); }
+        .ch-step-btn:hover:not(:disabled) { background:rgba(220,38,38,0.22); border-color:rgba(239,68,68,0.6); color:#ffffff; box-shadow:0 0 12px rgba(220,38,38,0.35); transform:translateY(-1px); }
+        .ch-step-btn:disabled { opacity:0.3; cursor:not-allowed; border-color:rgba(255,255,255,0.08); color:#64748b; }
+        .ch-nav-active { background:rgba(220,38,38,0.24) !important; border-color:rgba(239,68,68,0.7) !important; color:#fee2e2 !important; box-shadow:0 0 14px rgba(220,38,38,0.35); }
+        @media (max-width:1080px) { .ch-nav-hide-mob { display:none !important; } }
 
         .ch-compact .ch-left-panel.ch-panel-open { width:224px; min-width:224px; }
         .ch-compact .ch-right-panel.ch-panel-open { width:232px; min-width:232px; }
         .ch-compact .ch-center-scroll { padding:20px 20px 18px; gap:16px; }
-        .ch-compact .ch-payload-code { font-size:14px; line-height:1.85; }
+        .ch-compact .ch-payload-code { font-size:14px; line-height:1.7; }
         .ch-compact .ch-mission-title { font-size:clamp(20px,2.2vw,28px); }
         .ch-compact .ch-sitrep-text { font-size:14px; line-height:1.8; }
 
@@ -1195,7 +1551,6 @@ function ChallengesInner() {
           .ch-right-panel.ch-panel-open { width:216px; min-width:216px; }
           .ch-center-scroll { padding:18px 16px 16px; gap:14px; }
           .ch-mission-title { font-size:clamp(19px,2.2vw,26px); }
-          .ch-intel-scene { height:140px; }
         }
         .ch-panel-toggle { position:absolute; top:50%; transform:translateY(-50%); z-index:30; width:16px; height:56px; background:linear-gradient(180deg,#7f1d1d,#dc2626); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px rgba(220,38,38,0.4); transition:opacity 0.15s; }
         .ch-panel-toggle:hover { opacity:0.8; }
@@ -1262,23 +1617,223 @@ function ChallengesInner() {
         .ch-focus-note { color:#94a3b8; font-size:13px; background:rgba(220,38,38,0.12); border:1px solid rgba(220,38,38,0.3); border-radius:8px; padding:9px 12px; font-family:monospace; }
 
         /* intel banner */
-        .ch-intel-banner { border:1px solid; border-radius:12px; overflow:hidden; position:relative; background:linear-gradient(135deg,rgba(10,4,6,0.98),rgba(18,6,9,0.97)); }
-        .ch-intel-accent-line { position:absolute; top:0; left:0; right:0; height:2px; z-index:3; }
-        .ch-intel-scene { position:relative; height:clamp(144px, 17vh, 164px); overflow:hidden; }
-        .ch-intel-grid-bg { position:absolute; inset:0; background:repeating-linear-gradient(45deg,rgba(220,38,38,0.04) 0,rgba(220,38,38,0.04) 1px,transparent 1px,transparent 14px); }
-        .ch-portrait { position:absolute; left:0; top:0; bottom:0; width:clamp(96px, 8vw, 116px); overflow:hidden; background:linear-gradient(90deg, rgba(0,0,0,0.3), transparent); }
-        .ch-intel-info { position:absolute; bottom:0; left:clamp(102px, 8.5vw, 124px); right:0; padding:12px 16px 10px; display:flex; flex-direction:column; gap:6px; }
-        .ch-intel-row1 { display:flex; align-items:center; gap:8px; }
-        .ch-operative-badge { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; padding:2px 8px; border:1px solid; border-radius:4px; font-family:monospace; }
-        .ch-char-name { color:#f1f5f9; font-size:15px; font-weight:800; letter-spacing:1px; }
-        .ch-intel-time { display:flex; align-items:center; gap:5px; color:#94a3b8; font-size:11px; font-family:monospace; }
-        .ch-intel-status { display:inline-flex; align-items:center; gap:6px; background:rgba(220,38,38,0.12); border:1px solid rgba(220,38,38,0.35); border-radius:6px; padding:4px 10px; color:#fca5a5; font-size:10px; font-weight:700; letter-spacing:1px; width:fit-content; font-family:monospace; }
-        .ch-status-dot { width:5px; height:5px; border-radius:50%; background:#ef4444; animation:dopulse 1.5s infinite; flex-shrink:0; }
-        .ch-rescue-bar { display:flex; justify-content:space-between; align-items:center; padding:9px 16px 5px; }
-        .ch-rescue-label { display:flex; align-items:center; gap:5px; color:#94a3b8; font-size:9px; letter-spacing:2px; font-weight:700; text-transform:uppercase; font-family:monospace; }
-        .ch-rescue-count { font-size:12px; font-weight:900; font-family:monospace; }
-        .ch-rescue-track { height:5px; margin:0 16px 12px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; }
-        .ch-rescue-fill { height:100%; border-radius:3px; transition:width 0.8s ease; }
+        .ch-intel-banner {
+          border: 1px solid;
+          border-radius: 12px;
+          overflow: hidden;
+          position: relative;
+          background: linear-gradient(135deg, rgba(10,4,6,0.98), rgba(18,6,9,0.97));
+          display: flex;
+          flex-direction: column;
+        }
+        .ch-intel-accent-line {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          z-index: 3;
+        }
+        .ch-intel-scene {
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          padding: 16px 20px;
+          min-height: 110px;
+          overflow: hidden;
+        }
+        .ch-intel-grid-bg {
+          position: absolute;
+          inset: 0;
+          background: repeating-linear-gradient(45deg, rgba(220,38,38,0.035) 0, rgba(220,38,38,0.035) 1px, transparent 1px, transparent 14px);
+          pointer-events: none;
+        }
+        .ch-portrait-box {
+          position: relative;
+          width: 92px;
+          height: 92px;
+          min-width: 92px;
+          border-radius: 10px;
+          border: 1.5px solid;
+          background: radial-gradient(circle at 50% 30%, rgba(220,38,38,0.22), rgba(6,2,4,0.95));
+          box-shadow: 0 4px 18px rgba(0,0,0,0.6);
+          flex-shrink: 0;
+          overflow: hidden;
+          z-index: 2;
+        }
+        .ch-portrait-img-wrap {
+          position: relative;
+          width: 100%;
+          height: 100%;
+        }
+        .ch-portrait-corner {
+          position: absolute;
+          width: 8px;
+          height: 8px;
+          border-style: solid;
+          z-index: 4;
+          pointer-events: none;
+        }
+        .ch-p-tl { top: 3px; left: 3px; border-width: 2px 0 0 2px; border-color: inherit; }
+        .ch-p-br { bottom: 3px; right: 3px; border-width: 0 2px 2px 0; border-color: inherit; }
+        .ch-portrait-tag {
+          position: absolute;
+          bottom: 4px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 1px 6px;
+          border-radius: 3px;
+          font-family: monospace;
+          font-size: 8px;
+          font-weight: 900;
+          letter-spacing: 1px;
+          color: #fff;
+          z-index: 5;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.7);
+        }
+        .ch-tag-dot {
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background: #fff;
+          animation: dopulse 1.2s infinite;
+        }
+        .ch-intel-info {
+          position: relative;
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          z-index: 2;
+        }
+        .ch-intel-row1 {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .ch-operative-badge {
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          padding: 2px 8px;
+          border: 1px solid;
+          border-radius: 4px;
+          font-family: monospace;
+          flex-shrink: 0;
+        }
+        .ch-char-name {
+          color: #f1f5f9;
+          font-size: 16px;
+          font-weight: 800;
+          letter-spacing: 1px;
+          font-family: var(--font-rajdhani), sans-serif;
+          white-space: nowrap;
+        }
+        .ch-char-callsign {
+          color: #64748b;
+          font-size: 10px;
+          font-family: monospace;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+        }
+        .ch-intel-meta-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .ch-intel-time {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          color: #94a3b8;
+          font-size: 11px;
+          font-family: monospace;
+        }
+        .ch-intel-status {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(220,38,38,0.12);
+          border: 1px solid rgba(220,38,38,0.35);
+          border-radius: 6px;
+          padding: 3px 8px;
+          color: #fca5a5;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 1px;
+          font-family: monospace;
+        }
+        .ch-intel-transmission {
+          display: flex;
+          align-items: flex-start;
+          gap: 7px;
+          margin-top: 2px;
+        }
+        .ch-intel-comm-text {
+          color: #cbd5e1;
+          font-size: 12.5px;
+          font-style: italic;
+          line-height: 1.45;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .ch-rescue-section {
+          border-top: 1px solid rgba(220,38,38,0.15);
+          background: rgba(4,2,3,0.4);
+          padding: 8px 16px 10px;
+        }
+        .ch-rescue-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 5px;
+        }
+        .ch-rescue-label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: #94a3b8;
+          font-size: 10px;
+          letter-spacing: 1.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          font-family: monospace;
+        }
+        .ch-rescue-meta {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-family: monospace;
+        }
+        .ch-rescue-count {
+          font-size: 12px;
+          font-weight: 900;
+        }
+        .ch-rescue-pct {
+          font-size: 11px;
+          font-weight: 800;
+        }
+        .ch-rescue-track {
+          height: 6px;
+          background: rgba(255,255,255,0.06);
+          border-radius: 3px;
+          overflow: hidden;
+        }
+        .ch-rescue-fill {
+          height: 100%;
+          border-radius: 3px;
+          transition: width 0.8s ease;
+        }
 
         /* sitrep */
         .ch-sitrep { background:rgba(10,4,6,0.85); border:1px solid rgba(220,38,38,0.25); border-radius:10px; padding:18px 22px; }
@@ -1295,7 +1850,7 @@ function ChallengesInner() {
         .ch-vault-link-btn { display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:#ffffff; background:linear-gradient(135deg,#7f1d1d,#dc2626); border:1px solid rgba(248,113,113,0.5); border-radius:6px; padding:8px 14px; font-size:12px; font-weight:800; letter-spacing:1px; text-transform:uppercase; transition:all 0.15s; font-family:monospace; }
         .ch-vault-link-btn:hover { box-shadow:0 0 20px rgba(220,38,38,0.5); }
         .ch-vault-link-path { margin-top:8px; color:#94a3b8; font-size:11px; word-break:break-all; font-family:monospace; }
-        .ch-payload-code { background:rgba(0,0,0,0.65); border:1px solid rgba(220,38,38,0.3); border-radius:8px; padding:18px 20px; font-family:monospace; font-size:14px; color:#fee2e2; line-height:2; white-space:pre-wrap; max-height:360px; overflow-y:auto; letter-spacing:0.5px; }
+        .ch-payload-code { background:rgba(0,0,0,0.65); border:1px solid rgba(220,38,38,0.3); border-radius:8px; padding:16px 18px; font-family:'Fira Code','JetBrains Mono',monospace; font-size:13.5px; color:#fee2e2; line-height:1.65; white-space:pre-wrap; max-height:340px; overflow-y:auto; letter-spacing:0.4px; }
         .ch-payload-code::-webkit-scrollbar { width:4px; }
         .ch-payload-code::-webkit-scrollbar-thumb { background:rgba(220,38,38,0.4); border-radius:3px; }
         .ch-payload-state { display:flex; align-items:center; gap:10px; border-radius:8px; padding:14px 16px; font-size:13px; font-family:monospace; }
@@ -1317,7 +1872,7 @@ function ChallengesInner() {
         .ch-empty-state { display:flex; flex:1; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:#6b7280; font-size:13px; padding:40px; font-family:monospace; }
 
         /* flag bar */
-        .ch-flag-bar { border-top:1px solid rgba(220,38,38,0.25); background:rgba(8,3,5,0.98); padding:15px 22px; flex-shrink:0; backdrop-filter:blur(20px); }
+        .ch-flag-bar { border-top:1px solid rgba(220,38,38,0.25); background:rgba(8,3,5,0.98); padding:12px 20px; flex-shrink:0; backdrop-filter:blur(20px); position:relative; z-index:35; }
         .ch-flag-inner { display:flex; flex-direction:column; gap:10px; }
         .ch-flag-header { display:flex; align-items:center; gap:8px; }
         .ch-flag-icon-wrap { width:26px; height:26px; border-radius:6px; background:linear-gradient(135deg,#7f1d1d,#dc2626); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -1423,8 +1978,12 @@ function ChallengesInner() {
         }
         @media (max-width:600px) {
           .ch-mission-title { font-size:17px; }
-          .ch-portrait { width:80px; }
-          .ch-intel-info { left:90px; }
+          .ch-intel-scene { gap:12px; padding:12px 14px; }
+          .ch-portrait-box { width:74px; height:74px; min-width:74px; }
+          .ch-char-name { font-size:14px; }
+          .ch-char-callsign { display:none; }
+          .ch-intel-comm-text { font-size:11px; -webkit-line-clamp:1; }
+          .ch-rescue-section { padding:6px 12px 8px; }
           .ch-payload-code { font-size:12.5px; }
           .ch-flag-bar { padding:12px 14px; }
           .ch-transmit-btn { padding:11px 14px; font-size:11px; letter-spacing:1px; }

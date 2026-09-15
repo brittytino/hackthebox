@@ -37,7 +37,8 @@ export default function Character({
   className = '',
 }: CharacterProps) {
   const charRef = useRef<HTMLDivElement>(null);
-  const imagePath = `/images/characters/${character}_${expression}.png`;
+  const fixedExpression = character === 'veera' && expression === 'neutral' ? 'neautral' : expression;
+  const imagePath = `/images/characters/${character}_${fixedExpression}.webp`;
 
   useEffect(() => {
     if (charRef.current) {
@@ -101,7 +102,7 @@ export default function Character({
         className="relative h-[65vh] w-auto max-h-[700px] object-contain drop-shadow-2xl"
         onError={(e) => {
           // Fallback to placeholder if image not found
-          e.currentTarget.src = '/images/characters/placeholder.png';
+          e.currentTarget.src = '/images/characters/placeholder.webp';
           e.currentTarget.style.opacity = '0.3';
         }}
         style={{

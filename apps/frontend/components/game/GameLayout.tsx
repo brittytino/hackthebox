@@ -12,7 +12,7 @@ interface GameLayoutProps {
 
 export default function GameLayout({
   children,
-  backgroundImage = '/images/background/1.jpg',
+  backgroundImage = '/images/background/1.webp',
   showScanlines = true,
   className = '',
 }: GameLayoutProps) {

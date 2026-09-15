@@ -63,7 +63,7 @@ export default function CharacterDialogue({
     ? 'neautral' 
     : expression;
   
-  const imagePath = `/images/characters/${character}_${fixedExpression}.png`;
+  const imagePath = `/images/characters/${character}_${fixedExpression}.webp`;
 
   const moodStyles = {
     normal: 'border-red-950/60 bg-[rgba(10,4,6,0.95)] shadow-[0_0_25px_rgba(220,38,38,0.15)]',

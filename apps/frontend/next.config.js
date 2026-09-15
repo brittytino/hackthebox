@@ -1,5 +1,7 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    formats: ['image/avif', 'image/webp'],
+  },
 
   async rewrites() {
     const apiTarget = process.env.API_INTERNAL_URL || 'http://localhost:43118/api';

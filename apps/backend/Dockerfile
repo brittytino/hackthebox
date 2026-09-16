@@ -1,9 +1,7 @@
 FROM node:20-alpine
 
-# Install OpenSSL and build tools for Prisma and bcrypt - split into steps to avoid I/O errors
-RUN apk add --no-cache openssl openssl-dev libc6-compat bash
-RUN apk add --no-cache python3 make
-RUN apk add --no-cache g++ || apk add --no-cache --force-overwrite g++
+# Install OpenSSL and build tools for Prisma and bcrypt
+RUN apk add --no-cache openssl openssl-dev libc6-compat bash python3 make g++
 
 WORKDIR /app
 
@@ -14,7 +12,7 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # Clean install to ensure proper architecture binaries
-RUN npm ci --only=production=false
+RUN npm ci --no-audit --no-fund
 
 # Copy rest of the application (excluding node_modules via .dockerignore)
 COPY . .
@@ -22,15 +20,12 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Verify dist folder exists and show contents
-RUN ls -la /app/ && echo "=== Dist folder ===" && ls -la /app/dist/
-
 # Fix line endings
 RUN sed -i 's/\r$//' /app/entrypoint.sh
 
 # Make entrypoint executable
 RUN chmod +x /app/entrypoint.sh
 
-EXPOSE 3001
+EXPOSE 43118
 
 CMD ["bash", "/app/entrypoint.sh"]

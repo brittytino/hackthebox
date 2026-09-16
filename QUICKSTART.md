@@ -27,20 +27,40 @@ Once running:
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| **Frontend** | http://localhost:43117 | Main application UI |
-| **Backend** | http://localhost:43118 | REST API (optional direct) |
-| **Database** | localhost:45432 | PostgreSQL (user: postgres) |
-| **Redis** | localhost:46379 | Cache store |
+| **Frontend (Local)** | http://localhost:43117 | Main CTF application |
+| **Frontend (Campus LAN)** | http://<SERVER_IP>:43117 | Link for student participants |
+| **Admin Ops Center** | http://localhost:43117/admin | Tactical Game Controller |
+| **Marvel Ending Screen** | http://localhost:43117/credits | Post-credits tribute & winners |
+| **Live Scoreboard** | http://localhost:43117/leaderboard | Real-time standings |
+| **pgAdmin GUI** | http://localhost:45050 | Database admin |
+| **Backend REST API** | http://localhost:43118 | Direct API access |
 
-## Login
+## 🔑 Login Credentials
 
-Default admin credentials (change after login!):
+### Admin Control Panel
 ```
-Email:    admin@theextraction.local
+URL:      http://localhost:43117/admin
+Username: admin   (or email: admin@theextraction.local)
 Password: admin123
 ```
 
-## Common Tasks
+### pgAdmin Database GUI
+```
+URL:      http://localhost:45050
+Email:    admin@theextraction.com
+Password: Tx7-vQ2m-Pk9r-Zw4e-Jh6c
+```
+
+## 🎮 Event Admin Features
+- **Tactical Game Controller** (`/admin`):
+  - **END GAME FOR ALL**: Instantly pushes an emergency broadcast modal to all student devices and transitions everyone to the cinematic Marvel credits.
+  - **ACTIVATE ALL ROUNDS**: Ensures Rounds 1, 2, and 3 are active.
+  - **RESUME LIVE GAME**: Allows reopening the competition if needed.
+- **Marvel Movie Post-Credits Screen** (`/credits`):
+  - Starfield / ember animations and ambient audio synthesizer.
+  - Winner squad commendation & top solve roll.
+  - Coordinator photo cards for **Tino Britty** & **Srinithi** (`apps/frontend/public/images/coordinators/`).
+  - Stinger teaser: *"VEERA RAGHAVAN WILL RETURN"*.
 
 ### View logs
 ```bash

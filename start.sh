@@ -47,12 +47,13 @@ echo "[2/5] Waiting for database to be ready..."
 sleep 10
 echo ""
 
-echo "[3/5] Running database migrations..."
-docker-compose exec -T backend npm run prisma:migrate:deploy || echo "[WARNING] Migration failed"
+echo "[3/5] Syncing database schema..."
+docker-compose exec -T backend npx prisma db push --accept-data-loss || echo "[WARNING] Schema sync failed"
 echo ""
 
-echo "[4/5] Seeding database with admin user..."
-docker-compose exec -T backend npm run prisma:seed
+echo "[4/5] Seeding database with admin user, challenges, and active rounds..."
+docker-compose exec -T backend npx prisma db seed
+docker-compose exec -T backend npx ts-node -e "import { PrismaClient } from '@prisma/client'; const p = new PrismaClient(); p.round.updateMany({ data: { status: 'ACTIVE' } }).then(() => { console.log('Rounds 1, 2, and 3 are ACTIVE'); return p.\$disconnect(); }).catch(() => process.exit(0));"
 echo ""
 
 echo "[5/5] Checking service status..."

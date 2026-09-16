@@ -112,4 +112,20 @@ export class AdminController {
   exportResultsCSV() {
     return this.adminService.exportResultsCSV();
   }
+
+  // Game & Round Controls
+  @Post('game/end')
+  endGame() {
+    return this.adminService.endGame();
+  }
+
+  @Post('game/resume')
+  resumeGame() {
+    return this.adminService.resumeGame();
+  }
+
+  @Post('rounds/activate-all')
+  activateAllRounds() {
+    return this.adminService.activateAllRounds();
+  }
 }

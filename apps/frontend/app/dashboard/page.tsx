@@ -6,11 +6,11 @@ import { gsap } from 'gsap';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import {
-  Users, Trophy, Flag, Target, Shield, ChevronRight,
-  CheckCircle2, Lock, Zap, LogOut, BookOpen, LayoutList,
-  Activity, Star, Map, Terminal, Crosshair, Skull, ShieldAlert,
+  Trophy, Flag, Target, ChevronRight,
+  CheckCircle2, Lock, Zap, BookOpen, LayoutList,
+  Star, ShieldAlert,
 } from 'lucide-react';
-import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
+import AppNavbar from '@/components/ui/AppNavbar';
 import FocusScreenAdvisory, { FocusScreenButton } from '@/components/ui/FocusScreenAdvisory';
 
 interface Challenge {
@@ -88,12 +88,6 @@ export default function DashboardPage() {
     }
   }, [loading]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    router.push('/login');
-  };
-
   const userTeam = user?.team;
   const teamLevel = userTeam?.currentLevel ?? 1;
 
@@ -167,48 +161,24 @@ export default function DashboardPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#050508', position: 'relative', overflowX: 'hidden', color: '#f1f5f9' }}>
-      <HalfCircleMenu />
       <FocusScreenAdvisory />
       {/* Background blood splatter textures */}
       <div className="blood-splatter-bg" />
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse 80% 40% at 50% -10%, rgba(220,38,38,0.12) 0%, transparent 60%), radial-gradient(ellipse at bottom right, rgba(138,3,3,0.15) 0%, transparent 50%)' }} />
 
-      {/* -- TOP NAV -- */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '0 28px', height: 64, borderBottom: '1px solid rgba(220,38,38,0.3)', background: 'rgba(10,4,6,0.95)', backdropFilter: 'blur(20px)', gap: 10 }}>
-        {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 16 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 6, background: 'linear-gradient(135deg,#7f1d1d,#dc2626)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(220,38,38,0.4)', border: '1px solid rgba(248,113,113,0.5)' }}>
-            <Crosshair size={18} color="#fff" strokeWidth={2.5} />
-          </div>
-          <div>
-            <div style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 900, lineHeight: 1.1, letterSpacing: '1px', textTransform: 'uppercase' }}>OPERATION THE EXTRACTION</div>
-            <div style={{ color: '#ef4444', fontSize: 10, lineHeight: 1, fontFamily: 'monospace', letterSpacing: '2px' }}>TACTICAL COMMAND HQ</div>
-          </div>
-        </div>
-
-        <div style={{ flex: 1 }} />
-
-        {/* Live badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: 6 }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444', animation: 'dpulse 2s infinite' }} />
-          <span style={{ color: '#f87171', fontSize: 11, fontWeight: 700, fontFamily: 'monospace', letterSpacing: '1px' }}>OPERATION LIVE</span>
-        </div>
-
-        <FocusScreenButton />
-
-        <Link href="/challenges" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, color: '#fee2e2', fontSize: 13, fontWeight: 700, textDecoration: 'none', transition: 'all 0.15s' }}>
-          <Target size={14} className="text-red-500" /> Missions
-        </Link>
-        <Link href="/story" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, color: '#f1f5f9', fontSize: 13, fontWeight: 600, textDecoration: 'none', transition: 'all 0.15s' }}>
-          <Map size={14} className="text-red-500" /> Story
-        </Link>
-        <Link href="/leaderboard" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, color: '#f1f5f9', fontSize: 13, fontWeight: 600, textDecoration: 'none', transition: 'all 0.15s' }}>
-          <Trophy size={14} className="text-red-500" /> Rankings
-        </Link>
-        <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 6, color: '#fca5a5', fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}>
-          <LogOut size={14} /> Extract
-        </button>
-      </nav>
+      <AppNavbar
+        active="dashboard"
+        isAdmin={user?.role === 'ADMIN'}
+        right={
+          <>
+            <div className="app-nav-hide-narrow" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: 6 }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444', animation: 'dpulse 2s infinite' }} />
+              <span style={{ color: '#f87171', fontSize: 11, fontWeight: 700, fontFamily: 'monospace', letterSpacing: '1px' }}>OPERATION LIVE</span>
+            </div>
+            <FocusScreenButton className="app-nav-hide-narrow" />
+          </>
+        }
+      />
 
       {/* -- MAIN CONTAINER -- */}
       <div ref={containerRef} style={{ position: 'relative', zIndex: 5, maxWidth: 1320, margin: '0 auto', padding: '36px 28px 80px' }}>
@@ -323,21 +293,29 @@ export default function DashboardPage() {
                           const levelNum  = round.startLevel + chIdx;
                           const solved    = solvedIds.has(ch.id) || levelNum < teamLevel;
                           const available = isActive || isDone || solved || levelNum === teamLevel;
+                          const prevTitle = sorted[levelNum - 2]?.title;
+                          const lockedReason = prevTitle ? `Locked — complete "${prevTitle}" first` : 'Locked — clear the previous mission first';
                           return (
                             <div
                               key={ch.id}
-                              onClick={() => available && router.push(`/challenges?level=${ch.order}`)}
-                              className={`p-4 rounded-md transition-all duration-200 ${
+                              onClick={() => available && router.push('/timeline')}
+                              title={!available ? lockedReason : undefined}
+                              className={`relative p-4 rounded-md transition-all duration-200 ${
                                 solved
                                   ? 'bg-emerald-950/20 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
                                   : available
                                   ? 'bg-[#0e0508]/90 border border-red-900/50 hover:border-red-600 hover:shadow-[0_0_20px_rgba(220,38,38,0.25)] cursor-pointer'
-                                  : 'bg-black/40 border border-red-950/20 opacity-40 cursor-default'
-                              } relative`}
+                                  : 'bg-black/40 border border-red-950/20 opacity-40 cursor-not-allowed'
+                              }`}
                             >
                               {solved && (
                                 <div style={{ position: 'absolute', top: 12, right: 12, width: 20, height: 20, borderRadius: '50%', background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                   <CheckCircle2 size={13} color="#10b981" />
+                                </div>
+                              )}
+                              {!available && (
+                                <div style={{ position: 'absolute', top: 12, right: 12, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <Lock size={11} color="#6b7280" />
                                 </div>
                               )}
                               <div style={{ fontSize: 10, color: '#ef4444', fontWeight: 700, letterSpacing: 2, marginBottom: 4, fontFamily: 'monospace' }}>
@@ -353,6 +331,11 @@ export default function DashboardPage() {
                                 {available && !solved && (
                                   <span style={{ fontSize: 10, color: '#f87171', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 2 }}>
                                     ENGAGE <ChevronRight size={12} />
+                                  </span>
+                                )}
+                                {!available && (
+                                  <span style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 3 }}>
+                                    <Lock size={10} /> LOCKED
                                   </span>
                                 )}
                               </div>
@@ -376,17 +359,17 @@ export default function DashboardPage() {
                 // TACTICAL LAUNCH //
               </div>
               <h3 style={{ fontSize: 20, fontWeight: 900, color: '#f1f5f9', textTransform: 'uppercase', marginBottom: 8, letterSpacing: '1px' }}>
-                ENTER MISSION INTERFACE
+                VIEW MISSION TIMELINE
               </h3>
               <p style={{ color: '#94a3b8', fontSize: 12, lineHeight: 1.6, marginBottom: 18 }}>
-                Connect directly to the encrypted mall server terminal and decrypt intercepted ciphers.
+                Review the full operation roadmap, then engage your current target from there.
               </p>
               <Link
-                href="/challenges"
+                href="/timeline"
                 className="btn-game-primary"
                 style={{ width: '100%', justifyContent: 'center' }}
               >
-                <Target size={16} /> LAUNCH TERMINAL
+                <Target size={16} /> OPEN TIMELINE
               </Link>
             </div>
 

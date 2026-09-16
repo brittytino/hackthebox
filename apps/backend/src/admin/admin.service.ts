@@ -379,4 +379,74 @@ export class AdminService {
 
     return csv;
   }
+
+  // Game & Round Overrides
+  async endGame() {
+    const topScore = await this.prisma.score.findFirst({
+      orderBy: [
+        { totalPoints: 'desc' },
+        { lastSolved: 'asc' },
+      ],
+      include: {
+        team: true,
+      },
+    });
+
+    const winnerTeam = topScore?.team;
+
+    const state = await this.prisma.storyState.upsert({
+      where: { id: 'singleton' },
+      create: {
+        id: 'singleton',
+        storyStarted: true,
+        storyEnded: true,
+        winnerTeamName: winnerTeam?.name || 'OPERATIVE ALLIANCE',
+        round3Winner: winnerTeam?.id || null,
+        winTimestamp: new Date(),
+        finalOutcome: 'CITY_SAVED',
+      },
+      update: {
+        storyEnded: true,
+        winnerTeamName: winnerTeam?.name || 'OPERATIVE ALLIANCE',
+        round3Winner: winnerTeam?.id || null,
+        winTimestamp: new Date(),
+        finalOutcome: 'CITY_SAVED',
+      },
+    });
+
+    return {
+      message: 'Game ended successfully. Finale broadcast activated for all teams.',
+      winner: winnerTeam?.name || 'OPERATIVE ALLIANCE',
+      state,
+    };
+  }
+
+  async resumeGame() {
+    const state = await this.prisma.storyState.upsert({
+      where: { id: 'singleton' },
+      create: {
+        id: 'singleton',
+        storyStarted: true,
+        storyEnded: false,
+      },
+      update: {
+        storyEnded: false,
+      },
+    });
+
+    return {
+      message: 'Game resumed. Live missions active.',
+      state,
+    };
+  }
+
+  async activateAllRounds() {
+    await this.prisma.round.updateMany({
+      data: { status: 'ACTIVE' },
+    });
+
+    return {
+      message: 'All rounds (1, 2, 3) are now ACTIVE.',
+    };
+  }
 }

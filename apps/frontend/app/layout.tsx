@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Share_Tech_Mono, Rajdhani } from "next/font/google";
+import GameEndWatcher from "@/components/ui/GameEndWatcher";
 import "./globals.css";
 
 const inter = Inter({ 
@@ -40,6 +41,7 @@ export default function RootLayout({
         <div className="blood-corner-tl" aria-hidden="true" />
         <div className="blood-corner-br" aria-hidden="true" />
         <div className="crt-vignette" aria-hidden="true" />
+        <GameEndWatcher />
         <div className="relative z-10">
           {children}
         </div>

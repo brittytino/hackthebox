@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
-  Shield, Flag, Lock, CheckCircle, Zap, ArrowLeft, Trophy, Crosshair, Skull, Film,
+  Lock, CheckCircle, Zap, Trophy, Skull, Film,
 } from 'lucide-react';
 import { api } from '@/lib/api';
-import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
+import AppNavbar from '@/components/ui/AppNavbar';
+import LockedHint from '@/components/ui/LockedHint';
 import FocusScreenAdvisory, { FocusScreenButton } from '@/components/ui/FocusScreenAdvisory';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -124,47 +124,30 @@ export default function TimelinePage() {
 
   return (
     <div ref={containerRef} style={{ minHeight: '100vh', background: '#050508', overflow: 'auto', position: 'relative', color: '#f1f5f9' }}>
-      <HalfCircleMenu />
       <FocusScreenAdvisory />
       {/* Blood textures */}
       <div className="blood-splatter-bg" />
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(220,38,38,0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 100%, rgba(138,3,3,0.15) 0%, transparent 50%)' }} />
 
-      {/* Top nav */}
-      <div data-tl="header" style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '10px 28px', borderBottom: '1px solid rgba(220,38,38,0.3)', background: 'rgba(10,4,6,0.95)', backdropFilter: 'blur(24px)', gap: 12 }}>
-        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
-          <ArrowLeft size={12} className="text-red-500" />HQ
-        </Link>
-        <Link href="/challenges" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
-          <Crosshair size={12} className="text-red-500" />MISSIONS
-        </Link>
-        <Link href="/story" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
-          <Film size={12} className="text-red-500" />STORY
-        </Link>
-        <Link href="/leaderboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
-          <Trophy size={12} className="text-red-500" />RANKS
-        </Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg,#7f1d1d,#dc2626)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Shield size={13} color="#fff" />
-          </div>
-          <span style={{ color: '#f1f5f9', fontSize: 13, fontWeight: 900, letterSpacing: 2 }}>THE EXTRACTION</span>
-          <span style={{ color: '#ef4444', fontSize: 11, letterSpacing: 2, fontFamily: 'monospace' }}>/ MISSION TIMELINE</span>
-        </div>
-        <FocusScreenButton />
-        <div style={{ flex: 1 }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: 6, padding: '5px 12px' }}>
-          <Trophy size={13} color="#ef4444" />
-          <span style={{ color: '#fee2e2', fontWeight: 900, fontSize: 16, fontFamily: 'monospace' }}>{teamPoints.toLocaleString()}</span>
-          <span style={{ color: '#ef4444', fontSize: 10, fontWeight: 700, letterSpacing: 2, fontFamily: 'monospace' }}>PTS</span>
-        </div>
-        {teamName && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span className="status-dot active" />
-            <span style={{ color: '#fee2e2', fontSize: 11, letterSpacing: 1, fontFamily: 'monospace' }}>{teamName}</span>
-          </div>
-        )}
-      </div>
+      <AppNavbar
+        active="timeline"
+        right={
+          <>
+            <div className="app-nav-hide-narrow" style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: 6, padding: '5px 12px' }}>
+              <Trophy size={13} color="#ef4444" />
+              <span style={{ color: '#fee2e2', fontWeight: 900, fontSize: 16, fontFamily: 'monospace' }}>{teamPoints.toLocaleString()}</span>
+              <span style={{ color: '#ef4444', fontSize: 10, fontWeight: 700, letterSpacing: 2, fontFamily: 'monospace' }}>PTS</span>
+            </div>
+            {teamName && (
+              <div className="app-nav-hide-narrow" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span className="status-dot active" />
+                <span style={{ color: '#fee2e2', fontSize: 11, letterSpacing: 1, fontFamily: 'monospace' }}>{teamName}</span>
+              </div>
+            )}
+            <FocusScreenButton className="app-nav-hide-narrow" />
+          </>
+        }
+      />
 
       {/* Page header */}
       <div data-tl="header" style={{ textAlign: 'center', padding: '50px 24px 24px', position: 'relative', zIndex: 5 }}>
@@ -249,7 +232,7 @@ export default function TimelinePage() {
               {/* Card */}
               <div
                 onClick={() => state !== 'locked' && router.push(`/challenges?level=${m.order}`)}
-                className={`tactical-box corner-brackets ${
+                className={`group tactical-box corner-brackets ${
                   state === 'active'
                     ? 'border-red-500 shadow-[0_0_40px_rgba(220,38,38,0.35)]'
                     : state === 'solved'
@@ -259,18 +242,22 @@ export default function TimelinePage() {
                 style={{
                   width: '42%',
                   borderRadius: 10,
-                  overflow: 'hidden',
-                  cursor: state !== 'locked' ? 'pointer' : 'default',
+                  cursor: state !== 'locked' ? 'pointer' : 'not-allowed',
                   transition: 'all 0.3s ease',
                   position: 'relative',
                 }}
               >
+                {state === 'locked' && (
+                  <LockedHint
+                    text={i > 0 ? `Complete "${MISSIONS[i - 1].name}" first` : 'Locked target'}
+                  />
+                )}
                 {/* Accent top bar */}
-                <div style={{ height: 3, background: `linear-gradient(90deg,transparent,${m.accentColor},transparent)`, boxShadow: `0 0 15px ${m.accentColor}` }} />
+                <div style={{ height: 3, borderRadius: '9px 9px 0 0', overflow: 'hidden', background: `linear-gradient(90deg,transparent,${m.accentColor},transparent)`, boxShadow: `0 0 15px ${m.accentColor}` }} />
 
                 {/* Background image preview */}
                 <div style={{ position: 'relative' }}>
-                  <div style={{ height: 110, position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ height: 110, position: 'relative', overflow: 'hidden', borderRadius: '9px 9px 0 0' }}>
                     <Image src={m.bgImage} alt={m.name} fill style={{ objectFit: 'cover', objectPosition: 'center', opacity: 0.22, filter: 'saturate(0.5)' }} />
                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(10,4,6,0.3) 0%,rgba(10,4,6,0.9) 100%)' }} />
                     {/* Character */}

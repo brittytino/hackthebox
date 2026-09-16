@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   LayoutDashboard,
-  Swords,
+  Radio,
   Trophy,
   BookOpen,
   LogOut,
@@ -14,7 +14,6 @@ import {
   ShieldAlert,
   User,
   X,
-  Radio,
 } from 'lucide-react';
 
 interface HalfCircleMenuProps {
@@ -29,9 +28,9 @@ const menuItems = [
     color: '#ef4444',
   },
   {
-    href: '/challenges',
-    label: 'MISSIONS',
-    icon: Swords,
+    href: '/timeline',
+    label: 'TIMELINE',
+    icon: Radio,
     color: '#f87171',
   },
   {

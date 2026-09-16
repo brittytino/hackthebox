@@ -45,7 +45,7 @@ async function main() {
       name: 'Round 2: Infiltration',
       type: 'FIND_AND_CRACK',
       order: 2,
-      status: 'PENDING',
+      status: 'ACTIVE',
       description: 'Veera discovers Home Minister Veera Santhanam\'s betrayal. Crack password hashes and JWT tokens to expose the ministerial conspiracy.',
     },
   });
@@ -58,7 +58,7 @@ async function main() {
       name: 'Round 3: The Final Strike',
       type: 'CATCH_THE_FLAG',
       order: 3,
-      status: 'PENDING',
+      status: 'ACTIVE',
       description: 'Race against time to decode the mall demolition payload, defuse the logic bomb, and breach Farooq\'s border master vault.',
     },
   });

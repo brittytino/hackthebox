@@ -39,19 +39,24 @@ export default function AdminPage() {
   const [adjustReason, setAdjustReason] = useState('');
   const [disqualifyReason, setDisqualifyReason] = useState('');
   
+  // Game override states
+  const [gameState, setGameState] = useState<any>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
   // Creation states
   const [newRound, setNewRound] = useState({ name: '', type: 'DECODE_THE_SECRET', order: 1, description: '' });
   const [newChallenge, setNewChallenge] = useState({ roundId: '', title: '', description: '', points: 100, flag: '', order: 1, maxAttempts: 0, hints: '' });
 
   const loadData = useCallback(async () => {
     try {
-      const [profileData, statsData, roundsData, submissionsData, teamsData, scoreboardStatus] = await Promise.all([
+      const [profileData, statsData, roundsData, submissionsData, teamsData, scoreboardStatus, currentGameState] = await Promise.all([
         api.getProfile(),
         api.admin.getStats(),
         api.getAllRounds(),
         api.admin.getAllSubmissions(),
         api.getAllTeams(),
         api.getScoreboardStatus().catch(() => ({ frozen: false })),
+        api.game.getState().catch(() => null),
       ]);
 
       if (profileData.role !== 'ADMIN') {
@@ -65,6 +70,7 @@ export default function AdminPage() {
       setSubmissions(submissionsData);
       setTeams(teamsData);
       setScoreboardFrozen(Boolean(scoreboardStatus?.frozen));
+      setGameState(currentGameState);
       setLastRefresh(new Date());
     } catch (error) {
       console.error('Failed to load admin data:', error);
@@ -211,6 +217,50 @@ export default function AdminPage() {
     } catch (error: any) { alert(error.message || 'Failed to export CSV'); }
   };
 
+  const handleEndGame = async () => {
+    if (!confirm('🚨 CRITICAL ACTION: Are you sure you want to END THE GAME FOR ALL OPERATIVES?\n\nThis will broadcast the conclusion to all connected teams, determine the winner from current scores, and trigger the Marvel post-credits ending screen on all client devices.')) {
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const res = await api.admin.endGame();
+      alert(`✅ ${res.message || 'Game ended successfully!'}\nWinner: ${res.winner || 'Current Leader'}`);
+      await loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to end game');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleResumeGame = async () => {
+    if (!confirm('Reopen live missions and resume the competition?')) return;
+    setActionLoading(true);
+    try {
+      const res = await api.admin.resumeGame();
+      alert(res.message || 'Game resumed.');
+      await loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to resume game');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleActivateAllRounds = async () => {
+    if (!confirm('Ensure all rounds (Round 1, Round 2, Round 3) are active in database so teams face no artificial roadblocks?')) return;
+    setActionLoading(true);
+    try {
+      const res = await api.admin.activateAllRounds();
+      alert(res.message || 'All rounds activated.');
+      await loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to activate all rounds');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -341,6 +391,141 @@ export default function AdminPage() {
                   <div style={{ fontSize: 30, fontWeight: 900, color: '#f1f5f9', letterSpacing: '1px', fontFamily: 'var(--font-rajdhani), sans-serif' }}>{s.value}</div>
                 </div>
               ))}
+            </div>
+
+            {/* -- MISSION COMMAND OVERRIDE & FINALE BROADCAST -- */}
+            <div
+              className="df tactical-box corner-brackets"
+              style={{
+                ...cardStyle,
+                border: gameState?.storyEnded ? '2px solid #ef4444' : '1px solid rgba(239,68,68,0.4)',
+                background: gameState?.storyEnded
+                  ? 'linear-gradient(135deg, rgba(30,6,12,0.95), rgba(18,4,8,0.95))'
+                  : 'linear-gradient(135deg, rgba(14,4,7,0.95), rgba(20,5,10,0.95))',
+                boxShadow: gameState?.storyEnded ? '0 0 40px rgba(239,68,68,0.25)' : 'none',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: '#ef4444', fontWeight: 800, letterSpacing: 3, fontFamily: 'monospace' }}>
+                    // CENTRAL COMMAND OVERRIDE & POST-CREDITS FINALE //
+                  </div>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: '#f1f5f9', letterSpacing: 1, marginTop: 4 }}>
+                    TACTICAL GAME STATE CONTROLLER
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px',
+                      borderRadius: 6, fontFamily: 'monospace', fontSize: 11, fontWeight: 800,
+                      background: gameState?.storyEnded ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.15)',
+                      border: `1px solid ${gameState?.storyEnded ? '#ef4444' : '#10b981'}`,
+                      color: gameState?.storyEnded ? '#fca5a5' : '#6ee7b7',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 8, height: 8, borderRadius: '50%',
+                        background: gameState?.storyEnded ? '#ef4444' : '#10b981',
+                        boxShadow: `0 0 10px ${gameState?.storyEnded ? '#ef4444' : '#10b981'}`,
+                      }}
+                    />
+                    {gameState?.storyEnded ? '🚨 FINALE BROADCAST ACTIVE' : '🟢 LIVE MISSIONS ACTIVE'}
+                  </div>
+                </div>
+              </div>
+
+              <p style={{ color: '#94a3b8', fontSize: 13, lineHeight: 1.5, margin: '0 0 20px', maxWidth: 840 }}>
+                Ending the game triggers an immediate, synchronized emergency command broadcast across all active participant screens and automatically navigates them to the cinematic Marvel-style post-credits finale. You can also re-open operations or activate all mission rounds below.
+              </p>
+
+              {/* Action Buttons Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+                {/* 1. End Game for All */}
+                <button
+                  type="button"
+                  onClick={handleEndGame}
+                  disabled={actionLoading || Boolean(gameState?.storyEnded)}
+                  style={{
+                    padding: '14px 18px',
+                    background: gameState?.storyEnded ? 'rgba(127,29,29,0.25)' : 'linear-gradient(135deg, #7f1d1d, #dc2626)',
+                    border: '1.5px solid #ef4444',
+                    borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 900,
+                    cursor: gameState?.storyEnded ? 'not-allowed' : 'pointer',
+                    fontFamily: 'monospace', letterSpacing: 1.5,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    boxShadow: gameState?.storyEnded ? 'none' : '0 0 25px rgba(220,38,38,0.4)',
+                    opacity: gameState?.storyEnded ? 0.6 : 1,
+                  }}
+                >
+                  <ShieldAlert size={16} /> END GAME FOR ALL
+                </button>
+
+                {/* 2. Activate All Rounds */}
+                <button
+                  type="button"
+                  onClick={handleActivateAllRounds}
+                  disabled={actionLoading}
+                  style={{
+                    padding: '14px 18px',
+                    background: 'rgba(16,185,129,0.12)',
+                    border: '1px solid rgba(16,185,129,0.5)',
+                    borderRadius: 8, color: '#6ee7b7', fontSize: 13, fontWeight: 800,
+                    cursor: 'pointer', fontFamily: 'monospace', letterSpacing: 1.5,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
+                >
+                  <Zap size={15} color="#10b981" /> ACTIVATE ALL ROUNDS (1, 2, 3)
+                </button>
+
+                {/* 3. Resume Live Game */}
+                <button
+                  type="button"
+                  onClick={handleResumeGame}
+                  disabled={actionLoading || !Boolean(gameState?.storyEnded)}
+                  style={{
+                    padding: '14px 18px',
+                    background: !gameState?.storyEnded ? 'rgba(0,0,0,0.3)' : 'rgba(245,158,11,0.18)',
+                    border: `1px solid ${!gameState?.storyEnded ? 'rgba(255,255,255,0.1)' : 'rgba(245,158,11,0.5)'}`,
+                    borderRadius: 8, color: !gameState?.storyEnded ? '#6b7280' : '#fef08a',
+                    fontSize: 13, fontWeight: 800,
+                    cursor: !gameState?.storyEnded ? 'not-allowed' : 'pointer',
+                    fontFamily: 'monospace', letterSpacing: 1.5,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
+                >
+                  <RefreshCw size={14} /> RESUME LIVE GAME
+                </button>
+
+                {/* 4. Preview Marvel Credits */}
+                <Link
+                  href="/credits"
+                  target="_blank"
+                  style={{
+                    padding: '14px 18px',
+                    background: 'rgba(59,130,246,0.12)',
+                    border: '1px solid rgba(59,130,246,0.45)',
+                    borderRadius: 8, color: '#93c5fd', fontSize: 13, fontWeight: 800,
+                    fontFamily: 'monospace', letterSpacing: 1.5,
+                    textDecoration: 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
+                >
+                  <Trophy size={15} color="#60a5fa" /> PREVIEW MARVEL CREDITS
+                </Link>
+              </div>
+
+              {/* Admin Credentials Reference Note */}
+              <div style={{ marginTop: 18, padding: '10px 16px', background: 'rgba(0,0,0,0.4)', borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' }}>
+                  <span style={{ color: '#ef4444', fontWeight: 800 }}>ADMIN CLEARANCE:</span> Username: <code style={{ color: '#fee2e2' }}>admin</code> | Password: <code style={{ color: '#fee2e2' }}>admin123</code> | Direct Route: <code style={{ color: '#fee2e2' }}>/admin</code>
+                </div>
+                <div style={{ fontSize: 11, color: '#fca5a5', fontFamily: 'monospace' }}>
+                  Post-Credits URL: <Link href="/credits" target="_blank" style={{ color: '#ef4444', textDecoration: 'underline' }}>/credits</Link>
+                </div>
+              </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }} className="grid-cols-1 lg:grid-cols-2">

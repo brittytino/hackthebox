@@ -9,7 +9,7 @@ import { api } from '@/lib/api';
 import {
   Flag, Lock, CheckCircle, Zap, AlertTriangle, Eye, EyeOff,
   Terminal, Activity, Shield, Clock, X, Map, Users,
-  RadioTower, ChevronDown, ChevronUp, Trophy,
+  RadioTower, ChevronDown, ChevronUp, Trophy, LayoutList,
   ChevronsLeft, ChevronsRight, ChevronRight, ChevronLeft,
   SkipForward, Menu, Copy, Check,
 } from 'lucide-react';
@@ -260,6 +260,7 @@ interface ApiResponse {
     points: number; difficulty: string; order: number;
     hints?: string; hintPenalty?: number;
   } | null;
+  waitingForRound?: { name: string; order: number };
   progress: {
     currentLevel: number; totalLevels: number;
     attemptsUsed: number; maxAttempts: number | null;
@@ -737,6 +738,7 @@ function ChallengesInner() {
         {/* Nav */}
         <nav className="ch-topbar-nav">
           <Link href="/dashboard" className="ch-nav-link"><Activity size={13} /><span>HQ</span></Link>
+          <Link href="/timeline" className="ch-nav-link"><RadioTower size={13} /><span className="ch-nav-hide-mob">TIMELINE</span></Link>
           <Link href="/leaderboard" className="ch-nav-link"><Trophy size={13} /><span>LEADERBOARD</span></Link>
           <Link href={storyHref} className="ch-nav-link"><Map size={13} /><span>STORY</span></Link>
 
@@ -745,10 +747,10 @@ function ChallengesInner() {
             type="button"
             onClick={() => setLeftOpen(v => !v)}
             className={`ch-nav-link ${leftOpen ? 'ch-nav-active' : ''}`}
-            title={`Toggle Timeline (${leftOpen ? 'Open' : 'Collapsed'}) - Hotkey: T`}
+            title={`Toggle mission list panel (${leftOpen ? 'Open' : 'Collapsed'}) - Hotkey: T`}
           >
-            <RadioTower size={13} />
-            <span className="ch-nav-hide-mob">TIMELINE</span>
+            <LayoutList size={13} />
+            <span className="ch-nav-hide-mob">MISSIONS</span>
           </button>
 
           <button
@@ -826,7 +828,7 @@ function ChallengesInner() {
                   <div key={m.level}
                     className="ch-dot-pip"
                     onClick={() => { setSelectedLevel(m.level); setLeftOpen(true); }}
-                    title={m.name}
+                    title={s === 'locked' ? `${m.name} — locked` : m.name}
                     style={{
                       background: s === 'solved' ? '#10b981' : s === 'active' ? '#ef4444' : '#374151',
                       boxShadow: s === 'active' ? '0 0 8px #ef4444' : 'none',
@@ -886,6 +888,7 @@ function ChallengesInner() {
                         <div
                           onClick={() => can && setSelectedLevel(m.level)}
                           className={`ch-mc-card ${sel ? 'ch-mc-sel' : ''} ${s === 'locked' ? 'ch-mc-locked' : ''}`}
+                          title={s === 'locked' ? `Locked — complete "${MISSIONS[order - 2]?.name ?? 'the previous mission'}" first` : m.name}
                           style={{
                             marginLeft: isAlt ? 22 : 26, marginRight: isAlt ? 26 : 22,
                             borderColor: sel ? 'rgba(239,68,68,0.8)' : s === 'solved' ? 'rgba(16,185,129,0.35)' : s === 'active' ? 'rgba(220,38,38,0.6)' : 'rgba(220,38,38,0.18)',
@@ -893,7 +896,7 @@ function ChallengesInner() {
                             opacity: s === 'locked' ? 0.35 : 1,
                             boxShadow: sel ? `0 0 18px ${rc2.glow}` : s === 'active' ? `0 2px 14px ${rc2.glow}` : 'none',
                             borderLeft: `3px solid ${sel ? '#ef4444' : s === 'solved' ? '#10b981' : s === 'active' ? '#dc2626' : '#2d0f14'}`,
-                            cursor: can ? 'pointer' : 'default',
+                            cursor: can ? 'pointer' : 'not-allowed',
                           }}
                         >
                           <div className="ch-mci-row">
@@ -973,10 +976,19 @@ function ChallengesInner() {
                       disabled={!canGoNext}
                       onClick={() => nextMission && canGoNext && setSelectedLevel(nextMission.level)}
                       className="ch-step-btn"
-                      title={nextMission ? (canGoNext ? `Next: ${nextMission.name}` : 'Next mission locked') : 'Last mission'}
+                      title={nextMission ? (canGoNext ? `Next: ${nextMission.name}` : `Locked — solve "${meta.name}" to unlock ${nextMission.name}`) : 'Last mission'}
                     >
-                      <span>NEXT</span>
-                      <ChevronRight size={12} />
+                      {nextMission && !canGoNext ? (
+                        <>
+                          <Lock size={11} />
+                          <span>LOCKED</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>NEXT</span>
+                          <ChevronRight size={12} />
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -1126,7 +1138,9 @@ function ChallengesInner() {
                   <div className="game-scroll ch-payload-code">
                     {apiResponse?.challenge?.description
                       ? formatPayloadText(apiResponse.challenge.description)
-                      : 'Loading payload data...'}
+                      : (apiResponse?.waitingForRound
+                          ? `// COMMAND RESTRICTION: Round ${apiResponse.waitingForRound.order} (${apiResponse.waitingForRound.name}) is currently locked by command. Awaiting administrative clearance.`
+                          : 'Loading payload telemetry...')}
                   </div>
                 )}
                 {state === 'solved' && (
@@ -1590,7 +1604,7 @@ function ChallengesInner() {
         .ch-zz-dot { position:absolute; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; border:2px solid; z-index:2; left:12px; }
         .ch-mc-card { padding:11px 11px 11px 28px; border-radius:8px; border:1px solid; border-left:3px solid; transition:all 0.18s ease; cursor:pointer; background:rgba(12,4,6,0.9); }
         .ch-mc-card:not(.ch-mc-locked):hover { filter:brightness(1.15); transform:translateX(2px); }
-        .ch-mc-locked { cursor:default; opacity:0.4; }
+        .ch-mc-locked { cursor:not-allowed; opacity:0.4; }
         .ch-mci-row { display:flex; align-items:center; gap:5px; margin-bottom:4px; }
         .ch-mc-icon { flex-shrink:0; }
         .ch-mc-lvl { color:#f1f5f9; font-size:11px; font-weight:800; font-family:monospace; }

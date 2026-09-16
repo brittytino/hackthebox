@@ -1,14 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import Link from 'next/link';
 import { api } from '@/lib/api';
 import {
-  Trophy, Crown, Users, Activity, ArrowLeft,
-  Shield, RefreshCw, Lock, Zap, Star,
-  CheckCircle2, Target, Crosshair, Skull,
+  Trophy, Users, Activity,
+  RefreshCw, Lock, Skull,
 } from 'lucide-react';
-import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
+import AppNavbar from '@/components/ui/AppNavbar';
 
 // SSE ('/scoreboard/live') is the primary real-time channel; this is just a
 // safety-net poll in case SSE is blocked by a proxy, so it can be infrequent.
@@ -90,38 +88,31 @@ export default function LeaderboardPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#050508', position: 'relative', overflowX: 'hidden', color: '#f1f5f9' }}>
-      <HalfCircleMenu />
       {/* Blood texture overlays */}
       <div className="blood-splatter-bg" />
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(ellipse at 50% 0%, rgba(220,38,38,0.12) 0%, transparent 60%), radial-gradient(ellipse at 50% 100%, rgba(138,3,3,0.15) 0%, transparent 55%)' }} />
 
-      {/*  NAV  */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', padding: '10px 28px', borderBottom: '1px solid rgba(220,38,38,0.3)', background: 'rgba(10,4,6,0.95)', backdropFilter: 'blur(20px)', gap: 12 }}>
-        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
-          <ArrowLeft size={12} className="text-red-500" />HQ
-        </Link>
-        <Link href="/challenges" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 700, letterSpacing: 2, textDecoration: 'none', padding: '6px 12px', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 6, fontFamily: 'monospace' }}>
-          <Target size={12} className="text-red-500" />MISSIONS
-        </Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg,#7f1d1d,#dc2626)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Crosshair size={13} color="#fff" />
-          </div>
-          <span style={{ color: '#f1f5f9', fontSize: 13, fontWeight: 900, letterSpacing: 2 }}>THE EXTRACTION</span>
-          <span style={{ color: '#ef4444', fontSize: 11, letterSpacing: 2, fontFamily: 'monospace' }}>/ AGENT RANKINGS</span>
-        </div>
-        <div style={{ flex: 1 }} />
-        {/* Live indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: 6, padding: '5px 12px' }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444', animation: 'dopulse 1.5s infinite' }} />
-          <span style={{ color: '#f87171', fontSize: 11, fontWeight: 700, letterSpacing: 2, fontFamily: 'monospace' }}>LIVE FEED</span>
-          <span style={{ color: '#6b7280', fontSize: 10, letterSpacing: 1, fontFamily: 'monospace' }}>{countdown}s</span>
-        </div>
-        <button onClick={() => loadData(true)} disabled={refreshing} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.4)', borderRadius: 6, cursor: 'pointer', color: '#fee2e2', fontSize: 11, fontWeight: 700, letterSpacing: 1, fontFamily: 'monospace', opacity: refreshing ? 0.6 : 1 }}>
-          <RefreshCw size={12} style={{ animation: refreshing ? 'spin 0.8s linear infinite' : 'none' }} />REFRESH
-        </button>
-        {lastUpdated && <span style={{ color: '#6b7280', fontSize: 10, letterSpacing: 1, fontFamily: 'monospace' }}>{lastUpdated.toLocaleTimeString()}</span>}
-      </div>
+      <AppNavbar
+        active="leaderboard"
+        right={
+          <>
+            <div className="app-nav-hide-narrow" style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: 6, padding: '5px 12px' }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444', animation: 'dopulse 1.5s infinite' }} />
+              <span style={{ color: '#f87171', fontSize: 11, fontWeight: 700, letterSpacing: 2, fontFamily: 'monospace' }}>LIVE FEED</span>
+              <span style={{ color: '#6b7280', fontSize: 10, letterSpacing: 1, fontFamily: 'monospace' }}>{countdown}s</span>
+            </div>
+            <button
+              onClick={() => loadData(true)}
+              disabled={refreshing}
+              title={lastUpdated ? `Last updated ${lastUpdated.toLocaleTimeString()}` : undefined}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.4)', borderRadius: 6, cursor: 'pointer', color: '#fee2e2', fontSize: 11, fontWeight: 700, letterSpacing: 1, fontFamily: 'monospace', opacity: refreshing ? 0.6 : 1 }}
+            >
+              <RefreshCw size={12} style={{ animation: refreshing ? 'spin 0.8s linear infinite' : 'none' }} />
+              <span className="app-nav-hide-narrow">REFRESH</span>
+            </button>
+          </>
+        }
+      />
 
       <div style={{ position: 'relative', zIndex: 10, maxWidth: 940, margin: '0 auto', padding: '36px 24px 80px' }}>
 

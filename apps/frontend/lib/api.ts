@@ -123,6 +123,9 @@ export const api = {
       });
       return response.text();
     },
+    endGame: () => apiRequest('/admin/game/end', { method: 'POST' }),
+    resumeGame: () => apiRequest('/admin/game/resume', { method: 'POST' }),
+    activateAllRounds: () => apiRequest('/admin/rounds/activate-all', { method: 'POST' }),
   },
 
   // Game/victory state (who has won, whether the story has ended)

@@ -53,6 +53,7 @@ model Team {
   submissions   Submission[]
   scores        Score[]
   storyProgress StoryProgress[]
+  solves        ChallengeSolve[]
   qualified     Boolean       @default(false)
   qualifiedAt   DateTime?
   disqualified  Boolean       @default(false)
@@ -93,19 +94,43 @@ model Challenge {
   characterMessage String?     // Message from Veera/Althaf/etc
   points        Int
   flagHash      String
+  // Optional formula for team-bound flags, e.g. "md5:{team}|{size}|1|THEEXTRACTION"
+  // or "sha256:{team}5THEEXTRACTION". {team} and {size} are substituted at
+  // verify-time; result is ctf{<first 8 hex chars>}. When set, this takes
+  // priority over flagHash for verification. Admin-editable — nothing about
+  // team-specific challenges is hardcoded in application code.
+  teamFlagTemplate String?
   maxAttempts   Int?
   order         Int
   hints         String?
-  hintPenalty   Int           @default(50) // Points deducted for using hint
+  hintPenalty   Int           @default(50) // Points deducted per hint tier used
   isActive      Boolean       @default(true)
   difficulty    String        @default("MEDIUM") // EASY, MEDIUM, HARD
   submissions   Submission[]
+  solves        ChallengeSolve[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
   @@index([roundId])
   @@index([isActive])
   @@index([order])
+}
+
+// One row per (team, challenge) first-correct-solve. The unique constraint is
+// what makes scoring race-condition-proof: under concurrent correct
+// submissions for the same team+challenge, only one transaction can insert
+// this row — Postgres rejects the rest atomically, so a team can never be
+// scored twice for the same solve no matter how many requests race.
+model ChallengeSolve {
+  id            String        @id @default(uuid())
+  teamId        String
+  team          Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  challengeId   String
+  challenge     Challenge     @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+
+  @@unique([teamId, challengeId])
+  @@index([challengeId])
 }
 
 model Submission {

@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ScoreboardService } from '../scoreboard/scoreboard.service';
 import { CreateRoundDto, UpdateRoundStatusDto, CreateChallengeDto, UpdateChallengeDto } from './dto/admin.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private scoreboardService: ScoreboardService,
+  ) {}
 
   // Round Management
   async createRound(dto: CreateRoundDto) {
@@ -43,9 +47,16 @@ export class AdminService {
   }
 
   async updateChallenge(challengeId: string, dto: UpdateChallengeDto) {
+    const { flag, ...rest } = dto;
+
+    const data: Record<string, unknown> = { ...rest };
+    if (flag) {
+      data.flagHash = await bcrypt.hash(flag.toLowerCase(), 10);
+    }
+
     return this.prisma.challenge.update({
       where: { id: challengeId },
-      data: dto,
+      data,
     });
   }
 
@@ -190,22 +201,12 @@ export class AdminService {
   }
 
   async disqualifyTeam(teamId: string, reason: string) {
+    // `disqualified` alone is the marker — it's already checked at submit/hint
+    // time and filtered out of the public scoreboard. Mutating member roles
+    // was a hack that had no reset path on re-qualification.
     await this.prisma.team.update({
       where: { id: teamId },
-      data: {
-        disqualified: true,
-        members: {
-          updateMany: {
-            where: { teamId },
-            data: { role: 'JUDGE' }, // Use JUDGE role as disqualified marker
-          },
-        },
-      },
-    });
-
-    await this.prisma.score.update({
-      where: { teamId },
-      data: { totalPoints: 0 },
+      data: { disqualified: true },
     });
 
     return {
@@ -217,6 +218,7 @@ export class AdminService {
     await this.prisma.team.update({
       where: { id: teamId },
       data: {
+        disqualified: false,
         qualified: true,
         qualifiedAt: new Date(),
       },
@@ -258,11 +260,7 @@ export class AdminService {
   }
 
   async freezeScoreboard(freeze: boolean) {
-    await this.prisma.systemConfig.upsert({
-      where: { key: 'scoreboard_frozen' },
-      create: { key: 'scoreboard_frozen', value: freeze.toString() },
-      update: { value: freeze.toString() },
-    });
+    await this.scoreboardService.setFrozen(freeze);
 
     return {
       message: `Scoreboard ${freeze ? 'frozen' : 'unfrozen'}`,

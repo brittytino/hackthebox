@@ -10,11 +10,14 @@ import {
 } from 'lucide-react';
 import HalfCircleMenu from '@/components/ui/HalfCircleMenu';
 
-const POLL_INTERVAL = 15000;
+// SSE ('/scoreboard/live') is the primary real-time channel; this is just a
+// safety-net poll in case SSE is blocked by a proxy, so it can be infrequent.
+const POLL_INTERVAL = 45000;
 
 export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [myTeamId, setMyTeamId]       = useState<string | null>(null);
+  const [totalLevels, setTotalLevels] = useState(9);
   const [loading, setLoading]         = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [countdown, setCountdown]     = useState(POLL_INTERVAL / 1000);
@@ -38,6 +41,9 @@ export default function LeaderboardPage() {
   useEffect(() => {
     api.getProfile().then(p => {
       if (p?.team?.id) setMyTeamId(p.team.id);
+    }).catch(() => {});
+    api.getAllChallenges().then(list => {
+      if (Array.isArray(list) && list.length > 0) setTotalLevels(list.length);
     }).catch(() => {});
     loadData();
     const poll = setInterval(() => loadData(), POLL_INTERVAL);
@@ -66,7 +72,12 @@ export default function LeaderboardPage() {
   const rest     = sorted.slice(3);
 
   function getPoints(t: Record<string, any>) { return t?.totalPoints ?? t?.points ?? 0; }
-  function getLevel(t: Record<string, any>)  { return t?.currentLevel ?? t?.challengesSolved ?? 0; }
+  function getLevel(t: Record<string, any>) {
+    if (typeof t?.challengesSolved === 'number') return t.challengesSolved;
+    if (typeof t?.solvedChallenges === 'number') return t.solvedChallenges;
+    if (typeof t?.currentLevel === 'number') return Math.max(0, Math.min(totalLevels, t.currentLevel - 1));
+    return 0;
+  }
   function isMe(t: Record<string, any>)      { return myTeamId && (t?.teamId === myTeamId || t?.id === myTeamId); }
 
   const PODIUM_ORDER = [1, 0, 2]; // display as: 2nd | 1st | 3rd
@@ -185,7 +196,7 @@ export default function LeaderboardPage() {
                         <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden', marginBottom: 6 }}>
                           <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#7f1d1d,#dc2626,#ef4444)', borderRadius: 2 }} />
                         </div>
-                        <div style={{ color: '#94a3b8', fontSize: 10, letterSpacing: 1, fontFamily: 'monospace' }}>{getLevel(team)} / 9 TARGETS SOLVED</div>
+                        <div style={{ color: '#94a3b8', fontSize: 10, letterSpacing: 1, fontFamily: 'monospace' }}>{getLevel(team)} / {totalLevels} TARGETS SOLVED</div>
                       </div>
                       {/* Podium block */}
                       <div style={{
@@ -254,7 +265,7 @@ export default function LeaderboardPage() {
                         </div>
                         {/* Mission progress bubbles */}
                         <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                          {Array.from({ length: 9 }, (_, ii) => (
+                          {Array.from({ length: totalLevels }, (_, ii) => (
                             <div key={ii} style={{ width: 7, height: 7, borderRadius: '2px', background: ii < lvl ? '#10b981' : ii === lvl ? '#ef4444' : '#1f0d12', boxShadow: ii === lvl ? '0 0 6px #ef4444' : 'none' }} />
                           ))}
                         </div>

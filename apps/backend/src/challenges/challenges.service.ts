@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma, RoundStatus, RoundType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 
@@ -57,122 +58,90 @@ export class ChallengesService {
     return score?.totalPoints ?? 0;
   }
 
-  // Calculate team-specific flag for challenges 1.3 and 2.3
-  private calculateTeamSpecificFlag(
+  // Computes a team-bound flag from an admin-configured template like
+  // "md5:{team}|{size}|1|THEEXTRACTION" or "sha256:{team}5THEEXTRACTION".
+  // Nothing about which challenges are team-specific, or what their formula
+  // is, lives in application code — it's entirely a DB field admins set.
+  private computeTeamFlag(
+    template: string,
     team: { name: string; member2Name?: string | null },
-    absoluteLevel: number,
-  ): string {
+  ): string | null {
+    const match = template.match(/^(md5|sha1|sha256):(.+)$/);
+    if (!match) return null;
+
+    const [, algo, pattern] = match;
     const teamSize = team.member2Name ? 2 : 1;
-    if (absoluteLevel === 3) {
-      const input = `${team.name}|${teamSize}|1|THEEXTRACTION`;
-      const hash = crypto.createHash('md5').update(input).digest('hex');
-      return `ctf{${hash.substring(0, 8)}}`;
-    } else if (absoluteLevel === 6) {
-      // Level 2.3: SHA256(teamName+5+THEEXTRACTION)
-      const input = `${team.name}5THEEXTRACTION`;
-      const hash = crypto.createHash('sha256').update(input).digest('hex');
-      return `ctf{${hash.substring(0, 8)}}`;
-    }
-    return '';
+    const seed = pattern.replace(/\{team\}/g, team.name).replace(/\{size\}/g, String(teamSize));
+
+    const hash = crypto.createHash(algo).update(seed).digest('hex');
+    return `ctf{${hash.substring(0, 8)}}`;
   }
 
-  private getAbsoluteLevel(challenge: { round: { order: number }; order: number }) {
-    return (challenge.round.order - 1) * 3 + challenge.order;
-  }
-
-  private getAcceptedFlagsForLevel(team: { name: string; member2Name?: string | null }, absoluteLevel: number): string[] {
-    const staticFlags: Record<number, string[]> = {
-      1: ['ctf{v33r4_n0d3_x92_s3rv3r}'],
-      2: ['ctf{k3rn3l_p4th_v4ult91}'],
-      4: ['ctf{shadow99_valkyrie_crimson7}'],
-      5: ['ctf{minister_staged_treason_88x}'],
-      7: ['ctf{k1llsw17ch_0v3rr1d3_p4ck37}'],
-      8: ['ctf{d3fus3_l0g1c_b0mb_s41f99}'],
-      9: ['ctf{master_a1b2c3_vault}'],
-    };
-
-    if (absoluteLevel === 3 || absoluteLevel === 6) {
-      return [this.calculateTeamSpecificFlag(team, absoluteLevel).toLowerCase()];
+  private async isFlagCorrect(
+    challenge: { flagHash: string; teamFlagTemplate: string | null },
+    team: { name: string; member2Name?: string | null },
+    normalizedFlag: string,
+  ): Promise<boolean> {
+    if (challenge.teamFlagTemplate) {
+      const expected = this.computeTeamFlag(challenge.teamFlagTemplate, team);
+      return expected !== null && normalizedFlag === expected.toLowerCase();
     }
 
-    return staticFlags[absoluteLevel] || [];
+    return bcrypt.compare(normalizedFlag, challenge.flagHash);
   }
 
-  private getDefaultHintsForLevel(absoluteLevel: number): string[] {
-    const hints: Record<number, string[]> = {
-      1: [
-        'The transmission payload is armored in standard transport encoding, but decodes into non-printable binary telemetry rather than plain text.',
-        'Standard flag headers always begin with known characters. Compare the first few raw bytes against the expected protocol header to recover the single-byte masking key.',
-      ],
-      2: [
-        'The three pieces originate from separate comms relays: an ancient computer base, a symmetric classical alphabet inversion, and a reversed byte capture.',
-        'Resolve Fragment A using base-8 byte values, apply standard Atbash substitution to alphabetical characters in Fragment B, and invert the byte order of the final hex stream before decoding.',
-      ],
-      3: [
-        'The vault lock combines team registration telemetry with mission parameters using a strict pipe-delimited schema.',
-        'Construct the lock seed using your exact team name, operational headcount (1 or 2), round index 1, and mission codename separated by pipes. Digest with MD5 and extract the first 8 characters into standard flag format.',
-      ],
-      4: [
-        'Identify each digest family by length and analyze their bit footprints before choosing dictionary recovery tactics.',
-        'The three artifacts span 128-bit, 160-bit, and 256-bit cryptographic digest standards. Recover the operational passwords using standard CTF wordlists and join them with underscores.',
-      ],
-      5: [
-        'The artifact is wrapped in byte hex format; stripping the outer representation exposes a modern standard web authentication structure.',
-        'Extract the payload segment from the three-part token and inspect the operational claims for encoded operational intelligence. Decode the evidence field to reveal the treason string.',
-      ],
-      6: [
-        'This pattern lock binds your team\'s specific callsign directly to mission constants with zero delimiter padding.',
-        'Concatenate your exact team designation, the stage constant 5, and the operation codename THEEXTRACTION. Compute a 256-bit cryptographic digest and extract the leading 8 lowercase hex characters.',
-      ],
-      7: [
-        'The shards are segregated by encoding protocols: raw digital bits, byte hex stream, transport radix-64, and classic alphabetic rotation.',
-        'Translate each shard independently into ASCII: parse 8-bit binary, decode raw hex bytes, decode base64, and rotate the final alphabetic cipher by 13 positions before joining 1 through 4.',
-      ],
-      8: [
-        'The defusal payload is wrapped across multiple conversion barriers, terminating in a single-byte masked binary stream.',
-        'Strip the hexadecimal representation to reach the transport encoding, decode into raw bytes, and perform a known-plaintext XOR analysis against the standard flag prefix.',
-      ],
-      9: [
-        'Access the designated interactive terminal and trace the multi-stage cryptographic authority chain in real time.',
-        'Resolve each authentication layer in the terminal interface sequentially: decode the outer packet to extract the token claim, recover the vault coordinates, and derive the 6-character unlock code.',
-      ],
-    };
-
-    return hints[absoluteLevel] || [];
-  }
-
-  private getHintsForChallenge(
-    challenge: { hints: string | null; difficulty: string; round: { order: number }; order: number },
-  ): string[] {
-    const absoluteLevel = this.getAbsoluteLevel(challenge);
-    const dbHints = (challenge.hints || '')
+  private getHintsForChallenge(challenge: { hints: string | null }): string[] {
+    return (challenge.hints || '')
       .split(this.HINT_TIER_SEPARATOR)
       .map((hint) => hint.trim())
       .filter(Boolean);
-
-    if (dbHints.length > 0) {
-      return dbHints;
-    }
-
-    return this.getDefaultHintsForLevel(absoluteLevel);
   }
 
-  private getHintPenaltyForUse(
-    challenge: { difficulty: string; hintPenalty: number | null; round: { order: number } },
-    useIndex: number,
-  ): number {
-    if (challenge.difficulty === 'hard') {
-      const roundPenalties: Record<number, number[]> = {
-        1: [40, 80],
-        2: [80, 120],
-        3: [120, 180],
-      };
-      const penalties = roundPenalties[challenge.round.order] || [80, 120];
-      const idx = Math.max(0, Math.min(useIndex - 1, penalties.length - 1));
-      return penalties[idx];
+  // Each hint tier costs the challenge's configured hintPenalty, scaled by
+  // which tier is being unlocked (1st hint = 1x, 2nd = 2x, ...). Fully
+  // DB-driven — an admin editing hintPenalty in the panel changes this
+  // immediately, for every challenge and every difficulty.
+  private getHintPenaltyForUse(challenge: { hintPenalty: number | null }, useIndex: number): number {
+    const base = Math.max(challenge.hintPenalty || 0, 0);
+    return base * Math.max(useIndex, 1);
+  }
+
+  private isFinalChallengeOfRound(
+    sequence: Array<{ roundId: string; order: number }>,
+    challenge: { roundId: string; order: number },
+  ): boolean {
+    const roundChallenges = sequence.filter((c) => c.roundId === challenge.roundId);
+    const maxOrder = Math.max(...roundChallenges.map((c) => c.order));
+    return challenge.order === maxOrder;
+  }
+
+  private getStoryMessage(teamName: string, challenge: { title: string }, isLastOverall: boolean): string {
+    if (isLastOverall) {
+      return `🎉 ${teamName} CRACKED THE FINAL CHALLENGE — "${challenge.title}"! THE HOSTAGE CRISIS TERMINATED! 🎉`;
+    }
+    return `${teamName} solved "${challenge.title}"`;
+  }
+
+  private async updateStoryProgress(
+    tx: Prisma.TransactionClient,
+    teamId: string,
+    solvedRoundOrder: number,
+    isLastOverall: boolean,
+  ) {
+    const progress = await tx.storyProgress.findUnique({ where: { teamId } });
+    if (!progress) return;
+
+    const updates: Prisma.StoryProgressUpdateInput = { currentRound: solvedRoundOrder };
+
+    if (solvedRoundOrder > 1) updates.round1Completed = true;
+    if (solvedRoundOrder > 2) updates.round2Completed = true;
+    if (isLastOverall) {
+      updates.round3Completed = true;
+      updates.storyEnding = 'SUCCESS';
+      updates.round3Winner = true;
     }
 
-    return Math.max(challenge.hintPenalty || 0, 0);
+    await tx.storyProgress.update({ where: { teamId }, data: updates });
   }
 
   // Get current challenge for a team (based on linear progression)
@@ -200,6 +169,10 @@ export class ChallengesService {
     const challenge = sequence[currentLevel - 1];
 
     if (!challenge) {
+      const solvedCount = await this.prisma.submission.count({
+        where: { teamId: team.id, isCorrect: true },
+      });
+
       return {
         challenge: null,
         progress: {
@@ -209,10 +182,25 @@ export class ChallengesService {
           maxAttempts: null,
           isSolved: true,
           completedAll: true,
+          challengesSolved: solvedCount,
         },
         team: {
+          id: team.id,
           name: team.name,
           currentPoints: team.scores[0]?.totalPoints || 0,
+        },
+      };
+    }
+
+    if (challenge.round.status !== RoundStatus.ACTIVE) {
+      return {
+        challenge: null,
+        waitingForRound: { name: challenge.round.name, order: challenge.round.order },
+        progress: { currentLevel, totalLevels, attemptsUsed: 0, maxAttempts: null, isSolved: false },
+        team: {
+          id: team.id,
+          name: team.name,
+          currentPoints: team.scores[0]?.totalPoints ?? 0,
         },
       };
     }
@@ -270,6 +258,10 @@ export class ChallengesService {
 
     const team = user.team;
 
+    if (team.disqualified) {
+      throw new ForbiddenException('Your team has been disqualified from the competition');
+    }
+
     const sequence = await this.getChallengeSequence();
     const activeChallenge = sequence[team.currentLevel - 1];
 
@@ -290,158 +282,157 @@ export class ChallengesService {
       throw new NotFoundException('Challenge not found');
     }
 
-    const absoluteLevel = this.getAbsoluteLevel(challenge);
+    if (challenge.round.status !== RoundStatus.ACTIVE) {
+      throw new ForbiddenException('This round is not active yet');
+    }
 
-    // Check if already solved
-    const existingSolved = await this.prisma.submission.findFirst({
-      where: {
-        teamId: team.id,
-        challengeId: challenge.id,
-        isCorrect: true,
-      },
+    // Check if already solved (authoritative source: ChallengeSolve, not Submission)
+    const existingSolve = await this.prisma.challengeSolve.findUnique({
+      where: { teamId_challengeId: { teamId: team.id, challengeId: challenge.id } },
     });
 
-    if (existingSolved) {
+    if (existingSolve) {
       throw new BadRequestException('Challenge already solved');
     }
 
-    // Check attempt limit
-    const submissions = await this.prisma.submission.findMany({
-      where: {
-        teamId: team.id,
-        challengeId: challenge.id,
-      },
+    // Check attempt limit (team-scoped, matches the team-based progression model)
+    const priorAttempts = await this.prisma.submission.count({
+      where: { teamId: team.id, challengeId: challenge.id },
     });
 
-    if (
-      challenge.maxAttempts &&
-      submissions.length >= challenge.maxAttempts
-    ) {
-      throw new BadRequestException('Maximum attempts exceeded');
+    if (challenge.maxAttempts && priorAttempts >= challenge.maxAttempts) {
+      throw new BadRequestException(`Maximum attempts (${challenge.maxAttempts}) exceeded`);
     }
 
-    // Verify flag
     const normalizedFlag = flag.trim().toLowerCase();
-    const acceptedFlags = this.getAcceptedFlagsForLevel(team, absoluteLevel);
+    const isCorrect = await this.isFlagCorrect(challenge, team, normalizedFlag);
 
-    let isCorrect = false;
-    if (acceptedFlags.length > 0) {
-      isCorrect = acceptedFlags.includes(normalizedFlag);
-    } else {
-      isCorrect = await bcrypt.compare(normalizedFlag, challenge.flagHash);
+    if (!isCorrect) {
+      await this.prisma.submission.create({
+        data: {
+          userId: user.id,
+          teamId: team.id,
+          challengeId: challenge.id,
+          submittedFlag: flag,
+          isCorrect: false,
+          points: 0,
+          attempts: priorAttempts + 1,
+        },
+      });
+
+      return {
+        success: false,
+        isCorrect: false,
+        message: 'Incorrect flag. Try again.',
+        attemptsRemaining: challenge.maxAttempts ? challenge.maxAttempts - priorAttempts - 1 : null,
+      };
     }
 
-    if (isCorrect && absoluteLevel === 9) {
-      await this.prisma.storyState.upsert({
-        where: { id: 'singleton' },
-        create: {
-          id: 'singleton',
-          storyStarted: true,
-          storyEnded: false,
-        },
-        update: {},
-      });
+    const isFinalOfRound = this.isFinalChallengeOfRound(sequence, challenge);
+    const isCatchTheFlagFinal = challenge.round.type === RoundType.CATCH_THE_FLAG && isFinalOfRound;
+    const nextLevel = team.currentLevel + 1;
+    const isLastOverall = nextLevel > sequence.length;
 
-      const winnerClaim = await this.prisma.storyState.updateMany({
-        where: {
-          id: 'singleton',
-          round3Winner: null,
-        },
-        data: {
-          storyEnded: true,
-          round3Winner: team.id,
-          winnerTeamName: team.name,
-          winTimestamp: new Date(),
-          finalOutcome: 'CITY_SAVED',
-        },
-      });
+    try {
+      const result = await this.prisma.$transaction(async (tx) => {
+        // Atomically claim this solve for this team. If a concurrent duplicate
+        // request for the same team+challenge races in, Postgres's unique
+        // constraint rejects the second insert and the whole transaction
+        // rolls back — the team can never be scored twice for one solve.
+        await tx.challengeSolve.create({ data: { teamId: team.id, challengeId: challenge.id } });
 
-      if (winnerClaim.count === 0) {
-        const state = await this.prisma.storyState.findUnique({
-          where: { id: 'singleton' },
-          select: { winnerTeamName: true },
+        let awardedPoints = challenge.points;
+
+        if (isCatchTheFlagFinal) {
+          await tx.storyState.upsert({
+            where: { id: 'singleton' },
+            create: { id: 'singleton', storyStarted: true, storyEnded: false },
+            update: {},
+          });
+
+          const winnerClaim = await tx.storyState.updateMany({
+            where: { id: 'singleton', round3Winner: null },
+            data: {
+              storyEnded: true,
+              round3Winner: team.id,
+              winnerTeamName: team.name,
+              winTimestamp: new Date(),
+              finalOutcome: 'CITY_SAVED',
+            },
+          });
+
+          if (winnerClaim.count === 0) {
+            const state = await tx.storyState.findUnique({
+              where: { id: 'singleton' },
+              select: { winnerTeamName: true },
+            });
+            throw new ForbiddenException(
+              `Final vault already solved by ${state?.winnerTeamName || 'another team'}. The kill switch is already disabled.`,
+            );
+          }
+
+          // First-solver bonus, as promised by the challenge description.
+          awardedPoints = challenge.points * 2;
+        }
+
+        await tx.submission.create({
+          data: {
+            userId: user.id,
+            teamId: team.id,
+            challengeId: challenge.id,
+            submittedFlag: flag,
+            isCorrect: true,
+            points: awardedPoints,
+            attempts: priorAttempts + 1,
+          },
         });
 
-        throw new ForbiddenException(
-          `Final vault already solved by ${state?.winnerTeamName || 'another team'}. The kill switch is already disabled.`,
-        );
-      }
-    }
+        await tx.score.upsert({
+          where: { teamId: team.id },
+          create: { teamId: team.id, totalPoints: awardedPoints, lastSolved: new Date() },
+          update: { totalPoints: { increment: awardedPoints }, lastSolved: new Date() },
+        });
 
-    // Create submission
-    const submission = await this.prisma.submission.create({
-      data: {
-        userId: user.id,
-        teamId: team.id,
-        challengeId: challenge.id,
-        submittedFlag: flag,
-        isCorrect,
-        points: isCorrect ? challenge.points : 0,
-        attempts: submissions.length + 1,
-      },
-    });
+        await tx.team.update({ where: { id: team.id }, data: { currentLevel: nextLevel } });
 
-    if (isCorrect) {
-      // Update team score
-      await this.prisma.score.upsert({
-        where: { teamId: team.id },
-        create: {
-          teamId: team.id,
-          totalPoints: challenge.points,
-          lastSolved: new Date(),
-        },
-        update: {
-          totalPoints: {
-            increment: challenge.points,
+        await this.updateStoryProgress(tx, team.id, challenge.round.order, isLastOverall);
+
+        await tx.activity.create({
+          data: {
+            teamId: team.id,
+            teamName: team.name,
+            challengeId: challenge.id,
+            challengeTitle: challenge.title,
+            roundNumber: challenge.round.order,
+            levelNumber: sequence.findIndex((c) => c.id === challenge.id) + 1,
+            actionType: 'SOLVED',
+            storyMessage: this.getStoryMessage(team.name, challenge, isLastOverall),
+            points: awardedPoints,
           },
-          lastSolved: new Date(),
-        },
-      });
+        });
 
-      // Move team to next level
-      const nextLevel = team.currentLevel + 1;
-      await this.prisma.team.update({
-        where: { id: team.id },
-        data: {
-          currentLevel: nextLevel,
-        },
-      });
-
-      // Update story progress
-      await this.updateStoryProgress(team.id, absoluteLevel);
-
-      // Create activity log
-      await this.prisma.activity.create({
-        data: {
-          teamId: team.id,
-          teamName: team.name,
-          challengeId: challenge.id,
-          challengeTitle: challenge.title,
-          roundNumber: challenge.round.order,
-          levelNumber: absoluteLevel,
-          actionType: 'SOLVED',
-          storyMessage: this.getStoryMessage(team.name, absoluteLevel),
-          points: challenge.points,
-        },
+        return { awardedPoints };
       });
 
       return {
         success: true,
         isCorrect: true,
-        message: 'Correct! Challenge solved!',
-        points: challenge.points,
-        nextLevel: nextLevel,
-        hasMoreChallenges: nextLevel <= sequence.length,
+        message: isCatchTheFlagFinal
+          ? 'Correct! First-solve bonus applied — Challenge solved!'
+          : 'Correct! Challenge solved!',
+        points: result.awardedPoints,
+        nextLevel,
+        hasMoreChallenges: !isLastOverall,
+        gameCompleted: isLastOverall,
       };
-    } else {
-      return {
-        success: false,
-        isCorrect: false,
-        message: 'Incorrect flag. Try again.',
-        attemptsRemaining: challenge.maxAttempts
-          ? challenge.maxAttempts - submissions.length - 1
-          : null,
-      };
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new BadRequestException('Challenge already solved');
+      }
+      throw error;
     }
   }
 
@@ -456,6 +447,11 @@ export class ChallengesService {
     }
 
     const team = user.team;
+
+    if (team.disqualified) {
+      throw new ForbiddenException('Your team has been disqualified from the competition');
+    }
+
     const sequence = await this.getChallengeSequence();
     const activeChallenge = sequence[team.currentLevel - 1];
 
@@ -476,7 +472,10 @@ export class ChallengesService {
       throw new NotFoundException('Challenge not found');
     }
 
-    const absoluteLevel = this.getAbsoluteLevel(challenge);
+    if (challenge.round.status !== RoundStatus.ACTIVE) {
+      throw new ForbiddenException('This round is not active yet');
+    }
+
     const hintTiers = this.getHintsForChallenge(challenge);
 
     if (hintTiers.length === 0) {
@@ -510,40 +509,35 @@ export class ChallengesService {
 
     const nextHintIndex = hintsUsed + 1;
     const penalty = this.getHintPenaltyForUse(challenge, nextHintIndex);
-    const existingScore = await this.prisma.score.findUnique({ where: { teamId: team.id } });
 
-    if (!existingScore) {
-      await this.prisma.score.create({
+    const newTotalPoints = await this.prisma.$transaction(async (tx) => {
+      const score = await tx.score.upsert({
+        where: { teamId: team.id },
+        create: { teamId: team.id, totalPoints: -penalty },
+        update: { totalPoints: { decrement: penalty } },
+      });
+
+      // Never let a hint push the score below zero.
+      const clampedTotal = Math.max(score.totalPoints, 0);
+      if (clampedTotal !== score.totalPoints) {
+        await tx.score.update({ where: { teamId: team.id }, data: { totalPoints: clampedTotal } });
+      }
+
+      await tx.activity.create({
         data: {
           teamId: team.id,
-          totalPoints: 0,
+          teamName: team.name,
+          challengeId: challenge.id,
+          challengeTitle: challenge.title,
+          roundNumber: challenge.round.order,
+          levelNumber: team.currentLevel,
+          actionType: 'HINT_USED',
+          storyMessage: `${team.name} unlocked mission intel ${nextHintIndex}/${hintTiers.length} for ${challenge.title}`,
+          points: -penalty,
         },
       });
-    }
 
-    const currentPoints = existingScore?.totalPoints ?? 0;
-    const newTotalPoints = currentPoints - penalty;
-    const penaltyApplied = penalty;
-
-    await this.prisma.score.update({
-      where: { teamId: team.id },
-      data: {
-        totalPoints: newTotalPoints,
-      },
-    });
-
-    await this.prisma.activity.create({
-      data: {
-        teamId: team.id,
-        teamName: team.name,
-        challengeId: challenge.id,
-        challengeTitle: challenge.title,
-        roundNumber: challenge.round.order,
-        levelNumber: team.currentLevel,
-        actionType: 'HINT_USED',
-        storyMessage: `${team.name} unlocked mission intel ${nextHintIndex}/${hintTiers.length} for ${challenge.title}`,
-        points: -penaltyApplied,
-      },
+      return clampedTotal;
     });
 
     const unlockedHints = hintTiers.slice(0, nextHintIndex);
@@ -555,18 +549,30 @@ export class ChallengesService {
       unlockedHints,
       hintIndex: nextHintIndex,
       totalHints: hintTiers.length,
-      penaltyApplied,
+      penaltyApplied: penalty,
       teamPoints: newTotalPoints,
     };
   }
 
-  // Get all challenges (admin only or for overview)
+  // Get all challenges — flagHash/teamFlagTemplate are never selected here,
+  // this is reachable by any authenticated participant, not just admins.
   async getAllChallenges() {
     return this.prisma.challenge.findMany({
-      where: {
+      where: { isActive: true },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        storyContext: true,
+        characterMessage: true,
+        points: true,
+        maxAttempts: true,
+        order: true,
+        hintPenalty: true,
         isActive: true,
-      },
-      include: {
+        difficulty: true,
+        createdAt: true,
+        updatedAt: true,
         round: {
           select: {
             id: true,
@@ -584,51 +590,9 @@ export class ChallengesService {
     });
   }
 
-  // Update story progress based on challenge completion
-  private async updateStoryProgress(teamId: string, challengeOrder: number) {
-    const progress = await this.prisma.storyProgress.findUnique({
-      where: { teamId },
-    });
-
-    if (!progress) return;
-
-    const updates: any = {
-      currentRound: challengeOrder < 3 ? 1 : challengeOrder < 6 ? 2 : 3,
-    };
-
-    if (challengeOrder >= 3) updates.round1Completed = true;
-    if (challengeOrder >= 6) updates.round2Completed = true;
-    if (challengeOrder === 9) {
-      updates.round3Completed = true;
-      updates.storyEnding = 'SUCCESS';
-      updates.round3Winner = true;
-    }
-
-    await this.prisma.storyProgress.update({
-      where: { teamId },
-      data: updates,
-    });
-  }
-
-  // Get story message for activity feed
-  private getStoryMessage(teamName: string, level: number): string {
-    const messages = {
-      1: `${teamName} decoded the intercepted transmission - Command center located`,
-      2: `${teamName} unlocked Server Room ER-42 with fragmented access codes`,
-      3: `${teamName} cracked the time-locked vault - Attack plans recovered`,
-      4: `${teamName} broke through the corrupted hash trail - Home Minister exposed!`,
-      5: `${teamName} infiltrated admin panel via JWT token - Evidence collected`,
-      6: `${teamName} unlocked the pattern lock - The Extraction revealed`,
-      7: `${teamName} decoded the payload fragments - Attack mechanism understood`,
-      8: `${teamName} defused the logic bomb - Mall siege ended`,
-      9: `🎉 ${teamName} CRACKED THE MASTER VAULT! THE HOSTAGE CRISIS TERMINATED! 🎉`,
-    };
-
-    return messages[level] || `${teamName} completed level ${level}`;
-  }
-
   async getLeaderboard(limit = 10) {
     const scores = await this.prisma.score.findMany({
+      where: { team: { disqualified: false } },
       take: limit,
       orderBy: [{ totalPoints: 'desc' }, { lastSolved: 'asc' }],
       include: {
@@ -639,19 +603,29 @@ export class ChallengesService {
             member1Name: true,
             member2Name: true,
             currentLevel: true,
+            submissions: {
+              where: { isCorrect: true },
+              select: { challengeId: true },
+            },
           },
         },
       },
     });
 
-    return scores.map((score, index) => ({
-      rank: index + 1,
-      teamId: score.team.id,
-      teamName: score.team.name,
-      points: score.totalPoints,
-      currentLevel: score.team.currentLevel,
-      lastSolved: score.lastSolved,
-    }));
+    return scores.map((score, index) => {
+      const distinctSolves = new Set(score.team.submissions.map((s) => s.challengeId)).size;
+      return {
+        rank: index + 1,
+        teamId: score.team.id,
+        teamName: score.team.name,
+        points: score.totalPoints,
+        totalPoints: score.totalPoints,
+        currentLevel: score.team.currentLevel,
+        challengesSolved: distinctSolves,
+        solvedChallenges: distinctSolves,
+        lastSolved: score.lastSolved,
+      };
+    });
   }
 
   async getRecentActivity(limit = 20) {
@@ -672,4 +646,3 @@ export class ChallengesService {
     });
   }
 }
-

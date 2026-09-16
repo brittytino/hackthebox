@@ -15,9 +15,13 @@ import FocusScreenAdvisory, { FocusScreenButton } from '@/components/ui/FocusScr
 
 interface Challenge {
   id: string; title: string; points: number; order: number; roundId: string;
+  round?: { id: string; name: string; order: number; type?: string; status?: string };
 }
 interface Submission {
-  challengeId: string; correct: boolean;
+  challengeId: string;
+  isCorrect?: boolean;
+  correct?: boolean;
+  points?: number;
 }
 
 export default function DashboardPage() {
@@ -30,6 +34,8 @@ export default function DashboardPage() {
   const [scoreboard, setScoreboard]   = useState<any[]>([]);
   const [loading, setLoading]         = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [gameEnded, setGameEnded] = useState(false);
+  const [gameWinner, setGameWinner] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -37,9 +43,9 @@ export default function DashboardPage() {
     (async () => {
       try {
         const [profileData, roundData, challengeData, submissionData, scoreData] = await Promise.all([
-          api.getProfile(),
-          api.getCurrentRound(),
-          api.getAllChallenges(),
+          api.getProfile().catch(() => null),
+          api.getCurrentRound().catch(() => null),
+          api.getAllChallenges().catch(() => []),
           api.getMySubmissions().catch(() => []),
           api.getScoreboard().catch(() => []),
         ]);
@@ -55,6 +61,22 @@ export default function DashboardPage() {
       } catch { /* silent */ } finally { setLoading(false); }
     })();
   }, [router]);
+
+  // Poll whether the finale has unlocked (someone cracked the Master Vault) so
+  // every participant — not just the winning team — sees the banner to it.
+  useEffect(() => {
+    let cancelled = false;
+    const check = () => {
+      api.game.getState().then(state => {
+        if (cancelled) return;
+        setGameEnded(Boolean(state?.storyEnded));
+        setGameWinner(state?.winnerTeamName || null);
+      }).catch(() => {});
+    };
+    check();
+    const id = setInterval(check, 20000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, []);
 
   useEffect(() => {
     if (!loading && containerRef.current) {
@@ -72,25 +94,66 @@ export default function DashboardPage() {
     router.push('/login');
   };
 
-  const solvedIds   = new Set(submissions.filter(s => s.correct).map(s => s.challengeId));
-  const totalSolved = solvedIds.size;
-  const totalScore  = teamStats?.totalPoints ?? 0;
-  const teamName    = user?.team?.name || 'SHADOW_OPERATIVE';
-  const member1     = user?.team?.member1Name || user?.username || '';
-  const member2     = user?.team?.member2Name || '';
+  const userTeam = user?.team;
+  const teamLevel = userTeam?.currentLevel ?? 1;
+
+  // Everything below is derived from the actual fetched round/challenge data
+  // — no fixed "9 levels" or "3 per round" assumption, so this keeps working
+  // no matter how many rounds/challenges an admin configures.
+  const sorted = [...challenges].sort(
+    (a, b) => (a.round?.order ?? 0) - (b.round?.order ?? 0) || a.order - b.order,
+  );
+  const totalLevels = sorted.length;
+  const isCompletedAll = totalLevels > 0 && teamLevel > totalLevels;
+
+  const allSubmissions: Submission[] = [
+    ...(Array.isArray(submissions) ? submissions : []),
+    ...(Array.isArray(teamStats?.submissions) ? teamStats.submissions : []),
+  ];
+
+  const solvedIds = new Set<string>(
+    allSubmissions
+      .filter(s => s.isCorrect === true || s.correct === true)
+      .map(s => s.challengeId)
+  );
+
+  sorted.forEach((ch, i) => {
+    if (i + 1 < teamLevel) {
+      solvedIds.add(ch.id);
+    }
+  });
+
+  const totalSolved = isCompletedAll ? Math.max(solvedIds.size, totalLevels) : solvedIds.size;
+  const totalScore  = teamStats?.totalPoints ?? (userTeam?.scores?.[0]?.totalPoints ?? 0);
+  const teamName    = userTeam?.name || 'SHADOW_OPERATIVE';
+  const member1     = userTeam?.member1Name || user?.username || '';
+  const member2     = userTeam?.member2Name || '';
   const members     = [member1, member2].filter(Boolean);
-  const roundNum    = currentRound?.order || 1;
-  const myTeamId    = user?.team?.id;
-  const sortedBoard = [...scoreboard].sort((a, b) => (b.totalPoints ?? 0) - (a.totalPoints ?? 0));
+  const myTeamId    = userTeam?.id;
+  const sortedBoard = [...scoreboard].sort((a, b) => (b.totalPoints ?? b.points ?? 0) - (a.totalPoints ?? a.points ?? 0));
   const myRank      = myTeamId
     ? (sortedBoard.findIndex(t => t.teamId === myTeamId || t.id === myTeamId) + 1) || null
     : null;
-  const sorted  = [...challenges].sort((a, b) => a.order - b.order);
-  const rounds  = [
-    { label: 'Round 1', sub: 'The Breach',    missions: sorted.slice(0, 3), rc: '#ef4444', rn: 1 },
-    { label: 'Round 2', sub: 'Infiltration',  missions: sorted.slice(3, 6), rc: '#f59e0b', rn: 2 },
-    { label: 'Round 3', sub: 'Final Strike',  missions: sorted.slice(6, 9), rc: '#dc2626', rn: 3 },
-  ];
+
+  // Group challenges by their actual round, in order, with running level ranges.
+  const roundGroups: { order: number; name: string; missions: (Challenge & { round?: any })[] }[] = [];
+  sorted.forEach(ch => {
+    const order = ch.round?.order ?? 1;
+    const name = ch.round?.name || `Round ${order}`;
+    let group = roundGroups.find(r => r.order === order);
+    if (!group) { group = { order, name, missions: [] }; roundGroups.push(group); }
+    group.missions.push(ch);
+  });
+  roundGroups.sort((a, b) => a.order - b.order);
+  let levelCursor = 0;
+  const rounds = roundGroups.map(rg => {
+    const startLevel = levelCursor + 1;
+    levelCursor += rg.missions.length;
+    return { label: rg.name, missions: rg.missions, startLevel, endLevel: levelCursor };
+  });
+  const currentRoundLabel = isCompletedAll
+    ? 'COMPLETED'
+    : (rounds.find(r => teamLevel >= r.startLevel && teamLevel <= r.endLevel)?.label ?? currentRound?.name ?? '—');
 
   if (loading) {
     return (
@@ -150,6 +213,27 @@ export default function DashboardPage() {
       {/* -- MAIN CONTAINER -- */}
       <div ref={containerRef} style={{ position: 'relative', zIndex: 5, maxWidth: 1320, margin: '0 auto', padding: '36px 28px 80px' }}>
 
+        {/* -- FINALE BANNER (shown to every team once the Master Vault is cracked) -- */}
+        {gameEnded && (
+          <Link href="/victory" className="df" style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+            marginBottom: 24, padding: '16px 22px', borderRadius: 10, textDecoration: 'none',
+            background: 'linear-gradient(135deg, rgba(127,29,29,0.4), rgba(220,38,38,0.25))',
+            border: '1px solid rgba(239,68,68,0.6)', boxShadow: '0 0 30px rgba(220,38,38,0.25)',
+            animation: 'dpulse 2.4s infinite',
+          }}>
+            <div>
+              <div style={{ color: '#fee2e2', fontSize: 16, fontWeight: 900, letterSpacing: 1 }}>
+                🎬 OPERATION COMPLETE — {gameWinner ? `${gameWinner} SECURED THE CITY` : 'THE MASTER VAULT IS CRACKED'}
+              </div>
+              <div style={{ color: '#fca5a5', fontSize: 12, fontFamily: 'monospace', marginTop: 2 }}>
+                Watch the mission finale
+              </div>
+            </div>
+            <ChevronRight size={20} color="#fee2e2" />
+          </Link>
+        )}
+
         {/* -- TEAM HERO -- */}
         <div className="df" style={{ marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -174,8 +258,8 @@ export default function DashboardPage() {
           {[
             { icon: Trophy,       label: 'TOTAL SCORE',  value: totalScore.toLocaleString(), sub: 'POINTS EARNED',                          accent: '#dc2626' },
             { icon: Star,         label: 'CURRENT RANK',    value: myRank ? `#${myRank}` : '—', sub: `OUT OF ${sortedBoard.length} TEAMS`,   accent: '#ef4444' },
-            { icon: CheckCircle2, label: 'CHALLENGES SOLVED',       value: `${totalSolved}`,            sub: `OF ${challenges.length} SOLVED`, accent: '#f87171' },
-            { icon: Flag,         label: 'CURRENT ROUND', value: `ROUND ${roundNum}`,         sub: currentRound?.name || 'IN PROGRESS', accent: '#fca5a5' },
+            { icon: CheckCircle2, label: 'CHALLENGES SOLVED',       value: `${totalSolved}`,            sub: `OF ${totalLevels} SOLVED`, accent: '#f87171' },
+            { icon: Flag,         label: 'CURRENT ROUND', value: currentRoundLabel, sub: isCompletedAll ? `ALL ${totalLevels} TARGETS CLEARED` : 'IN PROGRESS', accent: '#fca5a5' },
           ].map(stat => (
             <div key={stat.label} className="tactical-box corner-brackets p-5 rounded-md">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
@@ -205,7 +289,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <div style={{ fontSize: 18, fontWeight: 800, color: '#f1f5f9', letterSpacing: '1px', textTransform: 'uppercase' }}>MISSION OPERATION BOARD</div>
-                    <div style={{ fontSize: 12, color: '#94a3b8', fontFamily: 'monospace' }}>{totalSolved} of {challenges.length} security layers dismantled</div>
+                    <div style={{ fontSize: 12, color: '#94a3b8', fontFamily: 'monospace' }}>{totalSolved} of {totalLevels} security layers dismantled</div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 14 }}>
@@ -220,8 +304,8 @@ export default function DashboardPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 {rounds.map((round, ri) => {
-                  const isActive = roundNum === round.rn;
-                  const isDone   = roundNum > round.rn;
+                  const isDone   = isCompletedAll || teamLevel > round.endLevel;
+                  const isActive = !isCompletedAll && (teamLevel >= round.startLevel && teamLevel <= round.endLevel);
                   const lc = isDone ? '#10b981' : isActive ? '#ef4444' : '#3a1014';
                   return (
                     <div key={ri}>
@@ -231,14 +315,14 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <span style={{ fontSize: 14, fontWeight: 800, color: isDone ? '#10b981' : isActive ? '#f1f5f9' : '#64748b', letterSpacing: '1px', textTransform: 'uppercase' }}>{round.label}</span>
-                          <span style={{ fontSize: 13, color: isDone ? '#6ee7b7' : isActive ? '#f87171' : '#475569', marginLeft: 6, fontFamily: 'monospace' }}>— {round.sub}</span>
                         </div>
                         <div style={{ flex: 1, height: 1, background: `${lc}33`, marginLeft: 4 }} />
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-                        {round.missions.map(ch => {
-                          const solved    = solvedIds.has(ch.id);
-                          const available = isActive || isDone;
+                        {round.missions.map((ch, chIdx) => {
+                          const levelNum  = round.startLevel + chIdx;
+                          const solved    = solvedIds.has(ch.id) || levelNum < teamLevel;
+                          const available = isActive || isDone || solved || levelNum === teamLevel;
                           return (
                             <div
                               key={ch.id}

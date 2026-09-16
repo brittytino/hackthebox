@@ -1,5 +1,8 @@
-import { IsNotEmpty, IsString, IsNumber, IsEnum, IsOptional, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsEnum, IsOptional, IsBoolean, Matches } from 'class-validator';
 import { RoundType, RoundStatus } from '@prisma/client';
+
+// "algo:template" — algo is md5|sha1|sha256, template may use {team} and {size}
+const TEAM_FLAG_TEMPLATE_PATTERN = /^(md5|sha1|sha256):.+$/;
 
 export class CreateRoundDto {
   @IsString()
@@ -52,9 +55,38 @@ export class CreateChallengeDto {
   @IsString()
   @IsOptional()
   hints?: string;
+
+  @IsNumber()
+  @IsOptional()
+  hintPenalty?: number;
+
+  @IsString()
+  @IsOptional()
+  difficulty?: string;
+
+  @IsString()
+  @IsOptional()
+  storyContext?: string;
+
+  @IsString()
+  @IsOptional()
+  characterMessage?: string;
+
+  // Only for challenges whose flag depends on the solving team's identity.
+  // Leave unset for a normal fixed-flag challenge.
+  @IsString()
+  @IsOptional()
+  @Matches(TEAM_FLAG_TEMPLATE_PATTERN, {
+    message: 'teamFlagTemplate must look like "md5:{team}|{size}|..." (algo: md5, sha1, or sha256)',
+  })
+  teamFlagTemplate?: string;
 }
 
 export class UpdateChallengeDto {
+  @IsString()
+  @IsOptional()
+  roundId?: string;
+
   @IsString()
   @IsOptional()
   title?: string;
@@ -75,6 +107,19 @@ export class UpdateChallengeDto {
   @IsOptional()
   points?: number;
 
+  // A new plaintext answer. Re-hashed server-side into flagHash — never
+  // stored or echoed back in plaintext.
+  @IsString()
+  @IsOptional()
+  flag?: string;
+
+  @IsString()
+  @IsOptional()
+  @Matches(TEAM_FLAG_TEMPLATE_PATTERN, {
+    message: 'teamFlagTemplate must look like "md5:{team}|{size}|..." (algo: md5, sha1, or sha256)',
+  })
+  teamFlagTemplate?: string;
+
   @IsNumber()
   @IsOptional()
   hintPenalty?: number;
@@ -90,6 +135,10 @@ export class UpdateChallengeDto {
   @IsNumber()
   @IsOptional()
   maxAttempts?: number;
+
+  @IsNumber()
+  @IsOptional()
+  order?: number;
 
   @IsBoolean()
   @IsOptional()

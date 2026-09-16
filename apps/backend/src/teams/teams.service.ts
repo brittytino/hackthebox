@@ -80,6 +80,8 @@ export class TeamsService {
   }
 
   async getTeam(teamId: string) {
+    // Emails are intentionally excluded: this endpoint is reachable by any
+    // authenticated participant for any team id, not just their own.
     const team = await this.prisma.team.findUnique({
       where: { id: teamId },
       include: {
@@ -87,7 +89,6 @@ export class TeamsService {
           select: {
             id: true,
             username: true,
-            email: true,
           },
         },
         scores: true,
@@ -111,6 +112,10 @@ export class TeamsService {
           },
         },
         scores: true,
+        submissions: {
+          where: { isCorrect: true },
+          select: { challengeId: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

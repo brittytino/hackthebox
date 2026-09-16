@@ -45,12 +45,13 @@ export default function AdminPage() {
 
   const loadData = useCallback(async () => {
     try {
-      const [profileData, statsData, roundsData, submissionsData, teamsData] = await Promise.all([
+      const [profileData, statsData, roundsData, submissionsData, teamsData, scoreboardStatus] = await Promise.all([
         api.getProfile(),
         api.admin.getStats(),
         api.getAllRounds(),
         api.admin.getAllSubmissions(),
         api.getAllTeams(),
+        api.getScoreboardStatus().catch(() => ({ frozen: false })),
       ]);
 
       if (profileData.role !== 'ADMIN') {
@@ -63,6 +64,7 @@ export default function AdminPage() {
       setRounds(roundsData);
       setSubmissions(submissionsData);
       setTeams(teamsData);
+      setScoreboardFrozen(Boolean(scoreboardStatus?.frozen));
       setLastRefresh(new Date());
     } catch (error) {
       console.error('Failed to load admin data:', error);
@@ -123,6 +125,36 @@ export default function AdminPage() {
       await loadData();
       setNewChallenge({ roundId: '', title: '', description: '', points: 100, flag: '', order: 1, maxAttempts: 0, hints: '' });
     } catch (error: any) { alert(error.message || 'Failed to create challenge'); }
+  };
+
+  const handleUpdateRoundStatus = async (roundId: string, status: string) => {
+    try {
+      await api.admin.updateRoundStatus(roundId, { status });
+      await loadData();
+    } catch (error: any) { alert(error.message || 'Failed to update round status'); }
+  };
+
+  const handleDeleteRound = async (roundId: string, name: string) => {
+    if (!confirm(`Delete round "${name}"? This also deletes all its challenges and submissions.`)) return;
+    try {
+      await api.admin.deleteRound(roundId);
+      await loadData();
+    } catch (error: any) { alert(error.message || 'Failed to delete round'); }
+  };
+
+  const handleToggleChallengeActive = async (challengeId: string, isActive: boolean) => {
+    try {
+      await api.admin.updateChallenge(challengeId, { isActive: !isActive });
+      await loadData();
+    } catch (error: any) { alert(error.message || 'Failed to update challenge'); }
+  };
+
+  const handleDeleteChallenge = async (challengeId: string, title: string) => {
+    if (!confirm(`Delete challenge "${title}"? This also deletes its submissions.`)) return;
+    try {
+      await api.admin.deleteChallenge(challengeId);
+      await loadData();
+    } catch (error: any) { alert(error.message || 'Failed to delete challenge'); }
   };
 
   const handleAdjustScore = async (e: React.FormEvent) => {
@@ -189,7 +221,7 @@ export default function AdminPage() {
     .sort((a, b) => (b.scores?.[0]?.totalPoints || 0) - (a.scores?.[0]?.totalPoints || 0));
 
   const activeTeams = teams.filter(t => t.members?.length > 0).length;
-  const disqualifiedTeams = teams.filter(t => t.members?.some((m: any) => m.role === 'JUDGE')).length;
+  const disqualifiedTeams = teams.filter(t => t.disqualified).length;
   const lastHourSubmissions = submissions.filter(s => new Date(s.createdAt).getTime() > Date.now() - 3600000).length;
   const recentSubmissions = submissions.slice(0, 50);
 
@@ -397,7 +429,7 @@ export default function AdminPage() {
                 </thead>
                 <tbody>
                   {filteredTeams.map((team, i) => {
-                    const isDisqualified = team.members?.some((m: any) => m.role === 'JUDGE');
+                    const isDisqualified = Boolean(team.disqualified);
                     return (
                       <tr key={team.id} style={{ borderBottom: '1px solid rgba(220,38,38,0.15)', background: i % 2 === 0 ? 'rgba(220,38,38,0.03)' : 'transparent' }}>
                         <td style={{ padding: '12px 14px', fontFamily: 'monospace', fontWeight: 800, color: '#ef4444' }}>#{i+1}</td>
@@ -449,6 +481,71 @@ export default function AdminPage() {
 
         {/* -- ROUNDS & CHALLENGES TAB -- */}
         {activeTab === 'rounds' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {/* Manage Existing Rounds & Challenges — this is the control that actually
+                gates gameplay: a challenge is only solvable while its round's
+                status here is ACTIVE. Nothing about progression is static. */}
+            <div className="df tactical-box" style={cardStyle}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9', marginBottom: 14, letterSpacing: 2, textTransform: 'uppercase', fontFamily: 'monospace' }}>
+                // MANAGE ROUNDS & CHALLENGES //
+              </div>
+              {[...rounds].sort((a, b) => a.order - b.order).map(round => (
+                <div key={round.id} style={{ marginBottom: 16, padding: 14, background: 'rgba(220,38,38,0.05)', border: '1px solid rgba(220,38,38,0.25)', borderRadius: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
+                    <div>
+                      <span style={{ color: '#f1f5f9', fontWeight: 800, fontSize: 14 }}>R{round.order}: {round.name}</span>
+                      <span style={{ marginLeft: 10, color: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }}>{round.type}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <select
+                        value={round.status}
+                        onChange={e => handleUpdateRoundStatus(round.id, e.target.value)}
+                        style={{ ...inputStyle, width: 'auto', padding: '6px 10px', fontSize: 12 }}
+                      >
+                        <option value="PENDING">PENDING</option>
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="COMPLETED">COMPLETED</option>
+                        <option value="LOCKED">LOCKED</option>
+                      </select>
+                      <button
+                        onClick={() => handleDeleteRound(round.id, round.name)}
+                        style={{ padding: '6px 10px', background: 'rgba(127,29,29,0.3)', border: '1px solid rgba(239,68,68,0.5)', borderRadius: 4, color: '#fca5a5', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'monospace' }}
+                      >
+                        DELETE ROUND
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {(round.challenges || []).map((ch: any) => (
+                      <div key={ch.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0,0,0,0.3)', borderRadius: 6, gap: 10, flexWrap: 'wrap' }}>
+                        <span style={{ color: ch.isActive === false ? '#6b7280' : '#e2e8f0', fontSize: 12, textDecoration: ch.isActive === false ? 'line-through' : 'none' }}>
+                          {round.order}.{ch.order} — {ch.title} <span style={{ color: '#ef4444', fontFamily: 'monospace' }}>({ch.points} pts)</span>
+                        </span>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button
+                            onClick={() => handleToggleChallengeActive(ch.id, ch.isActive !== false)}
+                            style={{ padding: '4px 8px', background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 4, color: '#fee2e2', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'monospace' }}
+                          >
+                            {ch.isActive === false ? 'ACTIVATE' : 'DEACTIVATE'}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteChallenge(ch.id, ch.title)}
+                            style={{ padding: '4px 8px', background: 'rgba(127,29,29,0.3)', border: '1px solid rgba(239,68,68,0.5)', borderRadius: 4, color: '#fca5a5', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'monospace' }}
+                          >
+                            DELETE
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {(!round.challenges || round.challenges.length === 0) && (
+                      <div style={{ color: '#6b7280', fontSize: 12, fontFamily: 'monospace' }}>No challenges in this round yet.</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {rounds.length === 0 && <div style={{ color: '#6b7280', fontSize: 13, fontFamily: 'monospace' }}>No rounds created yet.</div>}
+            </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }} className="grid-cols-1 lg:grid-cols-2">
             {/* Create Round */}
             <div className="df tactical-box" style={cardStyle}>
@@ -572,6 +669,7 @@ export default function AdminPage() {
                 </button>
               </form>
             </div>
+          </div>
           </div>
         )}
       </div>

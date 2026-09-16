@@ -11,7 +11,8 @@ import { SubmissionsModule } from './submissions/submissions.module';
 import { ScoreboardModule } from './scoreboard/scoreboard.module';
 import { AdminModule } from './admin/admin.module';
 import { HealthModule } from './health/health.module';
-import { StoryModule } from './story/story.module';
+import { VaultModule } from './vault/vault.module';
+import { GameModule } from './game/game.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -33,7 +34,8 @@ import { AppController } from './app.controller';
     ScoreboardModule,
     AdminModule,
     HealthModule,
-    StoryModule,
+    VaultModule,
+    GameModule,
   ],
   controllers: [AppController],
 })

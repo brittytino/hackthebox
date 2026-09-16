@@ -8,7 +8,9 @@ import {
   Request,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { ChallengesService } from './challenges.service';
+import { SubmitChallengeFlagDto } from './dto/submit-flag.dto';
 
 @Controller('challenges')
 @UseGuards(AuthGuard('jwt'))
@@ -21,10 +23,8 @@ export class ChallengesController {
   }
 
   @Post('submit')
-  submitFlag(
-    @Request() req,
-    @Body() body: { challengeId: string; flag: string },
-  ) {
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  submitFlag(@Request() req, @Body() body: SubmitChallengeFlagDto) {
     return this.challengesService.submitFlag(
       req.user.id,
       body.challengeId,
@@ -33,6 +33,7 @@ export class ChallengesController {
   }
 
   @Post(':id/hint')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   useHint(@Request() req, @Param('id') challengeId: string) {
     return this.challengesService.useHint(req.user.id, challengeId);
   }

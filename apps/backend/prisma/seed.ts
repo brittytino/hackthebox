@@ -64,7 +64,21 @@ async function main() {
   });
   console.log('✅ Round 3 created');
 
-  // Ensure challenge seed is idempotent (prevents duplicate levels on repeated startup)
+  // Check if challenges are already seeded so we do not wipe submissions on container restart
+  const existingChallengeCount = await prisma.challenge.count({
+    where: {
+      roundId: {
+        in: [round1.id, round2.id, round3.id],
+      },
+    },
+  });
+
+  if (existingChallengeCount >= 9) {
+    console.log('✅ Challenges already seeded. Preserving existing challenges, submissions, and scores.');
+    return;
+  }
+
+  // Ensure challenge seed is idempotent when initially seeding
   await prisma.challenge.deleteMany({
     where: {
       roundId: {
@@ -166,14 +180,15 @@ The vault contains Saif's full attack blueprint. The biometric lock requires a t
     },
   ];
 
+  // Level 1.3's flag is unique per team: ctf{md5("{teamName}|{size}|1|THEEXTRACTION")[:8]}
+  const LEVEL_1_3_TEMPLATE = 'md5:{team}|{size}|1|THEEXTRACTION';
+
   for (const challenge of challenges1) {
-    let flagHash: string;
-    if (challenge.flag === 'TEAM_SPECIFIC') {
-      // For team-specific challenges, store a special marker
-      flagHash = await bcrypt.hash('__TEAM_SPECIFIC__', 10);
-    } else {
-      flagHash = await bcrypt.hash(challenge.flag.toLowerCase(), 10);
-    }
+    const isTeamSpecific = challenge.flag === 'TEAM_SPECIFIC';
+    const flagHash = await bcrypt.hash(
+      isTeamSpecific ? '__TEAM_SPECIFIC__' : challenge.flag.toLowerCase(),
+      10,
+    );
 
     await prisma.challenge.create({
       data: {
@@ -184,6 +199,7 @@ The vault contains Saif's full attack blueprint. The biometric lock requires a t
         characterMessage: challenge.characterMessage,
         points: challenge.points,
         flagHash: flagHash,
+        teamFlagTemplate: isTeamSpecific ? LEVEL_1_3_TEMPLATE : null,
         order: challenge.order,
         hints: challenge.hints,
         difficulty: challenge.difficulty,
@@ -286,13 +302,15 @@ The final database containing the communication relay uses a team-specific patte
     },
   ];
 
+  // Level 2.3's flag is unique per team: ctf{sha256("{teamName}5THEEXTRACTION")[:8]}
+  const LEVEL_2_3_TEMPLATE = 'sha256:{team}5THEEXTRACTION';
+
   for (const challenge of challenges2) {
-    let flagHash: string;
-    if (challenge.flag === 'TEAM_SPECIFIC') {
-      flagHash = await bcrypt.hash('__TEAM_SPECIFIC__', 10);
-    } else {
-      flagHash = await bcrypt.hash(challenge.flag.toLowerCase(), 10);
-    }
+    const isTeamSpecific = challenge.flag === 'TEAM_SPECIFIC';
+    const flagHash = await bcrypt.hash(
+      isTeamSpecific ? '__TEAM_SPECIFIC__' : challenge.flag.toLowerCase(),
+      10,
+    );
 
     await prisma.challenge.create({
       data: {
@@ -303,6 +321,7 @@ The final database containing the communication relay uses a team-specific patte
         characterMessage: challenge.characterMessage,
         points: challenge.points,
         flagHash: flagHash,
+        teamFlagTemplate: isTeamSpecific ? LEVEL_2_3_TEMPLATE : null,
         order: challenge.order,
         hints: challenge.hints,
         difficulty: challenge.difficulty,

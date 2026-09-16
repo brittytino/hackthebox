@@ -24,8 +24,17 @@ async function bootstrap() {
     exclude: [{ path: '', method: RequestMethod.GET }],
   });
   
+  // Reflecting every origin (origin: true) combined with credentials: true lets
+  // any website make credentialed requests against this API. Lock it to the
+  // configured frontend origin(s) instead; fall back to permissive only when
+  // FRONTEND_URL isn't set (local dev without a .env).
+  const allowedOrigins = (process.env.FRONTEND_URL || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: true,
+    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
     credentials: true,
   });
   

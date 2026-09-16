@@ -320,8 +320,8 @@ function ChallengesInner() {
 
   const getState = (order: number): 'solved' | 'active' | 'locked' => {
     if (order < currentLevel) return 'solved';
-    if (order === currentLevel) return 'active';
-    return 'locked';
+    if (order === currentLevel && currentLevel <= totalLevels) return 'active';
+    return currentLevel > totalLevels ? 'solved' : 'locked';
   };
 
   const loadData = useCallback(async () => {
@@ -515,6 +515,10 @@ function ChallengesInner() {
       if (res.correct || res.success || res.isCorrect) {
         const solvedOrder = meta?.order ?? 0;
         setFlag('');
+        if (res.gameCompleted) {
+          router.push('/victory');
+          return;
+        }
         // Redirect to story page with challenge context
         router.push(`/story?challenge=${solvedOrder}`);
       } else {
@@ -659,9 +663,10 @@ function ChallengesInner() {
     </div>
   );
 
-  const rescued = HOSTAGE[meta?.order ?? 1] ?? 0;
+  const isCompletedAll = Boolean(apiResponse?.progress?.completedAll || currentLevel > totalLevels);
+  const scored = isCompletedAll ? 9 : Math.max(currentLevel - 1, 0);
+  const rescued = isCompletedAll ? 1200 : (HOSTAGE[scored] ?? 0);
   const rescuePct = Math.round((rescued / 1200) * 100);
-  const scored = Math.max(currentLevel - 1, 0);
   const teamPoints = apiResponse?.team?.currentPoints ?? 0;
   const teamName = apiResponse?.team?.name ?? '—';
   const storyChallenge = Math.min(Math.max(meta?.order ?? currentLevel, 1), 9);
@@ -1213,7 +1218,14 @@ function ChallengesInner() {
                   )}
                 </div>
               )}
-              {state === 'solved' && <div className="game-alert-success ch-flag-status"><CheckCircle size={16} />Mission complete. Select the next level from the timeline.</div>}
+              {state === 'solved' && (
+                <div className="game-alert-success ch-flag-status">
+                  <CheckCircle size={16} />
+                  {isCompletedAll
+                    ? '🎉 Operation Beast Complete! All 9 missions cleared.'
+                    : 'Mission complete. Select the next level from the timeline.'}
+                </div>
+              )}
               {state === 'locked' && <div className="game-alert-info ch-flag-status"><Lock size={16} />This mission is locked. Solve the active level first.</div>}
             </div>
           )}

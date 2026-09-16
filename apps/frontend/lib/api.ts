@@ -50,10 +50,6 @@ export const api = {
   login: (data: { username: string; password: string; email?: string }) =>
     apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
 
-  auth: {
-    profile: () => apiRequest('/auth/profile'),
-  },
-
   // Users
   getProfile: () => apiRequest('/users/me'),
   
@@ -74,12 +70,8 @@ export const api = {
   getAllRounds: () => apiRequest('/rounds'),
 
   // Challenges
-  getAllChallenges: () => apiRequest('/challenges'),
-  
-  getChallengesByRound: (roundId: string) => apiRequest(`/challenges/round/${roundId}`),
-  
-  getChallenge: (id: string) => apiRequest(`/challenges/${id}`),
-  
+  getAllChallenges: () => apiRequest('/challenges/all'),
+
   challenges: {
     getCurrent: () => apiRequest('/challenges/current'),
     getActivity: () => apiRequest('/challenges/activity'),
@@ -90,17 +82,14 @@ export const api = {
   },
 
   // Submissions
-  submitFlag: (data: { challengeId: string; flag: string }) =>
-    apiRequest('/submissions', { method: 'POST', body: JSON.stringify(data) }),
-  
   getMySubmissions: () => apiRequest('/submissions/me'),
-  
-  getTeamSubmissions: (teamId: string) => apiRequest(`/submissions/team/${teamId}`),
 
   // Scoreboard
   getScoreboard: () => apiRequest('/scoreboard'),
-  
+
   getTeamStats: (teamId: string) => apiRequest(`/scoreboard/team/${teamId}`),
+
+  getScoreboardStatus: () => apiRequest('/scoreboard/status'),
 
   // Admin
   admin: {
@@ -113,6 +102,8 @@ export const api = {
       apiRequest('/admin/challenges', { method: 'POST', body: JSON.stringify(data) }),
     updateChallenge: (id: string, data: any) =>
       apiRequest(`/admin/challenges/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    deleteChallenge: (id: string) => apiRequest(`/admin/challenges/${id}`, { method: 'DELETE' }),
+    deleteRound: (id: string) => apiRequest(`/admin/rounds/${id}`, { method: 'DELETE' }),
     resetCompetition: () => apiRequest('/admin/reset', { method: 'POST' }),
     adjustTeamScore: (teamId: string, data: { points: number; reason: string }) =>
       apiRequest(`/admin/teams/${teamId}/adjust-score`, { method: 'POST', body: JSON.stringify(data) }),
@@ -134,23 +125,8 @@ export const api = {
     },
   },
 
-  // Story endpoints
-  story: {
-    getState: () => apiRequest('/story/state'),
-    getProgress: () => apiRequest('/story/progress'),
-    getRound: (roundNumber: number) => apiRequest(`/story/round/${roundNumber}`),
-    submitRound1: (data: { systemTarget: string; darkweaveCode: string; credentialHash: string }) =>
-      apiRequest('/story/submit/round1', { method: 'POST', body: JSON.stringify(data) }),
-    submitRound2: (data: { masterKey: string; backdoorLocation: string }) =>
-      apiRequest('/story/submit/round2', { method: 'POST', body: JSON.stringify(data) }),
-    submitRound3: (data: { flag: string }) =>
-      apiRequest('/story/submit/round3', { method: 'POST', body: JSON.stringify(data) }),
-    admin: {
-      start: () => apiRequest('/story/admin/start', { method: 'POST' }),
-      end: (outcome: 'CITY_SAVED' | 'BREACH_EXECUTED') =>
-        apiRequest('/story/admin/end', { method: 'POST', body: JSON.stringify({ outcome }) }),
-      reset: () => apiRequest('/story/admin/reset', { method: 'POST' }),
-      getAllProgress: () => apiRequest('/story/admin/all-progress'),
-    },
+  // Game/victory state (who has won, whether the story has ended)
+  game: {
+    getState: () => apiRequest('/game/state'),
   },
 };

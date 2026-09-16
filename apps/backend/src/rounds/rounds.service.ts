@@ -43,7 +43,12 @@ export class RoundsService {
             title: true,
             points: true,
             order: true,
+            isActive: true,
+            maxAttempts: true,
+            hintPenalty: true,
+            difficulty: true,
           },
+          orderBy: { order: 'asc' },
         },
       },
       orderBy: { order: 'asc' },
@@ -57,6 +62,24 @@ export class RoundsService {
         challenges: {
           where: { isActive: true },
           orderBy: { order: 'asc' },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            storyContext: true,
+            characterMessage: true,
+            points: true,
+            maxAttempts: true,
+            order: true,
+            hints: true,
+            hintPenalty: true,
+            isActive: true,
+            difficulty: true,
+            createdAt: true,
+            updatedAt: true,
+            // flagHash / teamFlagTemplate deliberately excluded — this is
+            // reachable by any authenticated participant, not just admins.
+          },
         },
       },
     });

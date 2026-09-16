@@ -38,6 +38,7 @@ const DIFF_COLORS: Record<string, string> = { easy: '#22c55e', medium: '#ef4444'
 export default function TimelinePage() {
   const router = useRouter();
   const [currentLevel, setCurrentLevel] = useState(1);
+  const [totalLevels, setTotalLevels] = useState(MISSIONS.length);
   const [teamPoints, setTeamPoints] = useState(0);
   const [teamName, setTeamName] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -50,6 +51,7 @@ export default function TimelinePage() {
     if (!token) { router.push('/login'); return; }
     api.challenges.getCurrent().then(data => {
       setCurrentLevel(data?.progress?.currentLevel ?? 1);
+      setTotalLevels(data?.progress?.totalLevels ?? MISSIONS.length);
       setTeamPoints(data?.team?.currentPoints ?? 0);
       setTeamName(data?.team?.name ?? '');
       setTimeout(() => {
@@ -116,8 +118,8 @@ export default function TimelinePage() {
 
   const getState = (order: number) => {
     if (order < currentLevel) return 'solved';
-    if (order === currentLevel) return 'active';
-    return 'locked';
+    if (order === currentLevel && currentLevel <= totalLevels) return 'active';
+    return currentLevel > totalLevels ? 'solved' : 'locked';
   };
 
   return (
@@ -171,8 +173,18 @@ export default function TimelinePage() {
         </h1>
         <div style={{ height: 3, width: 120, background: 'linear-gradient(90deg,transparent,#dc2626,#ef4444,transparent)', margin: '16px auto 0', borderRadius: 3, boxShadow: '0 0 20px rgba(220,38,38,0.6)' }} />
         <p style={{ color: '#94a3b8', fontSize: 13, marginTop: 16, letterSpacing: 3, fontWeight: 600, fontFamily: 'monospace' }}>
-          9 MISSIONS • 3 SECURITY SECTORS • CHENNAI RECON
+          {totalLevels} MISSIONS • {new Set(MISSIONS.map(m => m.round)).size} SECURITY SECTORS • CHENNAI RECON
         </p>
+        {currentLevel > totalLevels && (
+          <div style={{ maxWidth: 640, margin: '20px auto 0', padding: '14px 20px', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.5)', borderRadius: 8, textAlign: 'center' }}>
+            <div style={{ color: '#10b981', fontWeight: 900, fontSize: 15, letterSpacing: 2, textTransform: 'uppercase', fontFamily: 'monospace' }}>
+              🏆 ALL {totalLevels} MISSIONS COMPLETED — OPERATION FINALE CLEARED
+            </div>
+            <div style={{ color: '#6ee7b7', fontSize: 12, marginTop: 4, fontFamily: 'monospace' }}>
+              Final score: {teamPoints.toLocaleString()} PTS • All targets solved
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Timeline */}

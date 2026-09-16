@@ -214,6 +214,197 @@ export class AdminService {
     };
   }
 
+  async reEnableTeam(teamId: string) {
+    await this.prisma.team.update({
+      where: { id: teamId },
+      data: { disqualified: false },
+    });
+
+    return {
+      message: 'Team successfully re-enabled and restored to active competition.',
+    };
+  }
+
+  async freezeTeamScore(teamId: string, freeze: boolean) {
+    const team = await this.prisma.team.findUnique({ where: { id: teamId } });
+    if (!team) throw new NotFoundException('Team not found');
+
+    await this.prisma.team.update({
+      where: { id: teamId },
+      data: { scoreFrozen: freeze },
+    });
+
+    return {
+      message: `Score for "${team.name}" is now ${freeze ? 'FROZEN' : 'UNFROZEN'}.`,
+      scoreFrozen: freeze,
+    };
+  }
+
+  async getHintsOverview() {
+    const [teams, challenges, hintActivities] = await Promise.all([
+      this.prisma.team.findMany({
+        include: {
+          scores: true,
+          members: { select: { username: true } },
+        },
+        orderBy: { name: 'asc' },
+      }),
+      this.prisma.challenge.findMany({
+        where: { isActive: true },
+        include: { round: { select: { order: true, name: true } } },
+        orderBy: [{ round: { order: 'asc' } }, { order: 'asc' }],
+      }),
+      this.prisma.activity.findMany({
+        where: { actionType: 'HINT_USED' },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+
+    // Unique challenges defensive deduplication
+    const uniqueChallenges: typeof challenges = [];
+    const seenMap = new Set<string>();
+    for (const c of challenges) {
+      const key = `${c.round.order}-${c.order}`;
+      if (!seenMap.has(key)) {
+        seenMap.add(key);
+        uniqueChallenges.push(c);
+      }
+    }
+
+    const challengeCatalog = uniqueChallenges.map((ch) => ({
+      id: ch.id,
+      title: ch.title,
+      roundOrder: ch.round.order,
+      order: ch.order,
+      points: ch.points,
+      hintPenalty: ch.hintPenalty,
+      hints: (ch.hints || '').split('||').map((h) => h.trim()).filter(Boolean),
+    }));
+
+    const teamHintSummary = teams.map((team) => {
+      const teamActivities = hintActivities.filter((a) => a.teamId === team.id);
+      const totalPenalties = teamActivities.reduce((acc, curr) => acc + Math.abs(curr.points || 0), 0);
+      const currentCh = uniqueChallenges[Math.min(Math.max(0, team.currentLevel - 1), uniqueChallenges.length - 1)] || null;
+      const hintsOnCurrent = currentCh
+        ? teamActivities.filter((a) => a.challengeId === currentCh.id).length
+        : 0;
+
+      return {
+        id: team.id,
+        name: team.name,
+        members: team.members.map((m) => m.username),
+        currentLevel: team.currentLevel,
+        currentChallenge: currentCh
+          ? { id: currentCh.id, title: currentCh.title, roundOrder: currentCh.round.order, order: currentCh.order }
+          : null,
+        totalPoints: team.scores[0]?.totalPoints || 0,
+        scoreFrozen: team.scoreFrozen,
+        disqualified: team.disqualified,
+        totalHintsUsed: teamActivities.length,
+        totalHintPenalty: totalPenalties,
+        hintsOnCurrent,
+        recentActivities: teamActivities.slice(0, 5),
+      };
+    });
+
+    return {
+      teams: teamHintSummary,
+      catalog: challengeCatalog,
+    };
+  }
+
+  async grantHint(teamId: string, challengeId?: string, free: boolean = true) {
+    const team = await this.prisma.team.findUnique({ where: { id: teamId } });
+    if (!team) throw new NotFoundException('Team not found');
+
+    const challenges = await this.prisma.challenge.findMany({
+      where: { isActive: true },
+      include: { round: true },
+      orderBy: [{ round: { order: 'asc' } }, { order: 'asc' }],
+    });
+
+    const targetChallenge = challengeId
+      ? challenges.find((c) => c.id === challengeId)
+      : challenges[Math.min(Math.max(0, team.currentLevel - 1), challenges.length - 1)];
+
+    if (!targetChallenge) throw new NotFoundException('Challenge not found');
+
+    const hintTiers = (targetChallenge.hints || '').split('||').map((h) => h.trim()).filter(Boolean);
+    if (hintTiers.length === 0) {
+      throw new NotFoundException('No hints configured for this challenge');
+    }
+
+    const existing = await this.prisma.activity.findMany({
+      where: { teamId, challengeId: targetChallenge.id, actionType: 'HINT_USED' },
+    });
+
+    const nextIndex = existing.length + 1;
+    const grantedHint = hintTiers[Math.min(nextIndex - 1, hintTiers.length - 1)];
+    const penalty = free ? 0 : (targetChallenge.hintPenalty || 0);
+
+    if (!free && penalty > 0 && !team.scoreFrozen) {
+      const score = await this.prisma.score.findUnique({ where: { teamId } });
+      const newPoints = Math.max(0, (score?.totalPoints || 0) - penalty);
+      await this.prisma.score.upsert({
+        where: { teamId },
+        create: { teamId, totalPoints: newPoints },
+        update: { totalPoints: newPoints },
+      });
+    }
+
+    const activity = await this.prisma.activity.create({
+      data: {
+        teamId: team.id,
+        teamName: team.name,
+        challengeId: targetChallenge.id,
+        challengeTitle: targetChallenge.title,
+        roundNumber: targetChallenge.round.order,
+        levelNumber: challenges.findIndex((c) => c.id === targetChallenge.id) + 1,
+        actionType: 'HINT_USED',
+        storyMessage: free
+          ? `[HQ OVERRIDE] Orbital Intel Dispatch: Administrator authorized classified intel ${Math.min(nextIndex, hintTiers.length)}/${hintTiers.length} for ${targetChallenge.title}`
+          : `${team.name} unlocked mission intel ${Math.min(nextIndex, hintTiers.length)}/${hintTiers.length} for ${targetChallenge.title}`,
+        points: -penalty,
+      },
+    });
+
+    return {
+      message: `Hint ${Math.min(nextIndex, hintTiers.length)}/${hintTiers.length} dispatched to ${team.name}`,
+      hint: grantedHint,
+      hintIndex: Math.min(nextIndex, hintTiers.length),
+      totalHints: hintTiers.length,
+      free,
+      penalty,
+      activity,
+    };
+  }
+
+  async resetTeamHints(teamId: string, challengeId?: string, refundPoints: boolean = true) {
+    const team = await this.prisma.team.findUnique({ where: { id: teamId } });
+    if (!team) throw new NotFoundException('Team not found');
+
+    const whereClause: any = { teamId, actionType: 'HINT_USED' };
+    if (challengeId) whereClause.challengeId = challengeId;
+
+    const hints = await this.prisma.activity.findMany({ where: whereClause });
+    const totalDeducted = hints.reduce((sum, h) => sum + Math.abs(h.points || 0), 0);
+
+    await this.prisma.activity.deleteMany({ where: whereClause });
+
+    if (refundPoints && totalDeducted > 0 && !team.scoreFrozen) {
+      await this.prisma.score.update({
+        where: { teamId },
+        data: { totalPoints: { increment: totalDeducted } },
+      });
+    }
+
+    return {
+      message: `Reset ${hints.length} hint record(s) for ${team.name}.${refundPoints && totalDeducted > 0 ? ` Refunded ${totalDeducted} points.` : ''}`,
+      resetCount: hints.length,
+      refundedPoints: refundPoints ? totalDeducted : 0,
+    };
+  }
+
   async qualifyTeam(teamId: string) {
     await this.prisma.team.update({
       where: { id: teamId },

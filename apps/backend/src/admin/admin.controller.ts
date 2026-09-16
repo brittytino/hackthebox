@@ -1,10 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Header } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Header, ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { AdminService } from './admin.service';
-import { CreateRoundDto, UpdateRoundStatusDto, CreateChallengeDto, UpdateChallengeDto } from './dto/admin.dto';
 
 @Controller('admin')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -12,36 +11,35 @@ import { CreateRoundDto, UpdateRoundStatusDto, CreateChallengeDto, UpdateChallen
 export class AdminController {
   constructor(private adminService: AdminService) {}
 
-  // Rounds
+  // Prohibited actions: Rounds and Challenges cannot be created or edited by admin
   @Post('rounds')
-  createRound(@Body() dto: CreateRoundDto) {
-    return this.adminService.createRound(dto);
+  createRound() {
+    throw new ForbiddenException('Round management and creation is restricted.');
   }
 
   @Put('rounds/:id/status')
-  updateRoundStatus(@Param('id') id: string, @Body() dto: UpdateRoundStatusDto) {
-    return this.adminService.updateRoundStatus(id, dto);
+  updateRoundStatus() {
+    throw new ForbiddenException('Round status modification is restricted.');
   }
 
   @Delete('rounds/:id')
-  deleteRound(@Param('id') id: string) {
-    return this.adminService.deleteRound(id);
+  deleteRound() {
+    throw new ForbiddenException('Round deletion is restricted.');
   }
 
-  // Challenges
   @Post('challenges')
-  createChallenge(@Body() dto: CreateChallengeDto) {
-    return this.adminService.createChallenge(dto);
+  createChallenge() {
+    throw new ForbiddenException('Challenge creation is restricted.');
   }
 
   @Put('challenges/:id')
-  updateChallenge(@Param('id') id: string, @Body() dto: UpdateChallengeDto) {
-    return this.adminService.updateChallenge(id, dto);
+  updateChallenge() {
+    throw new ForbiddenException('Challenge editing is restricted.');
   }
 
   @Delete('challenges/:id')
-  deleteChallenge(@Param('id') id: string) {
-    return this.adminService.deleteChallenge(id);
+  deleteChallenge() {
+    throw new ForbiddenException('Challenge deletion is restricted.');
   }
 
   // Users
@@ -71,7 +69,7 @@ export class AdminController {
     return this.adminService.resetCompetition();
   }
 
-  // Score Management
+  // Team & Score Management
   @Post('teams/:id/adjust-score')
   adjustTeamScore(
     @Param('id') id: string,
@@ -86,6 +84,16 @@ export class AdminController {
     return this.adminService.disqualifyTeam(id, reason);
   }
 
+  @Post('teams/:id/re-enable')
+  reEnableTeam(@Param('id') id: string) {
+    return this.adminService.reEnableTeam(id);
+  }
+
+  @Post('teams/:id/freeze-score')
+  freezeTeamScore(@Param('id') id: string, @Body('freeze') freeze: boolean) {
+    return this.adminService.freezeTeamScore(id, Boolean(freeze));
+  }
+
   @Post('teams/:id/qualify')
   qualifyTeam(@Param('id') id: string) {
     return this.adminService.qualifyTeam(id);
@@ -96,6 +104,31 @@ export class AdminController {
     return this.adminService.qualifyTopTeams(count);
   }
 
+  // Hint Management
+  @Get('hints')
+  getHintsOverview() {
+    return this.adminService.getHintsOverview();
+  }
+
+  @Post('teams/:id/grant-hint')
+  grantHint(
+    @Param('id') id: string,
+    @Body('challengeId') challengeId?: string,
+    @Body('free') free: boolean = true,
+  ) {
+    return this.adminService.grantHint(id, challengeId, free);
+  }
+
+  @Post('teams/:id/reset-hints')
+  resetTeamHints(
+    @Param('id') id: string,
+    @Body('challengeId') challengeId?: string,
+    @Body('refundPoints') refundPoints: boolean = true,
+  ) {
+    return this.adminService.resetTeamHints(id, challengeId, refundPoints);
+  }
+
+  // Scoreboard Freeze (Whole Game)
   @Post('scoreboard/freeze')
   freezeScoreboard(@Body('freeze') freeze: boolean) {
     return this.adminService.freezeScoreboard(freeze);

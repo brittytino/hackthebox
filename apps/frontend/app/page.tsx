@@ -37,7 +37,7 @@ const SCENES: CharacterScene[] = [
   {
     act: 'ACT II // THE CRISIS DISPATCH',
     badge: 'RAW CHIEF NEGOTIATOR',
-    charName: 'NSA ALTHAF',
+    charName: 'ALTHAF HUSSAIN',
     charTitle: 'RAW HIGH COMMAND // CHENNAI SATELLITE OPERATIONS',
     image: '/images/characters/althaf_commanding.webp',
     quote: '"The government is paralyzed. Veera, you are our sole operative inside. Break through node ER-42."',

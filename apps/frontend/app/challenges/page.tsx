@@ -57,7 +57,7 @@ const COMPLETION_STORIES: Record<number, {
     title: 'VAULT CRACKED — ROUND 1 COMPLETE',
     quote: '"Attack schematics secured. Saif is threatening to execute hostages live on air. Three encrypted databases hold his operational network."',
     subtext: 'Round 1 complete. The Infiltration phase begins now.',
-    character: 'NSA Althaf',
+    character: 'Althaf Hussain',
     characterImage: '/images/characters/althaf_commanding.webp',
     bgColor: 'rgba(16,185,129,0.12)',
     accentColor: '#10b981',
@@ -87,7 +87,7 @@ const COMPLETION_STORIES: Record<number, {
     title: 'PATTERN LOCK BROKEN — ROUND 2 COMPLETE',
     quote: '"Mall frequency hijacked. Veera has cornered the corrupt officials and delayed Farooq\'s border handover. But Saif has armed the demolition network!"',
     subtext: 'Round 2 complete. The Final Strike begins.',
-    character: 'NSA Althaf',
+    character: 'Althaf Hussain',
     characterImage: '/images/characters/althaf_concerned.webp',
     bgColor: 'rgba(16,185,129,0.12)',
     accentColor: '#10b981',
@@ -161,7 +161,7 @@ const MISSIONS: MissionMeta[] = [
     storyStatus: 'FIRST HOSTAGE DEADLINE EXPIRING',
     situation: 'Veera reaches the biometric vault in ER-42. The system uses a team-bound algorithmic lock to prevent shared answers. Inside is Saif\'s complete mall infiltration blueprint and C4 detonation grid.',
     intel: '"Personalised algorithmic vault lock — your authorization code depends strictly on your team registration data. Compute it with zero error or the vault seals permanently."',
-    character: 'NSA Althaf',
+    character: 'Althaf Hussain',
     characterImage: '/images/characters/althaf_commanding.webp',
     roundLabel: 'ROUND 1  BREACH',
   },
@@ -198,9 +198,9 @@ const MISSIONS: MissionMeta[] = [
     storyAct: 'ROUND 2 FINALE — HOSTAGE COUNTERSTRIKE',
     storyTime: '06:15 AM  Central Command Node',
     storyStatus: 'FAROOQ BORDER HANDOVER IN 3 HOURS',
-    situation: 'Veera turns the tables by capturing the Home Minister\'s accomplices inside the mall as leverage. NSA Althaf alerts Veera that Farooq\'s transport convoy is approaching the border. Veera must breach the dynamic pattern lock to hijack the negotiation frequency and freeze the handover.',
+    situation: 'Veera turns the tables by capturing the Home Minister\'s accomplices inside the mall as leverage. Althaf Hussain alerts Veera that Farooq\'s transport convoy is approaching the border. Veera must breach the dynamic pattern lock to hijack the negotiation frequency and freeze the handover.',
     intel: '"Dynamic pattern lock unique to your team. Compute your hash digest to hijack the command frequency and broadcast our counter-ultimatum before Farooq crosses the border."',
-    character: 'NSA Althaf',
+    character: 'Althaf Hussain',
     characterImage: '/images/characters/althaf_concerned.webp',
     roundLabel: 'ROUND 2  INFILTRATION',
   },
@@ -1036,7 +1036,7 @@ function ChallengesInner() {
                       <span className="ch-char-callsign">
                         {meta.character === 'Veera Raghavan' ? 'EX-RAW AGENT // CODENAME: BEAST' :
                          meta.character === 'Preethi' ? 'CYBER SECURITY LIAISON' :
-                         meta.character === 'NSA Althaf' ? 'CHIEF NEGOTIATOR // RAW COMMAND' : 'TACTICAL ADVISOR'}
+                         meta.character === 'Althaf Hussain' || meta.character === 'NSA Althaf' ? 'CHIEF NEGOTIATOR // RAW COMMAND' : 'TACTICAL ADVISOR'}
                       </span>
                     </div>
 

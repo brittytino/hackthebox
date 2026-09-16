@@ -32,8 +32,8 @@ const characterInfo: Record<CharacterName, { name: string; title: string; color:
     color: 'red',
   },
   althaf: {
-    name: 'Althaf',
-    title: 'NSA Tactical Commander',
+    name: 'Althaf Hussain',
+    title: 'National Security Commander',
     color: 'crimson',
   },
   preethi: {

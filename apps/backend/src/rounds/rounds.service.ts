@@ -31,11 +31,21 @@ export class RoundsService {
       return null;
     }
 
+    const uniqueCh: typeof activeRound.challenges = [];
+    const seen = new Set<number>();
+    for (const c of activeRound.challenges) {
+      if (!seen.has(c.order)) {
+        seen.add(c.order);
+        uniqueCh.push(c);
+      }
+    }
+    activeRound.challenges = uniqueCh;
+
     return activeRound;
   }
 
   async getAllRounds() {
-    return this.prisma.round.findMany({
+    const list = await this.prisma.round.findMany({
       include: {
         challenges: {
           select: {
@@ -52,6 +62,18 @@ export class RoundsService {
         },
       },
       orderBy: { order: 'asc' },
+    });
+
+    return list.map((round) => {
+      const uniqueCh: typeof round.challenges = [];
+      const seen = new Set<number>();
+      for (const c of round.challenges) {
+        if (!seen.has(c.order)) {
+          seen.add(c.order);
+          uniqueCh.push(c);
+        }
+      }
+      return { ...round, challenges: uniqueCh };
     });
   }
 

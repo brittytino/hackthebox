@@ -47,7 +47,7 @@ const INTRO_SCENES: Scene[] = [
   },
   {
     bg: '/images/background/6.webp',
-    speaker: 'NSA ALTHAF',
+    speaker: 'ALTHAF HUSSAIN',
     speakerColor: '#ef4444',
     text: '"The government will not surrender to terror. But a frontal assault on the glass atrium will trigger the C4 explosives. Wait... satellite thermal scan detects an operative inside: Veera Raghavan — ex-RAW black-ops specialist."',
     image: '/images/characters/althaf_concerned.webp',
@@ -71,7 +71,7 @@ const INTRO_SCENES: Scene[] = [
   },
   {
     bg: '/images/background/6.webp',
-    speaker: 'NSA ALTHAF',
+    speaker: 'ALTHAF HUSSAIN',
     speakerColor: '#ef4444',
     text: '"Veera, you have operational greenlight. Preethi\'s team will handle the cryptography remotely while you take back East Coast Mall ground by ground. Operation Beast begins now."',
     image: '/images/characters/althaf_commanding.webp',
@@ -138,7 +138,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = [
     },
     {
       bg: '/images/background/2.webp',
-      speaker: 'NSA ALTHAF',
+      speaker: 'ALTHAF HUSSAIN',
       speakerColor: '#ef4444',
       text: '"Veera, our acoustic sensors detect seismic charges wired to the floor beneath you. Saif has linked the vault alarm to the transformers. Zero room for error."',
       image: '/images/characters/althaf_concerned.webp',
@@ -165,7 +165,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = [
     },
     {
       bg: '/images/background/3.webp',
-      speaker: 'NSA ALTHAF',
+      speaker: 'ALTHAF HUSSAIN',
       speakerColor: '#ef4444',
       text: '"Good god... the explosives are wired to central transformers and gas lines. 1,200 hostages are trapped in the atrium. Saif is preparing his first broadcast deadline."',
       image: '/images/characters/althaf_concerned.webp',
@@ -181,7 +181,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = [
     },
     {
       bg: '/images/background/3.webp',
-      speaker: 'NSA ALTHAF',
+      speaker: 'ALTHAF HUSSAIN',
       speakerColor: '#ef4444',
       text: '"Round 1 complete! Now entering Round 2: Infiltration. Crack the three password databases on that drive to identify who is financing and facilitating Saif from the outside."',
       image: '/images/characters/althaf_commanding.webp',
@@ -235,7 +235,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = [
     },
     {
       bg: '/images/background/5.webp',
-      speaker: 'NSA ALTHAF',
+      speaker: 'ALTHAF HUSSAIN',
       speakerColor: '#ef4444',
       text: '"The Cabinet has received our decrypt. The Home Minister\'s conspiracy is shattered and his orders revoked. But Farooq\'s prison transport convoy was already dispatched toward the border."',
       image: '/images/characters/althaf_neutral.webp',
@@ -270,7 +270,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = [
     },
     {
       bg: '/images/background/6.webp',
-      speaker: 'NSA ALTHAF',
+      speaker: 'ALTHAF HUSSAIN',
       speakerColor: '#ef4444',
       text: '"Round 2 complete. But Saif has initiated total mall demolition! We enter Round 3: The Final Strike. Veera, you must locate and disarm the central detonator!"',
       image: '/images/characters/althaf_concerned.webp',
@@ -391,7 +391,7 @@ const CHALLENGE_SCENES: Record<number, Scene[]> = [
     },
     {
       bg: '/images/background/6.webp',
-      speaker: 'NSA ALTHAF',
+      speaker: 'ALTHAF HUSSAIN',
       speakerColor: '#ef4444',
       text: '"Sensational work, Veera. You brought back Farooq, exposed high-level treason, and saved 1,200 innocent citizens. A true Beast in action. Chennai and the nation salute you."',
       image: '/images/characters/althaf_commanding.webp',

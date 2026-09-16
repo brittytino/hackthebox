@@ -387,11 +387,13 @@ export class ChallengesService {
           },
         });
 
-        await tx.score.upsert({
-          where: { teamId: team.id },
-          create: { teamId: team.id, totalPoints: awardedPoints, lastSolved: new Date() },
-          update: { totalPoints: { increment: awardedPoints }, lastSolved: new Date() },
-        });
+        if (!team.scoreFrozen) {
+          await tx.score.upsert({
+            where: { teamId: team.id },
+            create: { teamId: team.id, totalPoints: awardedPoints, lastSolved: new Date() },
+            update: { totalPoints: { increment: awardedPoints }, lastSolved: new Date() },
+          });
+        }
 
         await tx.team.update({ where: { id: team.id }, data: { currentLevel: nextLevel } });
 
@@ -511,16 +513,22 @@ export class ChallengesService {
     const penalty = this.getHintPenaltyForUse(challenge, nextHintIndex);
 
     const newTotalPoints = await this.prisma.$transaction(async (tx) => {
-      const score = await tx.score.upsert({
-        where: { teamId: team.id },
-        create: { teamId: team.id, totalPoints: -penalty },
-        update: { totalPoints: { decrement: penalty } },
-      });
+      let clampedTotal = 0;
+      if (!team.scoreFrozen) {
+        const score = await tx.score.upsert({
+          where: { teamId: team.id },
+          create: { teamId: team.id, totalPoints: -penalty },
+          update: { totalPoints: { decrement: penalty } },
+        });
 
-      // Never let a hint push the score below zero.
-      const clampedTotal = Math.max(score.totalPoints, 0);
-      if (clampedTotal !== score.totalPoints) {
-        await tx.score.update({ where: { teamId: team.id }, data: { totalPoints: clampedTotal } });
+        // Never let a hint push the score below zero.
+        clampedTotal = Math.max(score.totalPoints, 0);
+        if (clampedTotal !== score.totalPoints) {
+          await tx.score.update({ where: { teamId: team.id }, data: { totalPoints: clampedTotal } });
+        }
+      } else {
+        const score = await tx.score.findUnique({ where: { teamId: team.id } });
+        clampedTotal = score?.totalPoints || 0;
       }
 
       await tx.activity.create({
@@ -533,7 +541,7 @@ export class ChallengesService {
           levelNumber: team.currentLevel,
           actionType: 'HINT_USED',
           storyMessage: `${team.name} unlocked mission intel ${nextHintIndex}/${hintTiers.length} for ${challenge.title}`,
-          points: -penalty,
+          points: team.scoreFrozen ? 0 : -penalty,
         },
       });
 
@@ -557,7 +565,7 @@ export class ChallengesService {
   // Get all challenges — flagHash/teamFlagTemplate are never selected here,
   // this is reachable by any authenticated participant, not just admins.
   async getAllChallenges() {
-    return this.prisma.challenge.findMany({
+    const list = await this.prisma.challenge.findMany({
       where: { isActive: true },
       select: {
         id: true,
@@ -588,6 +596,17 @@ export class ChallengesService {
         { order: 'asc' },
       ],
     });
+
+    const unique: typeof list = [];
+    const seen = new Set<string>();
+    for (const ch of list) {
+      const key = `${ch.round?.order ?? ch.round?.id}-${ch.order}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(ch);
+      }
+    }
+    return unique;
   }
 
   async getLeaderboard(limit = 10) {

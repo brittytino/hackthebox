@@ -57,6 +57,7 @@ model Team {
   qualified     Boolean       @default(false)
   qualifiedAt   DateTime?
   disqualified  Boolean       @default(false)
+  scoreFrozen   Boolean       @default(false)
   currentLevel  Int           @default(1)
   startedAt     DateTime      @default(now())
   createdAt     DateTime      @default(now())
@@ -111,6 +112,7 @@ model Challenge {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
+  @@unique([roundId, order])
   @@index([roundId])
   @@index([isActive])
   @@index([order])

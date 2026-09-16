@@ -109,10 +109,19 @@ export const api = {
       apiRequest(`/admin/teams/${teamId}/adjust-score`, { method: 'POST', body: JSON.stringify(data) }),
     disqualifyTeam: (teamId: string, data: { reason: string }) =>
       apiRequest(`/admin/teams/${teamId}/disqualify`, { method: 'POST', body: JSON.stringify(data) }),
+    reEnableTeam: (teamId: string) =>
+      apiRequest(`/admin/teams/${teamId}/re-enable`, { method: 'POST' }),
+    freezeTeamScore: (teamId: string, data: { freeze: boolean }) =>
+      apiRequest(`/admin/teams/${teamId}/freeze-score`, { method: 'POST', body: JSON.stringify(data) }),
     qualifyTeam: (teamId: string) =>
       apiRequest(`/admin/teams/${teamId}/qualify`, { method: 'POST' }),
     qualifyTopTeams: (count: number) =>
       apiRequest('/admin/teams/qualify-top', { method: 'POST', body: JSON.stringify({ count }) }),
+    getHints: () => apiRequest('/admin/hints'),
+    grantHint: (teamId: string, data?: { challengeId?: string; free?: boolean }) =>
+      apiRequest(`/admin/teams/${teamId}/grant-hint`, { method: 'POST', body: JSON.stringify(data || {}) }),
+    resetHints: (teamId: string, data?: { challengeId?: string; refundPoints?: boolean }) =>
+      apiRequest(`/admin/teams/${teamId}/reset-hints`, { method: 'POST', body: JSON.stringify(data || {}) }),
     freezeScoreboard: (data: { freeze: boolean }) =>
       apiRequest('/admin/scoreboard/freeze', { method: 'POST', body: JSON.stringify(data) }),
     exportResults: () => apiRequest('/admin/export'),
